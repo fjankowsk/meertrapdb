@@ -1,8 +1,6 @@
-MeerTRAP database repo
-======================
+# MeerTRAP database repo #
 
-Requirements
-============
+## Requirements ##
 
 * [Python](https://www.python.org/) (2.x >= 2.7)
 
