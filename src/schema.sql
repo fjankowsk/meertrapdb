@@ -1,30 +1,43 @@
 USE test;
 
-CREATE TABLE `BeamConfig` (
+CREATE TABLE IF NOT EXISTS `BeamConfig` (
   `configid` int(10) unsigned NOT NULL AUTO_INCREMENT,
   PRIMARY KEY (`configid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE `FbfuseStatus` (
+CREATE TABLE IF NOT EXISTS `FbfuseStatus` (
   `statusid` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
   `description` varchar(64) NOT NULL DEFAULT '',
   PRIMARY KEY (`statusid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE `LogTypes` (
+CREATE TABLE IF NOT EXISTS `LogTypes` (
   `typeid` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
   `description` varchar(64) NOT NULL DEFAULT '',
   PRIMARY KEY (`typeid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE `NodeList` (
+CREATE TABLE IF NOT EXISTS `NodeList` (
   `nodeid` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
   `ip` varchar(15) NOT NULL DEFAULT '',
   `hostname` varchar(64) NOT NULL DEFAULT '',
   PRIMARY KEY (`nodeid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE `Observations` (
+CREATE TABLE IF NOT EXISTS `TilingStrategy` (
+  `strategyid` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `mainproj` varchar(16) NOT NULL DEFAULT '',
+  PRIMARY KEY (`strategyid`),
+  UNIQUE KEY `mainproj` (`mainproj`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `TuseStatus` (
+  `statusid` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
+  `description` varchar(64) NOT NULL DEFAULT '',
+  PRIMARY KEY (`statusid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `Observations` (
   `obsid` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `ra` float NOT NULL,
   `dec` float NOT NULL,
@@ -47,12 +60,27 @@ CREATE TABLE `Observations` (
   KEY `tuse_status` (`tuse_status`),
   KEY `fbfuse_status` (`fbfuse_status`),
   KEY `beamconfig` (`beamconfig`),
-  CONSTRAINT `observations_ibfk_1` FOREIGN KEY (`tuse_status`) REFERENCES `tusestatus` (`statusid`),
-  CONSTRAINT `observations_ibfk_2` FOREIGN KEY (`fbfuse_status`) REFERENCES `fbfusestatus` (`statusid`),
-  CONSTRAINT `observations_ibfk_3` FOREIGN KEY (`beamconfig`) REFERENCES `beamconfig` (`configid`)
+  CONSTRAINT `observations_ibfk_1` FOREIGN KEY (`tuse_status`) REFERENCES `TuseStatus` (`statusid`),
+  CONSTRAINT `observations_ibfk_2` FOREIGN KEY (`fbfuse_status`) REFERENCES `FbfuseStatus` (`statusid`),
+  CONSTRAINT `observations_ibfk_3` FOREIGN KEY (`beamconfig`) REFERENCES `BeamConfig` (`configid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE `PeriodCandidates` (
+CREATE TABLE IF NOT EXISTS `PipelineLogs` (
+  `logid` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `utc` datetime NOT NULL,
+  `program` varchar(32) NOT NULL DEFAULT '',
+  `type` mediumint(8) unsigned NOT NULL,
+  `message` varchar(512) NOT NULL DEFAULT '',
+  `nodeid` mediumint(8) unsigned NOT NULL,
+  PRIMARY KEY (`logid`),
+  KEY `nodeid` (`nodeid`),
+  KEY `type` (`type`),
+  CONSTRAINT `pipelinelogs_ibfk_1` FOREIGN KEY (`logid`) REFERENCES `Observations` (`obsid`),
+  CONSTRAINT `pipelinelogs_ibfk_2` FOREIGN KEY (`nodeid`) REFERENCES `NodeList` (`nodeid`),
+  CONSTRAINT `pipelinelogs_ibfk_3` FOREIGN KEY (`type`) REFERENCES `LogTypes` (`typeid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `PeriodCandidates` (
   `periodcandid` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `utc` datetime NOT NULL,
   `utcadded` datetime NOT NULL,
@@ -67,26 +95,11 @@ CREATE TABLE `PeriodCandidates` (
   `dmcurve` blob NOT NULL,
   PRIMARY KEY (`periodcandid`),
   KEY `nodeid` (`nodeid`),
-  CONSTRAINT `periodcandidates_ibfk_1` FOREIGN KEY (`periodcandid`) REFERENCES `observations` (`obsid`),
-  CONSTRAINT `periodcandidates_ibfk_2` FOREIGN KEY (`nodeid`) REFERENCES `Nodes` (`nodeid`)
+  CONSTRAINT `periodcandidates_ibfk_1` FOREIGN KEY (`periodcandid`) REFERENCES `Observations` (`obsid`),
+  CONSTRAINT `periodcandidates_ibfk_2` FOREIGN KEY (`nodeid`) REFERENCES `NodeList` (`nodeid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE `PipelineLogs` (
-  `logid` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `utc` datetime NOT NULL,
-  `program` varchar(32) NOT NULL DEFAULT '',
-  `type` mediumint(8) unsigned NOT NULL,
-  `message` varchar(512) NOT NULL DEFAULT '',
-  `nodeid` mediumint(8) unsigned NOT NULL,
-  PRIMARY KEY (`logid`),
-  KEY `nodeid` (`nodeid`),
-  KEY `type` (`type`),
-  CONSTRAINT `pipelinelogs_ibfk_1` FOREIGN KEY (`logid`) REFERENCES `observations` (`obsid`),
-  CONSTRAINT `pipelinelogs_ibfk_2` FOREIGN KEY (`nodeid`) REFERENCES `NodeList` (`nodeid`),
-  CONSTRAINT `pipelinelogs_ibfk_3` FOREIGN KEY (`type`) REFERENCES `logtypes` (`typeid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-CREATE TABLE `SpsCandidates` (
+CREATE TABLE IF NOT EXISTS `SpsCandidates` (
   `spscandid` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `utc` datetime NOT NULL,
   `utcadded` datetime NOT NULL,
@@ -101,19 +114,6 @@ CREATE TABLE `SpsCandidates` (
   `profile` blob NOT NULL,
   PRIMARY KEY (`spscandid`),
   KEY `nodeid` (`nodeid`),
-  CONSTRAINT `spscandidates_ibfk_1` FOREIGN KEY (`spscandid`) REFERENCES `observations` (`obsid`),
-  CONSTRAINT `spscandidates_ibfk_2` FOREIGN KEY (`nodeid`) REFERENCES `Nodes` (`nodeid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-CREATE TABLE `TilingStrategy` (
-  `strategyid` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `mainproj` varchar(16) NOT NULL DEFAULT '',
-  PRIMARY KEY (`strategyid`),
-  UNIQUE KEY `mainproj` (`mainproj`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-CREATE TABLE `TuseStatus` (
-  `statusid` mediumint(8) unsigned NOT NULL AUTO_INCREMENT,
-  `description` varchar(64) NOT NULL DEFAULT '',
-  PRIMARY KEY (`statusid`)
+  CONSTRAINT `spscandidates_ibfk_1` FOREIGN KEY (`spscandid`) REFERENCES `Observations` (`obsid`),
+  CONSTRAINT `spscandidates_ibfk_2` FOREIGN KEY (`nodeid`) REFERENCES `NodeList` (`nodeid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
