@@ -48,6 +48,9 @@ def init_tables():
 
     commands = raw.split(";")
 
+    # remove empty last item
+    commands = commands[:-1]
+
     db = Database()
     db.bind(provider='mysql', host='localhost', user='root', passwd='')
     
