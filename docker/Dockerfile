@@ -27,3 +27,12 @@ RUN rm -rf /var/lib/mysql \
 
 RUN easy_install pip
 RUN pip install --upgrade pip
+
+# install our software in docker image
+ARG SOFT_PATH="/software/meertrapdb"
+
+RUN mkdir -p ${SOFT_PATH}
+COPY . ${SOFT_PATH}
+
+ENV PYTHONPATH ${SOFT_PATH}:${PYTHONPATH}
+WORKDIR ${SOFT_PATH}
