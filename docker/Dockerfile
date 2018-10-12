@@ -2,6 +2,7 @@ FROM debian:stable
 
 RUN apt-get update && apt-get install -y \
     curl \
+    default-libmysqlclient-dev \
     gcc \
     git \
     make \
@@ -27,6 +28,12 @@ RUN rm -rf /var/lib/mysql \
 
 RUN easy_install pip
 RUN pip install --upgrade pip
+
+# python packages
+RUN pip install \
+    ipython \
+    mysqlclient \
+    pony
 
 # install our software in docker image
 ARG SOFT_PATH="/software/meertrapdb"
