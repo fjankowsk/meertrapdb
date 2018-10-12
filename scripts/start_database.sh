@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+#
+# Simple wrapper to start up database. 
+# 2018 Fabian Jankowski
+#
+
+service mysql start
+bash
