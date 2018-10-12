@@ -19,7 +19,7 @@ production:
 	${DCK} build --file ${DOCKERFILE} --tag meertrapdb ${BASEDIR}
 
 clean:
-	rm ${SRCDIR}/*.pyc
+	rm -f ${SRCDIR}/*.pyc
 
 interactive:
 	${DCK} run -it --rm meertrapdb bash
