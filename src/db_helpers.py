@@ -16,32 +16,24 @@ __version__ = "$Revision$"
 
 log = logging.getLogger(__name__)
 
-def signal_handler(signum, frame):
-    """
-    Handle UNIX signals sent to the program.
-    """
-
-    # treat SIGINT/INT/CRTL-C
-    if signum == signal.SIGINT:
-        log.warn("SIGINT received, stopping the program.")
-        sys.exit(1)
-
-
 def setup_db():
     """
     Do initial configuration of database.
     """
-    
+
     db = Database()
     db.bind(provider='mysql', host='localhost', user='root', passwd='')
 
-    sql = """CREATE USER meertrap@localhost IDENTIFIED BY 'password';
-    CREATE DATABASE test;
-    """
-    
-    with db_session:
-        cursor = db.execute(sql)
+    commands = [
+        "CREATE USER IF NOT EXISTS meertrap@localhost IDENTIFIED BY 'password1';",
+        "CREATE USER IF NOT EXISTS meertrap_ro@localhost IDENTIFIED BY 'password2';",
+        "CREATE DATABASE IF NOT EXISTS test;"
+    ]
 
+    with db_session:
+        for sql in commands:
+            db.execute(sql)
+            db.commit()
 
 
 def init_tables():
@@ -49,4 +41,17 @@ def init_tables():
     Initialise the database tables.
     """
 
-    pass
+    filename = "schema.sql"
+
+    with open(filename) as f:
+        raw = f.read()
+
+    commands = raw.split(";")
+
+    db = Database()
+    db.bind(provider='mysql', host='localhost', user='root', passwd='')
+    
+    with db_session:
+        for sql in commands:
+            db.execute(sql)
+            db.commit()
