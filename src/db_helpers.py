@@ -52,7 +52,7 @@ def init_tables():
     commands = commands[:-1]
 
     db = Database()
-    db.bind(provider='mysql', host='localhost', user='root', passwd='')
+    db.bind(provider='mysql', host='localhost', user='root', passwd='', db='test')
     
     with db_session:
         for sql in commands:
