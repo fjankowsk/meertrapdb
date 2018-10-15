@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y \
     mariadb-client \
     netcat \
     net-tools \
+    procps \
     python2.7 \
     python2.7-dev \
     python-setuptools \
