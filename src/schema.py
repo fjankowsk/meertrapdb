@@ -48,13 +48,13 @@ class BeamConfig(db.Entity):
 class TuseStatus(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
     status = Required(str, max_len=32)
-    description = Required(str, max_len=64)
+    description = Optional(str, max_len=64)
     obs = Set('Observation')
 
 class FbfuseStatus(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
     status = Required(str, max_len=32)
-    description = Required(str, max_len=64)
+    description = Optional(str, max_len=64)
     obs = Set('Observation')
 
 class PeriodCandidate(db.Entity):
@@ -108,6 +108,7 @@ class PipelineConfig(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
     name = Required(str, max_len=32)
     version = Required(str, max_len=32)
+    ddplan = Required(str, max_len=512)
     snr_threshold = Required(float)
     zerodm_zapping = Required(bool)
     periodcandidate = Set('PeriodCandidate')

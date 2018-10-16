@@ -19,7 +19,8 @@ from pony.orm import db_session
 from config_helpers import get_config
 from db_helpers import setup_db
 from schema import (db, Observation, BeamConfig, TuseStatus,
-                    FbfuseStatus, PeriodCandidate, SpsCandidate)
+                    FbfuseStatus, PeriodCandidate, SpsCandidate,
+                    Node, PipelineConfig, ClassifierConfig)
 
 # version info
 __version__ = "$Revision$"
@@ -33,9 +34,24 @@ def insert_data(task):
 
     while True:
         now = datetime.now()
-        buf = buffer('jfdsajlk')
+        buf = b'jfdsajlkfdsjlafjaklsfjladksflkdsjfklsjflkas'
         
         with db_session:
+            fbfusestatus = FbfuseStatus(
+                status='good',
+                description='all fine'
+            )
+
+            tusestatus = TuseStatus(
+                status='good',
+                description='all fine'
+            )
+
+            beamconfig = BeamConfig(
+                nbeam=396,
+                tilingmode='fill'
+            )
+
             obs = Observation(
                 ra=0,
                 dec=0,
@@ -51,7 +67,33 @@ def insert_data(task):
                 cfreq=1400.123,
                 bw=800.0,
                 npol=1,
-                tsamp=0.1234
+                tsamp=0.1234,
+                beamconfig=beamconfig,
+                fbfuse_status=fbfusestatus,
+                tuse_status=tusestatus
+            )
+
+            node1 = Node(
+                ip='192.168.1.123',
+                hostname='compute123.meertrap.local'
+            )
+
+            node2 = Node(
+                ip='192.168.1.198',
+                hostname='compute198.meertrap.local'
+            )
+
+            pipelineconfig = PipelineConfig(
+                name='Cheetah',
+                version='0.7.5',
+                ddplan='Blablabla',
+                snr_threshold=7.5,
+                zerodm_zapping=True
+            )
+
+            classifierconfig = ClassifierConfig(
+                name='AwesomeClassifier',
+                version='0.2.5'
             )
 
             for _ in range(500):
@@ -67,7 +109,32 @@ def insert_data(task):
                     dynamicspectrum=buf,
                     profile=buf,
                     score=97.3,
-                    obs=obs
+                    obs=obs,
+                    node=node1,
+                    pipelineconfig=pipelineconfig,
+                    classifierconfig=classifierconfig
+                )
+            
+            for _ in range(200):
+                PeriodCandidate(
+                    utc=now,
+                    utcadded=now,
+                    ra=0.0,
+                    dec=0.0,
+                    beam='in0',
+                    snr=9.5,
+                    period=89.123,
+                    dm=1234.56,
+                    width=2.7,
+                    acc=100.0,
+                    dynamicspectrum=buf,
+                    profile=buf,
+                    dmcurve=buf,
+                    score=97.3,
+                    obs=obs,
+                    node=node2,
+                    pipelineconfig=pipelineconfig,
+                    classifierconfig=classifierconfig
                 )
 
         print("Done. Time taken: {0}".format(datetime.now() - now))
@@ -102,38 +169,108 @@ def run_test():
         print(pn.count(o.id for o in Observation))
 
     now = datetime.now()
-    buf = buffer('jfdsajlk')
+    buf = b'jfdsajlkfdsjlafjaklsfjladksflkdsjfklsjflkas'
 
     with db_session:
-        Observation(ra=0,
-                    dec=0,
-                    mainproj="Bla",
-                    proj="bdfsa",
-                    observer="Fabian",
-                    utcstart=now,
-                    utcend=now,
-                    utcadded=now,
-                    tobs=360.0,
-                    finished=False,
-                    nant=64,
-                    cfreq=1400.123,
-                    bw=800.0,
-                    npol=1,
-                    tsamp=0.1234)
+        fbfusestatus = FbfuseStatus(
+            status='good',
+            description='all fine'
+        )
+
+        tusestatus = TuseStatus(
+            status='good',
+            description='all fine'
+        )
+
+        beamconfig = BeamConfig(
+            nbeam=396,
+            tilingmode='fill'
+        )
+
+        obs = Observation(
+            ra=0,
+            dec=0,
+            mainproj="Bla",
+            proj="bdfsa",
+            observer="Fabian",
+            utcstart=now,
+            utcend=now,
+            utcadded=now,
+            tobs=360.0,
+            finished=False,
+            nant=64,
+            cfreq=1400.123,
+            bw=800.0,
+            npol=1,
+            tsamp=0.1234,
+            beamconfig=beamconfig,
+            fbfuse_status=fbfusestatus,
+            tuse_status=tusestatus
+        )
+
+        node1 = Node(
+            ip='192.168.1.123',
+            hostname='compute123.meertrap.local'
+        )
+
+        node2 = Node(
+            ip='192.168.1.198',
+            hostname='compute198.meertrap.local'
+        )
+
+        pipelineconfig = PipelineConfig(
+            name='Cheetah',
+            version='0.7.5',
+            ddplan='Blablabla',
+            snr_threshold=7.5,
+            zerodm_zapping=True
+        )
+
+        classifierconfig = ClassifierConfig(
+            name='AwesomeClassifier',
+            version='0.2.5'
+        )
+
+        for _ in range(500):
+            SpsCandidate(
+                utc=now,
+                utcadded=now,
+                ra=0.0,
+                dec=0.0,
+                beam='in0',
+                snr=9.5,
+                dm=1234.56,
+                width=2.7,
+                dynamicspectrum=buf,
+                profile=buf,
+                score=97.3,
+                obs=obs,
+                node=node1,
+                pipelineconfig=pipelineconfig,
+                classifierconfig=classifierconfig
+            )
         
-        SpsCandidate(
-                    utc=now,
-                    utcadded=now,
-                    ra=0.0,
-                    dec=0.0,
-                    beam='in0',
-                    snr=9.5,
-                    dm=1234.56,
-                    width=2.7,
-                    dynamicspectrum=buf,
-                    profile=buf,
-                    score=97.3
-                )
+        for _ in range(200):
+            PeriodCandidate(
+                utc=now,
+                utcadded=now,
+                ra=0.0,
+                dec=0.0,
+                beam='in0',
+                snr=9.5,
+                period=89.123,
+                dm=1234.56,
+                width=2.7,
+                acc=100.0,
+                dynamicspectrum=buf,
+                profile=buf,
+                dmcurve=buf,
+                score=97.3,
+                obs=obs,
+                node=node2,
+                pipelineconfig=pipelineconfig,
+                classifierconfig=classifierconfig
+        )
 
 
 def parse_args():
