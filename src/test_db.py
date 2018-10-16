@@ -5,6 +5,7 @@
 #
 
 from __future__ import print_function
+import argparse
 from datetime import datetime
 import logging
 from multiprocessing import Pool
@@ -87,23 +88,11 @@ def run_benchmark(nproc):
         print("Bla.")
         sleep(5)
 
-#
-# MAIN
-#
 
-def main():
-    setup_db()
-
-    config = get_config()
-    dbconf = config['db']
-
-    db.bind(provider=dbconf['provider'],
-            host=dbconf['host'],
-            user=dbconf['root']['name'],
-            passwd=dbconf['root']['password'],
-            db='test')
-
-    db.generate_mapping(create_tables=True)
+def run_test():
+    """
+    Test the database.
+    """
 
     with db_session:
         #print(Observation.describe())
@@ -111,7 +100,7 @@ def main():
 
         #pn.select((o.utcstart,o.cfreq,o.bw) for o in Observation).show()
         print(pn.count(o.id for o in Observation))
-    
+
     now = datetime.now()
     buf = buffer('jfdsajlk')
 
@@ -146,8 +135,62 @@ def main():
                     score=97.3
                 )
 
-    run_benchmark(nproc=64)
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Test the database implementation.")
     
+    parser.add_argument(
+        'operation',
+        choices=['benchmark', 'test'],
+        help='Operation that should be performed.')
+    
+    parser.add_argument(
+        '--nproc',
+        type=int,
+        dest='nproc',
+        default=64,
+        help='Number of processes that access the database simultanously.')
+    
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=__version__)
+
+    return parser.parse_args()
+
+
+#
+# MAIN
+#
+
+def main():
+    args = parse_args()
+
+    try:
+        setup_db()
+    except pn.dbapiprovider.OperationalError as e:
+        print("Could not setup database: {0}".format(str(e)))
+
+    config = get_config()
+    dbconf = config['db']
+
+    db.bind(provider=dbconf['provider'],
+            host=dbconf['host'],
+            user=dbconf['root']['name'],
+            passwd=dbconf['root']['password'],
+            db='test')
+
+    db.generate_mapping(create_tables=True)
+
+    if args.operation == 'benchmark':
+        run_benchmark(nproc=args.nproc)
+
+    elif args.operation == 'test':
+        run_test()
+    
+    print("All done.")
+
 
 if __name__ == "__main__":
     main()
