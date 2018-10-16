@@ -141,7 +141,7 @@ def insert_data(task):
                 )
 
         log.debug("Done. Time taken: {0}".format(datetime.now() - now))
-        sleep(pconf['sps']['interval'])
+        #sleep(pconf['sps']['interval'])
 
 
 def run_benchmark(nproc):
@@ -163,22 +163,25 @@ def run_benchmark(nproc):
 
     while True:
         with db_session:
-            tobs = pn.count(pn.select(o.id for o in Observation))
-            tsps = pn.count(pn.select(o.id for o in SpsCandidate))
-            tperiod = pn.count(pn.select(o.id for o in PeriodCandidate))
+            tobs = pn.max(o.id for o in Observation)
+            tsps = pn.max(o.id for o in SpsCandidate)
+            tperiod = pn.max(o.id for o in PeriodCandidate)
 
-        dt = (datetime.now() - now).total_seconds()
-        dobs = (tobs - nobs)/dt
-        dsps = (tsps - nsps)/dt
-        dperiod = (tperiod - nperiod)/dt
+        if tobs is not None \
+        and tsps is not None \
+        and tperiod is not None:
+            dt = (datetime.now() - now).total_seconds()
+            dobs = (tobs - nobs)/dt
+            dsps = (tsps - nsps)/dt
+            dperiod = (tperiod - nperiod)/dt
 
-        log.info("Dt, dObs, dSps, dPeriod [1/s]: {0:.1f} s, {1:.1f}, {2:.1f}, {3:.1f}".format(
-            dt, dobs, dsps, dperiod))
+            log.info("Dt, dObs, dSps, dPeriod [1/s]: {0:.1f} s, {1:.1f}, {2:.1f}, {3:.1f}".format(
+                dt, dobs, dsps, dperiod))
         
-        nobs = tobs
-        nsps = tsps
-        nperiod = tperiod
-        now = datetime.now()
+            nobs = tobs
+            nsps = tsps
+            nperiod = tperiod
+            now = datetime.now()
 
         sleep(10)
 
