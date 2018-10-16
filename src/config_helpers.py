@@ -31,7 +31,7 @@ def get_config():
     filename = os.path.join(os.path.dirname(__file__), 'config', 'test.yaml')
     filename = os.path.abspath(filename)
 
-    log = logging.getLogger(__file__)
+    log = logging.getLogger('meertrapdb')
     log.debug("Configuration file: {0}".format(filename))
 
     if not os.path.isfile(filename):

@@ -33,7 +33,7 @@ def insert_data(task):
     config = get_config()
     pconf = config['pipeline']
 
-    log = logging.getLogger(__file__)
+    log = logging.getLogger('meertrapdb')
 
     while True:
         now = datetime.now()
@@ -149,7 +149,7 @@ def run_benchmark(nproc):
     Benchmark concurrent database connections.
     """
 
-    log = logging.getLogger(__file__)
+    log = logging.getLogger('meertrapdb')
 
     p = Pool(processes=nproc)
     tasks = [500 for _ in range(nproc)]
@@ -170,7 +170,7 @@ def run_test():
     Test the database.
     """
 
-    log = logging.getLogger(__file__)
+    log = logging.getLogger('meertrapdb')
 
     with db_session:
         #print(Observation.describe())
@@ -289,7 +289,7 @@ def setup_logging():
     Setup the logging configuration.
     """
 
-    log = logging.getLogger(__file__)
+    log = logging.getLogger('meertrapdb')
 
     log.setLevel(logging.DEBUG)
     log.propagate = False
@@ -297,7 +297,7 @@ def setup_logging():
     # log to console
     console = logging.StreamHandler()
     console.setLevel(logging.INFO)
-    fmt = "%(asctime)s, %(processName)s, %(name)s, %(levelname)s: %(message)s"
+    fmt = "%(asctime)s, %(processName)s, %(name)s, %(module)s, %(levelname)s: %(message)s"
     console_formatter = logging.Formatter(fmt)
     console.setFormatter(console_formatter)
     log.addHandler(console)
@@ -334,7 +334,7 @@ def parse_args():
 def main():
     args = parse_args()
 
-    log = logging.getLogger(__file__)
+    log = logging.getLogger('meertrapdb')
     setup_logging()
 
     try:

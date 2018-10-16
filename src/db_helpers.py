@@ -22,7 +22,7 @@ def setup_db():
     config = get_config()
     dbconf = config['db']
 
-    log = logging.getLogger(__file__)
+    log = logging.getLogger('meertrapdb')
     log.info('Setting root password.')
 
     # set root password
@@ -77,7 +77,7 @@ def init_tables():
     filename = os.path.join(os.path.dirname(__file__), 'schema.sql')
     filename = os.path.abspath(filename)
 
-    log = logging.getLogger(__file__)
+    log = logging.getLogger('meertrapdb')
     log.debug('Schema file: {0}'.format(filename))
 
     with open(filename) as f:
