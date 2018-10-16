@@ -14,3 +14,8 @@ db:
     - name: production
     - name: backup
     - name: old
+pipeline:
+  sps:
+    interval: 10
+  period:
+    interval: 600

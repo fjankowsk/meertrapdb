@@ -14,8 +14,6 @@ from config_helpers import get_config
 # version info
 __version__ = "$Revision$"
 
-log = logging.getLogger(__name__)
-
 def setup_db():
     """
     Do initial configuration of database.
@@ -23,6 +21,9 @@ def setup_db():
 
     config = get_config()
     dbconf = config['db']
+
+    log = logging.getLogger(__file__)
+    log.info('Setting root password.')
 
     # set root password
     db = Database()
@@ -38,6 +39,7 @@ def setup_db():
         db.execute(sql)
     
     db.disconnect()
+    log.info('Root password was set successfully.')
 
     db = Database()
     db.bind(provider=dbconf['provider'],
@@ -57,10 +59,14 @@ def setup_db():
         command = "CREATE DATABASE IF NOT EXISTS {0};".format(database['name'])
         commands.append(command)
 
+    log.info('Creating users and databases.')
+
     with db_session:
         for sql in commands:
             db.execute(sql)
             db.commit()
+    
+    log.info('Users and databases were created successfully.')
 
 
 def init_tables():
@@ -70,6 +76,9 @@ def init_tables():
 
     filename = os.path.join(os.path.dirname(__file__), 'schema.sql')
     filename = os.path.abspath(filename)
+
+    log = logging.getLogger(__file__)
+    log.debug('Schema file: {0}'.format(filename))
 
     with open(filename) as f:
         raw = f.read()
@@ -88,7 +97,11 @@ def init_tables():
             user=dbconf['root']['name'],
             passwd=dbconf['root']['password'])
 
+    log.info('Initialising tables.')
+
     with db_session:
         for sql in commands:
             db.execute(sql)
             db.commit()
+    
+    log.info('Tables were initialised successfully.')

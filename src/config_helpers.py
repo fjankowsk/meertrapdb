@@ -5,6 +5,7 @@
 #
 
 from __future__ import print_function
+import logging
 import os.path
 import yaml
 # local ones
@@ -29,6 +30,9 @@ def get_config():
 
     filename = os.path.join(os.path.dirname(__file__), 'config', 'test.yaml')
     filename = os.path.abspath(filename)
+
+    log = logging.getLogger(__file__)
+    log.debug("Configuration file: {0}".format(filename))
 
     if not os.path.isfile(filename):
         raise RuntimeError("Config file does not exist: {0}".format(filename))

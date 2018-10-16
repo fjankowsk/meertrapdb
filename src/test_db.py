@@ -25,12 +25,15 @@ from schema import (db, Observation, BeamConfig, TuseStatus,
 # version info
 __version__ = "$Revision$"
 
-log = logging.getLogger(__name__)
-
 def insert_data(task):
     """
     Insert data into the database.
     """
+
+    config = get_config()
+    pconf = config['pipeline']
+
+    log = logging.getLogger(__file__)
 
     while True:
         now = datetime.now()
@@ -137,14 +140,16 @@ def insert_data(task):
                     classifierconfig=classifierconfig
                 )
 
-        print("Done. Time taken: {0}".format(datetime.now() - now))
-        sleep(3)
+        log.info("Done. Time taken: {0}".format(datetime.now() - now))
+        sleep(pconf['sps']['interval'])
 
 
 def run_benchmark(nproc):
     """
     Benchmark concurrent database connections.
     """
+
+    log = logging.getLogger(__file__)
 
     p = Pool(processes=nproc)
     tasks = [500 for _ in range(nproc)]
@@ -153,7 +158,11 @@ def run_benchmark(nproc):
 
     while True:
         print("Bla.")
-        sleep(5)
+
+        with db_session:
+            log.info(pn.count(o.id for o in Observation))
+
+        sleep(10)
 
 
 def run_test():
@@ -161,12 +170,14 @@ def run_test():
     Test the database.
     """
 
+    log = logging.getLogger(__file__)
+
     with db_session:
         #print(Observation.describe())
         #Observation.select().show()
 
         #pn.select((o.utcstart,o.cfreq,o.bw) for o in Observation).show()
-        print(pn.count(o.id for o in Observation))
+        log.info(pn.count(o.id for o in Observation))
 
     now = datetime.now()
     buf = b'jfdsajlkfdsjlafjaklsfjladksflkdsjfklsjflkas'
@@ -273,6 +284,25 @@ def run_test():
         )
 
 
+def setup_logging():
+    """
+    Setup the logging configuration.
+    """
+
+    log = logging.getLogger(__file__)
+
+    log.setLevel(logging.DEBUG)
+    log.propagate = False
+
+    # log to console
+    console = logging.StreamHandler()
+    console.setLevel(logging.INFO)
+    fmt = "%(asctime)s, %(processName)s, %(name)s, %(levelname)s: %(message)s"
+    console_formatter = logging.Formatter(fmt)
+    console.setFormatter(console_formatter)
+    log.addHandler(console)
+
+
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Test the database implementation.")
@@ -304,10 +334,13 @@ def parse_args():
 def main():
     args = parse_args()
 
+    log = logging.getLogger(__file__)
+    setup_logging()
+
     try:
         setup_db()
     except pn.dbapiprovider.OperationalError as e:
-        print("Could not setup database: {0}".format(str(e)))
+        log.warn("Could not setup database: {0}".format(str(e)))
 
     config = get_config()
     dbconf = config['db']
@@ -326,7 +359,7 @@ def main():
     elif args.operation == 'test':
         run_test()
     
-    print("All done.")
+    log.info("All done.")
 
 
 if __name__ == "__main__":
