@@ -140,7 +140,7 @@ def insert_data(task):
                     classifierconfig=classifierconfig
                 )
 
-        log.info("Done. Time taken: {0}".format(datetime.now() - now))
+        log.debug("Done. Time taken: {0}".format(datetime.now() - now))
         sleep(pconf['sps']['interval'])
 
 
@@ -156,11 +156,29 @@ def run_benchmark(nproc):
 
     p.map_async(insert_data, tasks)
 
-    while True:
-        print("Bla.")
+    nobs = 0
+    nsps = 0
+    nperiod = 0
+    now = datetime.now()
 
+    while True:
         with db_session:
-            log.info(pn.count(o.id for o in Observation))
+            tobs = pn.count(pn.select(o.id for o in Observation))
+            tsps = pn.count(pn.select(o.id for o in SpsCandidate))
+            tperiod = pn.count(pn.select(o.id for o in PeriodCandidate))
+
+        dt = (datetime.now() - now).total_seconds()
+        dobs = (tobs - nobs)/dt
+        dsps = (tsps - nsps)/dt
+        dperiod = (tperiod - nperiod)/dt
+
+        log.info("Dt, dObs, dSps, dPeriod [1/s]: {0:.1f} s, {1:.1f}, {2:.1f}, {3:.1f}".format(
+            dt, dobs, dsps, dperiod))
+        
+        nobs = tobs
+        nsps = tsps
+        nperiod = tperiod
+        now = datetime.now()
 
         sleep(10)
 
