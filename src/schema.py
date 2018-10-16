@@ -6,14 +6,11 @@
 
 from __future__ import print_function
 from datetime import datetime
-import logging
 from pony.orm import (Database, PrimaryKey, Optional, Required, Set)
 # local ones
 
 # version info
 __version__ = "$Revision$"
-
-log = logging.getLogger(__name__)
 
 db = Database()
 
