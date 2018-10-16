@@ -1,0 +1,16 @@
+db:
+  provider: mysql
+  host: localhost
+  root:
+    name: root
+    password: test1
+  users:
+    - name: meertrap
+      password: test2
+    - name: meertrap_ro
+      password: test3
+  databases:
+    - name: test
+    - name: production
+    - name: backup
+    - name: old

@@ -15,6 +15,7 @@ from time import sleep
 import pony.orm as pn
 from pony.orm import db_session
 # local ones
+from config_helpers import get_config
 from db_helpers import setup_db
 from schema import (db, Observation, BeamConfig, TuseStatus,
                     FbfuseStatus, PeriodCandidate, SpsCandidate)
@@ -93,7 +94,15 @@ def run_benchmark(nproc):
 def main():
     setup_db()
 
-    db.bind(provider='mysql', host='localhost', user='root', passwd='', db='test')
+    config = get_config()
+    dbconf = config['db']
+
+    db.bind(provider=dbconf['provider'],
+            host=dbconf['host'],
+            user=dbconf['root']['name'],
+            passwd=dbconf['root']['password'],
+            db='test')
+
     db.generate_mapping(create_tables=True)
 
     with db_session:
@@ -138,7 +147,6 @@ def main():
                 )
 
     run_benchmark(nproc=64)
-    
     
 
 if __name__ == "__main__":

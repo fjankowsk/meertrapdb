@@ -10,6 +10,7 @@ import signal
 import sys
 from pony.orm import (Database, db_session)
 # local ones
+from config_helpers import get_config
 
 # version info
 __version__ = "$Revision$"
@@ -21,14 +22,41 @@ def setup_db():
     Do initial configuration of database.
     """
 
-    db = Database()
-    db.bind(provider='mysql', host='localhost', user='root', passwd='')
+    config = get_config()
+    dbconf = config['db']
 
-    commands = [
-        "CREATE USER IF NOT EXISTS meertrap@localhost IDENTIFIED BY 'password1';",
-        "CREATE USER IF NOT EXISTS meertrap_ro@localhost IDENTIFIED BY 'password2';",
-        "CREATE DATABASE IF NOT EXISTS test;"
-    ]
+    # set root password
+    db = Database()
+    db.bind(provider=dbconf['provider'],
+            host=dbconf['host'],
+            user=dbconf['root']['name'],
+            passwd='')
+    
+    sql = "SET PASSWORD FOR '{0}'@'{1}' = PASSWORD('{2}');".format(
+        dbconf['root']['name'], dbconf['host'], dbconf['root']['password'])
+
+    with db_session:
+        db.execute(sql)
+    
+    db.disconnect()
+
+    db = Database()
+    db.bind(provider=dbconf['provider'],
+            host=dbconf['host'],
+            user=dbconf['root']['name'],
+            passwd=dbconf['root']['password'])
+
+    commands = []
+
+    for user in dbconf['users']:
+        command = "CREATE USER IF NOT EXISTS '{0}'@'{1}' IDENTIFIED BY '{2}';".format(
+            user['name'], dbconf['host'], user['password']
+        )
+        commands.append(command)
+    
+    for database in dbconf['databases']:
+        command = "CREATE DATABASE IF NOT EXISTS {0};".format(database['name'])
+        commands.append(command)
 
     with db_session:
         for sql in commands:
@@ -51,9 +79,15 @@ def init_tables():
     # remove empty last item
     commands = commands[:-1]
 
+    config = get_config()
+    dbconf = config['db']
+
     db = Database()
-    db.bind(provider='mysql', host='localhost', user='root', passwd='', db='test')
-    
+    db.bind(provider=dbconf['provider'],
+            host=dbconf['host'],
+            user=dbconf['root']['name'],
+            passwd=dbconf['root']['password'])
+
     with db_session:
         for sql in commands:
             db.execute(sql)

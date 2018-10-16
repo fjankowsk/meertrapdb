@@ -34,7 +34,8 @@ RUN pip install --upgrade pip
 RUN pip install \
     ipython \
     mysqlclient \
-    pony
+    pony \
+    pyyaml
 
 # install our software in docker image
 ARG SOFT_PATH="/software/meertrapdb"
