@@ -33,7 +33,9 @@ RUN pip install --upgrade pip
 # python packages
 RUN pip install \
     ipython \
+    matplotlib \
     mysqlclient \
+    numpy \
     pony \
     pyyaml
 

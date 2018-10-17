@@ -130,3 +130,16 @@ class Logs(db.Entity):
     type = Required(int, size=8)
     message = Required(str, max_len=512)
     node = Set('Node')
+
+class Benchmark(db.Entity):
+    id = PrimaryKey(int, auto=True, size=64, unsigned=True)
+    utc = Required(datetime)
+    utcadded = Required(datetime, sql_default='CURRENT_TIMESTAMP')
+    nproc = Required(int, size=8)
+    nobs = Required(int, size=64)
+    nsps = Required(int, size=64)
+    nperiod = Required(int, size=64)
+    dt = Required(float)
+    dobs = Required(float)
+    dsps = Required(float)
+    dperiod = Required(float)

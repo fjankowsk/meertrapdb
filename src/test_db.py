@@ -8,7 +8,11 @@ from __future__ import print_function
 import argparse
 from datetime import datetime
 import logging
+import matplotlib
+matplotlib.use('Agg') 
+import matplotlib.pyplot as plt
 from multiprocessing import Pool
+import numpy as np
 from operator import attrgetter
 import signal
 import sys
@@ -20,7 +24,8 @@ from config_helpers import get_config
 from db_helpers import setup_db
 from schema import (db, Observation, BeamConfig, TuseStatus,
                     FbfuseStatus, PeriodCandidate, SpsCandidate,
-                    Node, PipelineConfig, ClassifierConfig)
+                    Node, PipelineConfig, ClassifierConfig,
+                    Benchmark)
 
 # version info
 __version__ = "$Revision$"
@@ -156,9 +161,19 @@ def run_benchmark(nproc):
 
     p.map_async(insert_data, tasks)
 
-    nobs = 0
-    nsps = 0
-    nperiod = 0
+    # get initial number of entries in database
+    with db_session:
+        nobs = pn.max(o.id for o in Observation)
+        nsps = pn.max(o.id for o in SpsCandidate)
+        nperiod = pn.max(o.id for o in PeriodCandidate)
+    
+    if nobs is None \
+    or nsps is None \
+    or nperiod is None:
+        nobs = 0
+        nsps = 0
+        nperiod = 0
+
     now = datetime.now()
 
     while True:
@@ -167,16 +182,32 @@ def run_benchmark(nproc):
             tsps = pn.max(o.id for o in SpsCandidate)
             tperiod = pn.max(o.id for o in PeriodCandidate)
 
-        if tobs is not None \
+        tnow = datetime.now()
+        dt = (tnow - now).total_seconds()
+
+        if dt > 1.0 \
+        and tobs is not None \
         and tsps is not None \
         and tperiod is not None:
-            dt = (datetime.now() - now).total_seconds()
             dobs = (tobs - nobs)/dt
             dsps = (tsps - nsps)/dt
             dperiod = (tperiod - nperiod)/dt
 
             log.info("Dt, dObs, dSps, dPeriod [1/s]: {0:.1f} s, {1:.1f}, {2:.1f}, {3:.1f}".format(
                 dt, dobs, dsps, dperiod))
+            
+            with db_session:
+                Benchmark(
+                    utc=tnow,
+                    nproc=nproc,
+                    nobs=tobs,
+                    nsps=tsps,
+                    nperiod=tperiod,
+                    dt=dt,
+                    dobs=dobs,
+                    dsps=dsps,
+                    dperiod=dsps
+                )
         
             nobs = tobs
             nsps = tsps
@@ -184,6 +215,49 @@ def run_benchmark(nproc):
             now = datetime.now()
 
         sleep(10)
+
+
+def run_benchmark_analysis():
+    """
+    Analyse the data from `run_benchmark`.
+    """
+
+    dtype = [('nproc','int'), ('dobs','float'), ('dsps','float'), ('dperiod','float')]
+    data = np.zeros(1, dtype=dtype)
+
+    total = None
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+
+    with db_session:
+        nprocs = pn.select(o.nproc for o in Benchmark)[:]
+
+        for nproc in nprocs:
+            raw = pn.select((o.nproc, o.dobs, o.dsps, o.dperiod)
+                             for o in Benchmark).where(lambda o: o.nproc == nproc)[:]
+            
+            temp = [item for item in raw]
+            temp = np.array(temp, dtype=dtype)
+
+            for field in temp.dtype.names:
+                data[field] = np.median(temp[field])
+            
+            if total is None:
+                total = np.copy(data)
+            else:
+                total = np.concatenate((total, data))
+
+    ax.scatter(total['nproc'], total['dobs'], label='obs')
+    ax.scatter(total['nproc'], total['dsps'], label='sps')
+    ax.scatter(total['nproc'], total['dperiod'], label='period')
+
+    ax.grid(True)
+    ax.legend(loc='best')
+    ax.set_xlabel('nproc')
+    ax.set_ylabel('Rate [1/s]')
+
+    plt.savefig('test.pdf')
 
 
 def run_test():
@@ -330,7 +404,7 @@ def parse_args():
     
     parser.add_argument(
         'operation',
-        choices=['benchmark', 'test'],
+        choices=['benchmark', 'benchmark_analysis', 'test'],
         help='Operation that should be performed.')
     
     parser.add_argument(
@@ -376,6 +450,9 @@ def main():
 
     if args.operation == 'benchmark':
         run_benchmark(nproc=args.nproc)
+    
+    elif args.operation == 'benchmark_analysis':
+        run_benchmark_analysis()
 
     elif args.operation == 'test':
         run_test()
