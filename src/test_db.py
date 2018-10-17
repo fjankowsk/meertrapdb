@@ -206,7 +206,7 @@ def run_benchmark(nproc):
                     dt=dt,
                     dobs=dobs,
                     dsps=dsps,
-                    dperiod=dsps
+                    dperiod=dperiod
                 )
         
             nobs = tobs
