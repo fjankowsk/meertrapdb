@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-#   2018 Fabian Jankowski
+#   2018 - 2019 Fabian Jankowski
 #   Test the database.
 #
 

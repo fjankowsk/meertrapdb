@@ -1,5 +1,9 @@
 FROM debian:stable
 
+# meta data
+LABEL maintainer="Fabian Jankowski"
+LABEL description="Docker image for MeerTRAP database."
+
 RUN apt-get update && apt-get install -y \
     curl \
     default-libmysqlclient-dev \
