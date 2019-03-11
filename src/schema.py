@@ -21,9 +21,9 @@ class Observation(db.Entity):
     mainproj = Required(str, max_len=16)
     proj = Required(str, max_len=16)
     observer = Required(str, max_len=16)
-    utcstart = Required(datetime)
-    utcend = Required(datetime)
-    utcadded = Required(datetime, sql_default='CURRENT_TIMESTAMP')
+    utcstart = Required(datetime, precision=6)
+    utcend = Required(datetime, precision=6)
+    utcadded = Required(datetime, precision=6, sql_default='CURRENT_TIMESTAMP')
     tobs = Required(float)
     finished = Required(bool)
     nant = Required(int, unsigned=True, size=8)
@@ -59,8 +59,8 @@ class FbfuseStatus(db.Entity):
 
 class PeriodCandidate(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
-    utc = Required(datetime)
-    utcadded = Required(datetime, sql_default='CURRENT_TIMESTAMP')
+    utc = Required(datetime, precision=6)
+    utcadded = Required(datetime, precision=6, sql_default='CURRENT_TIMESTAMP')
     obs = Set('Observation')
     ra = Required(float)
     dec = Required(float)
@@ -80,8 +80,8 @@ class PeriodCandidate(db.Entity):
 
 class SpsCandidate(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
-    utc = Required(datetime)
-    utcadded = Required(datetime, sql_default='CURRENT_TIMESTAMP')
+    utc = Required(datetime, precision=6)
+    utcadded = Required(datetime, precision=6, sql_default='CURRENT_TIMESTAMP')
     obs = Set('Observation')
     ra = Required(float)
     dec = Required(float)
@@ -123,18 +123,21 @@ class ClassifierConfig(db.Entity):
 
 class Logs(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
-    utc = Required(datetime)
-    utcadded = Required(datetime, sql_default='CURRENT_TIMESTAMP')
+    utc = Required(datetime, precision=6)
+    utcadded = Required(datetime, precision=6, sql_default='CURRENT_TIMESTAMP')
     obs = Set('Observation')
     program = Required(str, max_len=32)
-    type = Required(int, size=8)
+    process = Required(str, max_len=32)
+    logger = Required(str, max_len=32)
+    module = Required(str, max_len=32)
+    level = Required(int, size=8)
     message = Required(str, max_len=512)
     node = Set('Node')
 
 class Benchmark(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
-    utc = Required(datetime)
-    utcadded = Required(datetime, sql_default='CURRENT_TIMESTAMP')
+    utc = Required(datetime, precision=6)
+    utcadded = Required(datetime, precision=6, sql_default='CURRENT_TIMESTAMP')
     nproc = Required(int, size=8)
     nobs = Required(int, size=64)
     nsps = Required(int, size=64)
