@@ -22,10 +22,11 @@ from pony.orm import db_session
 # local ones
 from config_helpers import get_config
 from db_helpers import setup_db
+from db_logger import  DBHandler
 from schema import (db, Observation, BeamConfig, TuseStatus,
                     FbfuseStatus, PeriodCandidate, SpsCandidate,
                     Node, PipelineConfig, ClassifierConfig,
-                    Benchmark)
+                    Logs, Benchmark)
 
 # version info
 __version__ = "$Revision$"
@@ -379,6 +380,34 @@ def run_test():
         )
 
 
+def run_test_log():
+    """
+    Test the logging functionality.
+    """
+
+    log = logging.getLogger('meertrapdb')
+
+    log.setLevel(logging.DEBUG)
+    log.propagate = False
+
+    # log to db
+    db = DBHandler()
+    db.setLevel(logging.DEBUG)
+    log.addHandler(db)
+
+    log.debug("Test at DEBUG level.")
+    log.info("Test at INFO level.")
+    log.warn("Test at WARN level.")
+    log.error("Test at ERROR level.")
+    log.critical("Test at CRITICAL level.")
+
+    # check that all logs made it into the database
+    with db_session:
+        print(Logs.describe())
+        Logs.select().show(180)
+        log.info(pn.count(o.id for o in Observation))
+
+
 def setup_logging():
     """
     Setup the logging configuration.
@@ -404,7 +433,7 @@ def parse_args():
     
     parser.add_argument(
         'operation',
-        choices=['benchmark', 'benchmark_analysis', 'test'],
+        choices=['benchmark', 'benchmark_analysis', 'test', 'test_log'],
         help='Operation that should be performed.')
     
     parser.add_argument(
@@ -456,6 +485,9 @@ def main():
 
     elif args.operation == 'test':
         run_test()
+    
+    elif args.operation == 'test_log':
+        run_test_log()
     
     log.info("All done.")
 
