@@ -8,4 +8,10 @@ setup(name='meertrapdb',
       author_email='fjankowsk at gmail.com',
       license='MIT',
       packages=['meertrapdb'],
+      install_requires=[
+            'matplotlib',
+            'numpy',
+            'pony',
+            'pyyaml'
+      ],
       zip_safe=False)
