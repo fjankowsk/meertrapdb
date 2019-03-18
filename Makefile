@@ -2,7 +2,7 @@ PY?         =   python
 DCK	    	=   docker
 
 BASEDIR     =   $(CURDIR)
-SRCDIR      =   ${BASEDIR}/src
+SRCDIR      =   ${BASEDIR}/meertrapdb
 PRODDIR     =   /software/meertrapdb
 DOCKERFILE  =   ${BASEDIR}/docker/Dockerfile
 
