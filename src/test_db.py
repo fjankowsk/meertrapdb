@@ -9,7 +9,7 @@ import argparse
 from datetime import datetime
 import logging
 import matplotlib
-matplotlib.use('Agg') 
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from multiprocessing import Pool
 import numpy as np
