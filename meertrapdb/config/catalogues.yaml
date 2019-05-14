@@ -1,0 +1,15 @@
+catalogues:
+    - rratalog:
+        name: RRATalog
+        citation: XXX
+        url: http://astro.phys.wvu.edu/rratalog/rratalog.txt
+
+    - magnetarcat:
+        name: McGill Online Magnetar Catalogue
+        citation: http://adsabs.harvard.edu/abs/2014ApJS..212....6O
+        url: http://www.physics.mcgill.ca/~pulsar/magnetar/TabO1.csv
+
+    - psrcat:
+        name: ATNF Pulsar Catalogue
+        citation: https://adsabs.harvard.edu/abs/2005AJ....129.1993M
+        url: http://www.atnf.csiro.au/research/pulsar/psrcat/downloads/psrcat_pkg.tar.gz
