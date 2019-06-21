@@ -32,14 +32,17 @@ class Observation(db.Entity):
     npol = Required(int, size=8, unsigned=True)
     tsamp = Required(float)
     beamconfig = Set('BeamConfig')
+    spscandidate = Set('SpsCandidate')
     #tuse_status = Set('TuseStatus')
     #fbfuse_status = Set('FbfuseStatus')
+    logs = Set('Logs')
     notes = Optional(str, max_len=256)
 
 class BeamConfig(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
     nbeam = Required(int, size=16, unsigned=True)
     tilingmode = Required(str, max_len=32)
+    observation = Set('Observation')
 
 """ class TuseStatus(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
@@ -103,8 +106,8 @@ class Node(db.Entity):
     ip = Required(str, max_len=16)
     hostname = Required(str, max_len=64)
     #periodcandidate = Set('PeriodCandidate')
-    #spscandidate = Set('SpsCandidate')
-    #logs = Set('Logs')
+    spscandidate = Set('SpsCandidate')
+    logs = Set('Logs')
 
 class PipelineConfig(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
@@ -115,6 +118,8 @@ class PipelineConfig(db.Entity):
     snr_threshold = Required(float)
     width_threshold = Required(float)
     zerodm_zapping = Required(bool)
+    #periodcandidate = Set('PeriodCandidate')
+    spscandidate = Set('SpsCandidate')
 
 """ class ClassifierConfig(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
