@@ -12,6 +12,7 @@ help:
 	@echo 'Makefile for Meertrap DB'
 	@echo 'Usage:'
 	@echo 'make production      build docker image for production use'
+	@echo 'make init_db         initialise database'
 	@echo 'make clean           remove temporary files'
 	@echo 'make interactive     run an interactive shell'
 	@echo 'make run_db          start the database'
@@ -41,4 +42,4 @@ run_db:
 	--name meertrap_db meertrapdb \
 	${PRODDIR}/scripts/start_database.sh
 
-.PHONY: help production clean interactive run_db
+.PHONY: help production init_db clean interactive run_db
