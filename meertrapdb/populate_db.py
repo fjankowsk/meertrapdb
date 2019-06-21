@@ -73,9 +73,9 @@ def insert_fake_data():
             )
 
             pipeline_config = schema.PipelineConfig(
-                name="",
+                name="Test",
                 version="0.1",
-                dd_plan="",
+                dd_plan="Test",
                 dm_threshold="5.0",
                 snr_threshold="12.0",
                 width_threshold="500.0",
