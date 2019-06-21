@@ -3,6 +3,9 @@ db:
   host: 127.0.0.1
   port: 3310
   database: meertrap
+  user:
+    name: meertrap
+    password: XXX
   root:
     name: root
     password: XXX

@@ -20,6 +20,7 @@ from pony.orm import db_session
 from config_helpers import get_config
 from db_helpers import setup_db
 from db_logger import  DBHandler
+from general_helpers import setup_logging
 from schema import (db, Observation, BeamConfig, TuseStatus,
                     FbfuseStatus, PeriodCandidate, SpsCandidate,
                     Node, PipelineConfig, ClassifierConfig,
@@ -402,25 +403,6 @@ def run_test_log():
         print(Logs.describe())
         Logs.select().show(180)
         log.info(pn.count(o.id for o in Observation))
-
-
-def setup_logging():
-    """
-    Setup the logging configuration.
-    """
-
-    log = logging.getLogger('meertrapdb')
-
-    log.setLevel(logging.DEBUG)
-    log.propagate = False
-
-    # log to console
-    console = logging.StreamHandler()
-    console.setLevel(logging.INFO)
-    fmt = "%(asctime)s, %(processName)s, %(name)s, %(module)s, %(levelname)s: %(message)s"
-    console_formatter = logging.Formatter(fmt)
-    console.setFormatter(console_formatter)
-    log.addHandler(console)
 
 
 def parse_args():
