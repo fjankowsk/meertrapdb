@@ -13,13 +13,10 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from multiprocessing import Pool
 import numpy as np
-from operator import attrgetter
-import signal
-import sys
 from time import sleep
 import pony.orm as pn
 from pony.orm import db_session
-# local ones
+
 from config_helpers import get_config
 from db_helpers import setup_db
 from db_logger import  DBHandler
