@@ -6,7 +6,6 @@ SRCDIR      =   ${BASEDIR}/meertrapdb
 PRODDIR     =   /software/meertrapdb
 DOCKERFILE  =   ${BASEDIR}/docker/Dockerfile
 DBPATH      =   /raid/jankowsk/mariadb
-MYSQLPORT   =   3310
 
 help:
 	@echo 'Makefile for Meertrap DB'
@@ -37,7 +36,7 @@ interactive:
 	${DCK} run -it --rm --network=host meertrapdb bash
 
 run_db:
-	${DCK} run -it --rm --publish ${MYSQLPORT}:${MYSQLPORT} \
+	${DCK} run -it --rm --network=host \
 	--mount "type=bind,source=${DBPATH},target=/var/lib/mysql" \
 	--name meertrap_db meertrapdb \
 	${PRODDIR}/scripts/start_database.sh
