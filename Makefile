@@ -20,6 +20,7 @@ production:
 
 clean:
 	rm -f ${SRCDIR}/*.pyc
+	rm -rf ${BASEDIR}/meertrapdb.egg-info
 
 interactive:
 	${DCK} run -it --rm meertrapdb bash
