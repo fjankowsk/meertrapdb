@@ -6,7 +6,6 @@
 
 from __future__ import print_function
 import logging
-import os.path
 from pony.orm import (Database, db_session)
 
 from config_helpers import get_config
@@ -65,41 +64,3 @@ def setup_db():
             db.commit()
     
     log.info('Users and databases were created successfully.')
-
-
-def init_tables():
-    """
-    Initialise the database tables.
-    """
-
-    filename = os.path.join(os.path.dirname(__file__), 'schema.sql')
-    filename = os.path.abspath(filename)
-
-    log = logging.getLogger('meertrapdb')
-    log.debug('Schema file: {0}'.format(filename))
-
-    with open(filename) as f:
-        raw = f.read()
-
-    commands = raw.split(";")
-
-    # remove empty last item
-    commands = commands[:-1]
-
-    config = get_config()
-    dbconf = config['db']
-
-    db = Database()
-    db.bind(provider=dbconf['provider'],
-            host=dbconf['host'],
-            user=dbconf['root']['name'],
-            passwd=dbconf['root']['password'])
-
-    log.info('Initialising tables.')
-
-    with db_session:
-        for sql in commands:
-            db.execute(sql)
-            db.commit()
-    
-    log.info('Tables were initialised successfully.')
