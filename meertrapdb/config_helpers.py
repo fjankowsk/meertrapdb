@@ -25,7 +25,7 @@ def get_config():
         If `filename` does not exist.
     """
 
-    filename = os.path.join(os.path.dirname(__file__), 'config', 'test.yml')
+    filename = os.path.join(os.path.dirname(__file__), 'config', 'config.yml')
     filename = os.path.abspath(filename)
 
     log = logging.getLogger('meertrapdb')

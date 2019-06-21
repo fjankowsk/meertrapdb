@@ -26,6 +26,7 @@ def setup_db():
     db = Database()
     db.bind(provider=dbconf['provider'],
             host=dbconf['host'],
+            port=dbconf['port'],
             user=dbconf['root']['name'],
             passwd='')
     
@@ -41,6 +42,7 @@ def setup_db():
     db = Database()
     db.bind(provider=dbconf['provider'],
             host=dbconf['host'],
+            port=dbconf['port'],
             user=dbconf['root']['name'],
             passwd=dbconf['root']['password'])
 

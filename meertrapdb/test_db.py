@@ -467,6 +467,7 @@ def main():
 
     db.bind(provider=dbconf['provider'],
             host=dbconf['host'],
+            port=dbconf['port'],
             user=dbconf['root']['name'],
             passwd=dbconf['root']['password'],
             db='test')

@@ -1,0 +1,17 @@
+db:
+  provider: mysql
+  host: 127.0.0.1
+  port: 3310
+  database: meertrap
+  root:
+    name: root
+    password: XXX
+  users:
+    - name: meertrap
+      password: XXX
+    - name: meertrap_ro
+      password: XXX
+  databases:
+    - name: meertrap
+    - name: production
+    - name: old
