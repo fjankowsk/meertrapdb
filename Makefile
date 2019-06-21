@@ -29,7 +29,7 @@ interactive:
 	${DCK} run -it --rm meertrapdb bash
 
 run_db:
-	${DCK} run -it --rm --user mysql --publish ${MYSQLPORT}:${MYSQLPORT} --name meertrap_db meertrapdb \
+	${DCK} run -it --rm --publish ${MYSQLPORT}:${MYSQLPORT} --name meertrap_db meertrapdb \
 	${PRODDIR}/scripts/start_database.sh
 
 .PHONY: help production clean interactive run_db
