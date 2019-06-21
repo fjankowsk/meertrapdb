@@ -21,9 +21,12 @@ class Observation(db.Entity):
     mainproj = Required(str, max_len=16)
     proj = Required(str, max_len=16)
     observer = Required(str, max_len=16)
-    utc_start = Required(datetime, precision=6)
-    utc_end = Required(datetime, precision=6)
-    utc_added = Required(datetime, precision=6, sql_default='CURRENT_TIMESTAMP')
+    #utc_start = Required(datetime, precision=6)
+    #utc_end = Required(datetime, precision=6)
+    #utc_added = Required(datetime, precision=6, sql_default='CURRENT_TIMESTAMP')
+    utc_start = Required(datetime, precision=0)
+    utc_end = Required(datetime, precision=0)
+    utc_added = Required(datetime, precision=0, sql_default='CURRENT_TIMESTAMP')
     tobs = Required(float)
     finished = Required(bool)
     nant = Required(int, size=8, unsigned=True)
@@ -59,8 +62,10 @@ class FbfuseStatus(db.Entity):
 
 class PeriodCandidate(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
-    utc = Required(datetime, precision=6)
-    utc_added = Required(datetime, precision=6, sql_default='CURRENT_TIMESTAMP')
+    #utc = Required(datetime, precision=6)
+    #utc_added = Required(datetime, precision=6, sql_default='CURRENT_TIMESTAMP')
+    utc = Required(str, max_len=32)
+    utc_added = Required(datetime, precision=0, sql_default='CURRENT_TIMESTAMP')
     obs = Set('Observation')
     ra = Required(str, max_len=32)
     dec = Required(str, max_len=32)
@@ -80,8 +85,10 @@ class PeriodCandidate(db.Entity):
 
 class SpsCandidate(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
-    utc = Required(datetime, precision=6)
-    utc_added = Required(datetime, precision=6, sql_default='CURRENT_TIMESTAMP')
+    #utc = Required(datetime, precision=6)
+    #utc_added = Required(datetime, precision=6, sql_default='CURRENT_TIMESTAMP')
+    utc = Required(str, max_len=32)
+    utc_added = Required(datetime, precision=0, sql_default='CURRENT_TIMESTAMP')
     mjd = Required(Decimal, precision=13, scale=8)
     obs = Set('Observation')
     beam = Required(int, size=16, unsigned=True)
@@ -131,8 +138,10 @@ class ClassifierConfig(db.Entity):
 
 class Logs(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
-    utc = Required(datetime, precision=6)
-    utc_added = Required(datetime, precision=6, sql_default='CURRENT_TIMESTAMP')
+    #utc = Required(datetime, precision=6)
+    #utc_added = Required(datetime, precision=6, sql_default='CURRENT_TIMESTAMP')
+    utc = Required(datetime, precision=0)
+    utc_added = Required(datetime, precision=0, sql_default='CURRENT_TIMESTAMP')
     obs = Set('Observation')
     program = Required(str, max_len=32)
     process = Required(str, max_len=32)
@@ -144,8 +153,10 @@ class Logs(db.Entity):
 
 class Benchmark(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
-    utc = Required(datetime, precision=6)
-    utcadded = Required(datetime, precision=6, sql_default='CURRENT_TIMESTAMP')
+    #utc = Required(datetime, precision=6)
+    #utcadded = Required(datetime, precision=6, sql_default='CURRENT_TIMESTAMP')
+    utc = Required(datetime, precision=0)
+    utcadded = Required(datetime, precision=0, sql_default='CURRENT_TIMESTAMP')
     nproc = Required(int, size=8)
     nobs = Required(int, size=64)
     nsps = Required(int, size=64)
