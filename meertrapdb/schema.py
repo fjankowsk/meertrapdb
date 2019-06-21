@@ -7,10 +7,7 @@
 from __future__ import print_function
 from datetime import datetime
 from pony.orm import (Database, PrimaryKey, Optional, Required, Set)
-# local ones
 
-# version info
-__version__ = "$Revision$"
 
 db = Database()
 

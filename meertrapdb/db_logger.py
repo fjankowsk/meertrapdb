@@ -8,11 +8,8 @@ from __future__ import print_function
 from datetime import datetime
 import logging
 from pony.orm import db_session
-# local ones
-from schema import Logs
 
-# version info
-__version__ = "$Revision$"
+from schema import Logs
 
 
 class DBHandler(logging.Handler):

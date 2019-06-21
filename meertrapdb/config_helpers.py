@@ -8,10 +8,7 @@ from __future__ import print_function
 import logging
 import os.path
 import yaml
-# local ones
 
-# version info
-__version__ = "$Revision$"
 
 def get_config():
     """

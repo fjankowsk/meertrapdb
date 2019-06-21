@@ -8,11 +8,9 @@ from __future__ import print_function
 import logging
 import os.path
 from pony.orm import (Database, db_session)
-# local ones
+
 from config_helpers import get_config
 
-# version info
-__version__ = "$Revision$"
 
 def setup_db():
     """
