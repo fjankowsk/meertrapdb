@@ -5,6 +5,7 @@ BASEDIR     =   $(CURDIR)
 SRCDIR      =   ${BASEDIR}/meertrapdb
 PRODDIR     =   /software/meertrapdb
 DOCKERFILE  =   ${BASEDIR}/docker/Dockerfile
+MYSQLPORT   =   3310
 
 help:
 	@echo 'Makefile for Meertrap DB'
@@ -28,6 +29,7 @@ interactive:
 	${DCK} run -it --rm meertrapdb bash
 
 run_db:
-	${DCK} run -it --rm meertrapdb ${PRODDIR}/scripts/start_database.sh
+	${DCK} run -it --rm --user mysql --publish ${MYSQLPORT}:${MYSQLPORT} --name meertrap_db meertrapdb \
+	${PRODDIR}/scripts/start_database.sh
 
 .PHONY: help production clean interactive run_db
