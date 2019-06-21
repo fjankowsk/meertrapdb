@@ -28,6 +28,8 @@ RUN rm -rf /var/lib/mysql \
     && chmod 777 /var/run/mysqld \
     && mysql_install_db
 
+RUN sed -i 's/3306/3310/' /etc/mysql/mariadb.conf.d/50-server.cnf
+
 RUN easy_install pip
 RUN pip install --upgrade pip
 
