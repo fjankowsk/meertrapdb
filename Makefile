@@ -26,7 +26,7 @@ clean:
 	rm -rf ${BASEDIR}/meertrapdb.egg-info
 
 interactive:
-	${DCK} run -it --rm meertrapdb bash
+	${DCK} run -it --rm --network=host meertrapdb bash
 
 run_db:
 	${DCK} run -it --rm --publish ${MYSQLPORT}:${MYSQLPORT} --name meertrap_db meertrapdb \
