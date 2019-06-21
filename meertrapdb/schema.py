@@ -105,7 +105,7 @@ class SpsCandidate(db.Entity):
     profile = Required(str, max_len=2048)
     heimdall_plot = Required(str, max_len=2048)
     score = Required(float)
-    viewed = Optional(int, size=10, unsigned=True, default=0)
+    viewed = Optional(int, size=16, unsigned=True, default=0)
     pipelineconfig = Set('PipelineConfig')
     classifierconfig = Set('ClassifierConfig')
 
@@ -154,9 +154,9 @@ class Logs(db.Entity):
 class Benchmark(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
     #utc = Required(datetime, precision=6)
-    #utcadded = Required(datetime, precision=6, sql_default='CURRENT_TIMESTAMP')
+    #utc_added = Required(datetime, precision=6, sql_default='CURRENT_TIMESTAMP')
     utc = Required(datetime, precision=0)
-    utcadded = Required(datetime, precision=0, sql_default='CURRENT_TIMESTAMP')
+    utc_added = Required(timestamp, precision=0, sql_default='CURRENT_TIMESTAMP')
     nproc = Required(int, size=8)
     nobs = Required(int, size=64)
     nsps = Required(int, size=64)
