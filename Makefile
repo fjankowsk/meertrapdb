@@ -23,7 +23,7 @@ production:
 
 init_db:
 	${DCK} run -it --rm \
-	--mount "type=bind,source=${DBPATH},target=/var/lib/mysql"
+	--mount "type=bind,source=${DBPATH},target=/var/lib/mysql" \
 	meertrapdb \
 	${PRODDIR}/scripts/init_database.sh
 
@@ -38,7 +38,7 @@ interactive:
 
 run_db:
 	${DCK} run -it --rm --publish ${MYSQLPORT}:${MYSQLPORT} \
-	--mount "type=bind,source=${DBPATH},target=/var/lib/mysql"
+	--mount "type=bind,source=${DBPATH},target=/var/lib/mysql" \
 	--name meertrap_db meertrapdb \
 	${PRODDIR}/scripts/start_database.sh
 
