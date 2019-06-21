@@ -18,7 +18,7 @@ class Observation(db.Entity):
     sb_id_code = Required(str, max_len=32)
     boresight_ra = Required(str, max_len=32)
     boresight_dec = Required(str, max_len=32)
-    mainproj = Required(str, max_len=16)
+    proj_main = Required(str, max_len=16)
     proj = Required(str, max_len=16)
     observer = Required(str, max_len=16)
     utc_start = Required(datetime, precision=6)
@@ -32,32 +32,28 @@ class Observation(db.Entity):
     npol = Required(int, size=8, unsigned=True)
     tsamp = Required(float)
     beamconfig = Set('BeamConfig')
-    tuse_status = Set('TuseStatus')
-    fbfuse_status = Set('FbfuseStatus')
-    periodcandidate = Set('PeriodCandidate')
-    spscandidate = Set('SpsCandidate')
-    logs = Set('Logs')
+    #tuse_status = Set('TuseStatus')
+    #fbfuse_status = Set('FbfuseStatus')
     notes = Optional(str, max_len=256)
 
 class BeamConfig(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
     nbeam = Required(int, size=16, unsigned=True)
     tilingmode = Required(str, max_len=32)
-    obs = Set('Observation')
 
-class TuseStatus(db.Entity):
+""" class TuseStatus(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
     status = Required(str, max_len=32)
     description = Optional(str, max_len=64)
-    obs = Set('Observation')
+    obs = Set('Observation') """
 
-class FbfuseStatus(db.Entity):
+""" class FbfuseStatus(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
     status = Required(str, max_len=32)
     description = Optional(str, max_len=64)
-    obs = Set('Observation')
+    obs = Set('Observation') """
 
-class PeriodCandidate(db.Entity):
+""" class PeriodCandidate(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
     utc = Required(datetime, precision=6)
     utc_added = Required(datetime, precision=6, sql_default='CURRENT_TIMESTAMP')
@@ -76,14 +72,14 @@ class PeriodCandidate(db.Entity):
     dmcurve = Required(str, max_len=2048)
     score = Required(float)
     pipelineconfig = Set('PipelineConfig')
-    classifierconfig = Set('ClassifierConfig')
+    classifierconfig = Set('ClassifierConfig') """
 
 class SpsCandidate(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
     utc = Required(datetime, precision=6)
     utc_added = Required(datetime, precision=6, sql_default='CURRENT_TIMESTAMP')
     mjd = Required(Decimal, precision=13, scale=8)
-    obs = Set('Observation')
+    observation = Set('Observation')
     beam = Required(int, size=16, unsigned=True)
     snr = Required(float)
     dm = Required(float)
@@ -100,34 +96,32 @@ class SpsCandidate(db.Entity):
     score = Required(float)
     viewed = Optional(int, size=16, unsigned=True, default=0)
     pipelineconfig = Set('PipelineConfig')
-    classifierconfig = Set('ClassifierConfig')
+    #classifierconfig = Set('ClassifierConfig')
 
 class Node(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
     ip = Required(str, max_len=16)
     hostname = Required(str, max_len=64)
-    periodcandidate = Set('PeriodCandidate')
-    spscandidate = Set('SpsCandidate')
-    logs = Set('Logs')
+    #periodcandidate = Set('PeriodCandidate')
+    #spscandidate = Set('SpsCandidate')
+    #logs = Set('Logs')
 
 class PipelineConfig(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
     name = Required(str, max_len=32)
     version = Required(str, max_len=32)
-    ddplan = Required(str, max_len=512)
+    dd_plan = Required(str, max_len=512)
     dm_threshold = Required(float)
     snr_threshold = Required(float)
     width_threshold = Required(float)
     zerodm_zapping = Required(bool)
-    periodcandidate = Set('PeriodCandidate')
-    spscandidate = Set('SpsCandidate')
 
-class ClassifierConfig(db.Entity):
+""" class ClassifierConfig(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
     name = Required(str, max_len=32)
     version = Required(str, max_len=32)
     periodcandidate = Set('PeriodCandidate')
-    spscandidate = Set('SpsCandidate')
+    spscandidate = Set('SpsCandidate') """
 
 class Logs(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
@@ -142,7 +136,7 @@ class Logs(db.Entity):
     message = Required(str, max_len=512)
     node = Set('Node')
 
-class Benchmark(db.Entity):
+""" class Benchmark(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
     utc = Required(datetime, precision=6)
     utc_added = Required(datetime, precision=6, sql_default='CURRENT_TIMESTAMP')
@@ -153,4 +147,4 @@ class Benchmark(db.Entity):
     dt = Required(float)
     dobs = Required(float)
     dsps = Required(float)
-    dperiod = Required(float)
+    dperiod = Required(float) """
