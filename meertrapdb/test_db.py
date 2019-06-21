@@ -27,9 +27,8 @@ from schema import (db, Observation, BeamConfig, TuseStatus,
                     FbfuseStatus, PeriodCandidate, SpsCandidate,
                     Node, PipelineConfig, ClassifierConfig,
                     Logs, Benchmark)
+from version import __version__
 
-# version info
-__version__ = "$Revision$"
 
 def insert_data(task):
     """
