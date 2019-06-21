@@ -20,6 +20,8 @@ production:
 
 clean:
 	rm -f ${SRCDIR}/*.pyc
+	rm -rf ${BASEDIR}/build
+	rm -rf ${BASEDIR}/dist
 	rm -rf ${BASEDIR}/meertrapdb.egg-info
 
 interactive:
