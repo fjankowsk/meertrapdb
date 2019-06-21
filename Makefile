@@ -5,6 +5,7 @@ BASEDIR     =   $(CURDIR)
 SRCDIR      =   ${BASEDIR}/meertrapdb
 PRODDIR     =   /software/meertrapdb
 DOCKERFILE  =   ${BASEDIR}/docker/Dockerfile
+DBPATH      =   /raid/jankowsk/mariadb
 MYSQLPORT   =   3310
 
 help:
@@ -19,6 +20,12 @@ help:
 production:
 	${DCK} build --file ${DOCKERFILE} --tag meertrapdb ${BASEDIR}
 
+init_db:
+	${DCK} run -it --rm \
+	--mount "type=bind,source=${DBPATH},target=/var/lib/mysql"
+	meertrapdb \
+	${PRODDIR}/scripts/init_database.sh
+
 clean:
 	rm -f ${SRCDIR}/*.pyc
 	rm -rf ${BASEDIR}/build
@@ -29,7 +36,9 @@ interactive:
 	${DCK} run -it --rm --network=host meertrapdb bash
 
 run_db:
-	${DCK} run -it --rm --publish ${MYSQLPORT}:${MYSQLPORT} --name meertrap_db meertrapdb \
+	${DCK} run -it --rm --publish ${MYSQLPORT}:${MYSQLPORT} \
+	--mount "type=bind,source=${DBPATH},target=/var/lib/mysql"
+	--name meertrap_db meertrapdb \
 	${PRODDIR}/scripts/start_database.sh
 
 .PHONY: help production clean interactive run_db
