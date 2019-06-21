@@ -21,9 +21,6 @@ RUN apt-get update && apt-get install -y \
     vim \
  && rm -rf /var/lib/apt/lists/*
 
-# mariadb configuration
-ENV MYSQL_ROOT_PASSWORD=mariadb_test
-
 # preparation for mariadb
 RUN rm -rf /var/lib/mysql \
     && mkdir -p /var/lib/mysql /var/run/mysqld \
