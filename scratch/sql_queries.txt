@@ -2,52 +2,53 @@
 # detail view
 #
 
-select `spscandidate`.utc, `spscandidate`.snr, `spscandidate`.dm, `spscandidate`.width,
+SELECT `spscandidate`.utc, `spscandidate`.snr, `spscandidate`.dm, `spscandidate`.width,
 `observation`.field_name, `beam`.number, beam.coherent, `scheduleblock`.sb_id_code
-from spscandidate
+FROM spscandidate
 
-left join observation_spscandidate
-on spscandidate.id=observation_spscandidate.spscandidate
-left join `observation`
-on observation_spscandidate.`observation`=observation.id
+LEFT JOIN observation_spscandidate
+ON spscandidate.id=observation_spscandidate.spscandidate
+LEFT JOIN `observation`
+ON observation_spscandidate.`observation`=observation.id
 
-left join `beam_spscandidate`
-on spscandidate.id=beam_spscandidate.spscandidate
-left join `beam`
-on beam_spscandidate.beam=`beam`.id
+LEFT JOIN `beam_spscandidate`
+ON spscandidate.id=beam_spscandidate.spscandidate
+LEFT JOIN `beam`
+ON beam_spscandidate.beam=`beam`.id
 
-left join `observation_scheduleblock`
-on observation.id=observation_scheduleblock.observation
-left join `scheduleblock`
-on `observation_scheduleblock`.`scheduleblock`=scheduleblock.id
+LEFT JOIN `observation_scheduleblock`
+ON observation.id=observation_scheduleblock.observation
+LEFT JOINn `scheduleblock`
+ON `observation_scheduleblock`.`scheduleblock`=scheduleblock.id
 
-where `spscandidate`.`id`=1
-order by spscandidate.snr;
+WHERE `spscandidate`.`id`=1
+ORDER BY spscandidate.snr DESC;
 
 #
 # grid and overview
 #
 
-select `spscandidate`.utc, `spscandidate`.snr, `spscandidate`.dm, `spscandidate`.width,
+SELECT `spscandidate`.utc, `spscandidate`.snr, `spscandidate`.dm, `spscandidate`.width,
 `observation`.field_name, `beam`.number, beam.coherent, `scheduleblock`.sb_id_code
 from spscandidate
 
-left join observation_spscandidate
-on spscandidate.id=observation_spscandidate.spscandidate
-left join `observation`
-on observation_spscandidate.`observation`=observation.id
+LEFT JOIN observation_spscandidate
+ON spscandidate.id=observation_spscandidate.spscandidate
+LEFT JOIN `observation`
+ON observation_spscandidate.`observation`=observation.id
 
-left join `beam_spscandidate`
-on spscandidate.id=beam_spscandidate.spscandidate
-left join `beam`
-on beam_spscandidate.beam=`beam`.id
+LEFT JOIN `beam_spscandidate`
+ON spscandidate.id=beam_spscandidate.spscandidate
+LEFT JOIN `beam`
+ON beam_spscandidate.beam=`beam`.id
 
-left join `observation_scheduleblock`
-on observation.id=observation_scheduleblock.observation
-left join `scheduleblock`
-on `observation_scheduleblock`.`scheduleblock`=scheduleblock.id
+LEFT JOIN `observation_scheduleblock`
+ON observation.id=observation_scheduleblock.observation
+LEFT JOIN `scheduleblock`
+ON `observation_scheduleblock`.`scheduleblock`=scheduleblock.id
 
-where `scheduleblock`.`id`=1
-and `observation`.id=1
-and `beam`.number between 123 and 160
-order by spscandidate.snr desc;
+WHERE `scheduleblock`.`id`=1
+AND `observation`.id=1
+AND `beam`.number between 123 and 160
+ORDER BY spscandidate.snr DESC
+LIMIT 100 OFFSET 100;
