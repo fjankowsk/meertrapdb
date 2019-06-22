@@ -12,15 +12,25 @@ from pony.orm import (Database, PrimaryKey, Optional, Required, Set)
 
 db = Database()
 
-class Observation(db.Entity):
+
+class ScheduleBlock(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
     sb_id = Required(int, size=64, unsigned=True)
     sb_id_code = Required(str, max_len=32)
-    boresight_ra = Required(str, max_len=32)
-    boresight_dec = Required(str, max_len=32)
+    proposal_id = Optional(str, max_len=32)
     proj_main = Required(str, max_len=16)
     proj = Required(str, max_len=16)
+    utc_start = Required(datetime, precision=6)
     observer = Optional(str, max_len=16)
+    description = Optional(str, max_len=128)
+    observation = Set('Observation')
+
+
+class Observation(db.Entity):
+    id = PrimaryKey(int, auto=True, size=64, unsigned=True)
+    schedule_block = Set('ScheduleBlock')
+    boresight_ra = Required(str, max_len=32)
+    boresight_dec = Required(str, max_len=32)
     utc_start = Required(datetime, precision=6)
     utc_end = Required(datetime, precision=6)
     utc_added = Required(datetime, precision=6, sql_default='CURRENT_TIMESTAMP')
@@ -40,11 +50,13 @@ class Observation(db.Entity):
     logs = Set('Logs')
     notes = Optional(str, max_len=256)
 
+
 class BeamConfig(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
     nbeam = Required(int, size=16, unsigned=True)
     tiling_mode = Required(str, max_len=32)
     observation = Set('Observation')
+
 
 class Beam(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
@@ -57,17 +69,20 @@ class Beam(db.Entity):
     gb = Required(float)
     sps_candidate = Set('SpsCandidate')
 
+
 """ class TuseStatus(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
     status = Required(str, max_len=32)
     description = Optional(str, max_len=64)
     obs = Set('Observation') """
 
+
 """ class FbfuseStatus(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
     status = Required(str, max_len=32)
     description = Optional(str, max_len=64)
     obs = Set('Observation') """
+
 
 """ class PeriodCandidate(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
@@ -90,6 +105,7 @@ class Beam(db.Entity):
     pipeline_config = Set('PipelineConfig')
     classifier_config = Set('ClassifierConfig') """
 
+
 class SpsCandidate(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
     utc = Required(datetime, precision=6)
@@ -110,6 +126,7 @@ class SpsCandidate(db.Entity):
     pipeline_config = Set('PipelineConfig')
     #classifierconfig = Set('ClassifierConfig')
 
+
 class Node(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
     number = Required(int, size=8, unsigned=True)
@@ -117,6 +134,7 @@ class Node(db.Entity):
     #periodcandidate = Set('PeriodCandidate')
     sps_candidate = Set('SpsCandidate')
     logs = Set('Logs')
+
 
 class PipelineConfig(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
@@ -130,12 +148,14 @@ class PipelineConfig(db.Entity):
     #period_candidate = Set('PeriodCandidate')
     sps_candidate = Set('SpsCandidate')
 
+
 """ class ClassifierConfig(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
     name = Required(str, max_len=32)
     version = Required(str, max_len=32)
     period_candidate = Set('PeriodCandidate')
     sps_candidate = Set('SpsCandidate') """
+
 
 class Logs(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
@@ -149,6 +169,7 @@ class Logs(db.Entity):
     level = Required(int, size=8, unsigned=True)
     message = Required(str, max_len=512)
     node = Set('Node')
+
 
 """ class Benchmark(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
