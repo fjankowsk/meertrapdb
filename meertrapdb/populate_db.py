@@ -87,31 +87,7 @@ def insert_fake_data():
 
                 # beams
                 for beam_nr in range(nbeam):
-                    node_nr = beam_nr // 6
-
-                    node = schema.Node(
-                            number=node_nr,
-                            hostname="tpn-0-{0}".format(node_nr)
-                        )
-                    
-                    # candidates
-                    ncand = random.randint(0, 100)
-                    for _ in range(ncand):
-                        snr = random.uniform(5, 300)
-                        dm = random.uniform(5, 5000)
-                        width = random.uniform(1, 500)
-
-                        pipeline_config = schema.PipelineConfig(
-                            name="Test",
-                            version="0.1",
-                            dd_plan="Test",
-                            dm_threshold="5.0",
-                            snr_threshold="12.0",
-                            width_threshold="500.0",
-                            zerodm_zapping=True
-                        )
-
-                        beam = schema.Beam(
+                    beam = schema.Beam(
                             number=beam_nr,
                             coherent=True,
                             source="Test source",
@@ -119,7 +95,30 @@ def insert_fake_data():
                             dec="-45:35:15.7",
                             gl=123.12,
                             gb=-23.1
-                        )
+                    )
+
+                    node_nr = beam_nr // 6
+                    node = schema.Node(
+                            number=node_nr,
+                            hostname="tpn-0-{0}".format(node_nr)
+                    )
+
+                    pipeline_config = schema.PipelineConfig(
+                            name="Test",
+                            version="0.1",
+                            dd_plan="Test",
+                            dm_threshold="5.0",
+                            snr_threshold="12.0",
+                            width_threshold="500.0",
+                            zerodm_zapping=True
+                    )
+                    
+                    # candidates
+                    ncand = random.randint(0, 100)
+                    for _ in range(ncand):
+                        snr = random.uniform(5, 300)
+                        dm = random.uniform(5, 5000)
+                        width = random.uniform(1, 500)
 
                         schema.SpsCandidate(
                             utc=start,
