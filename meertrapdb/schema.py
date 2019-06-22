@@ -83,7 +83,7 @@ class SpsCandidate(db.Entity):
     utc_added = Required(datetime, precision=6, sql_default='CURRENT_TIMESTAMP')
     mjd = Required(Decimal, precision=13, scale=8)
     observation = Set('Observation')
-    beam = Required(int, size=16, unsigned=True)
+    beam = Required(int, size=16, unsigned=True, index=True)
     snr = Required(float)
     dm = Required(float)
     dm_ex = Required(float)
