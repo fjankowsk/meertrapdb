@@ -8,6 +8,7 @@ from __future__ import print_function
 import argparse
 from datetime import datetime
 import logging
+import random
 
 from pony.orm import db_session
 
@@ -41,8 +42,8 @@ def insert_fake_data():
 
     start = datetime.now()
 
-    for _ in range(100):
-        with db_session:
+    with db_session:
+        for _ in range(1000):
             beam_config = schema.BeamConfig(
                 nbeam=400,
                 tiling_mode='fill'
@@ -82,7 +83,9 @@ def insert_fake_data():
                 zerodm_zapping=True
             )
 
-            for _ in range(10):
+            ncand = random.randint(1, 100)
+
+            for _ in range(ncand):
                 schema.SpsCandidate(
                     utc=start,
                     mjd=58000.123,
