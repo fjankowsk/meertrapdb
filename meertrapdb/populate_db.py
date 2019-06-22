@@ -86,15 +86,20 @@ def insert_fake_data():
             ncand = random.randint(1, 100)
 
             for _ in range(ncand):
+                beam = random.randint(0, 400)
+                snr = random.uniform(5, 300)
+                dm = random.uniform(5, 5000)
+                width = random.uniform(1, 500)
+
                 schema.SpsCandidate(
                     utc=start,
                     mjd=58000.123,
                     observation=obs,
-                    beam=123,
-                    snr=63.12,
-                    dm=89.34,
+                    beam=beam,
+                    snr=snr,
+                    dm=dm,
                     dm_ex=0.01,
-                    width=58.9,
+                    width=width,
                     ra="08:35:44.7",
                     dec="-45:35:15.7",
                     gl=123.12,
