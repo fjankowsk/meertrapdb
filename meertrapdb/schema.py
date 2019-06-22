@@ -29,6 +29,7 @@ class ScheduleBlock(db.Entity):
 class Observation(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
     schedule_block = Set('ScheduleBlock')
+    field_name = Required(str, max_len=32)
     boresight_ra = Required(str, max_len=32)
     boresight_dec = Required(str, max_len=32)
     utc_start = Required(datetime, precision=6)

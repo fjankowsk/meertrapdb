@@ -68,6 +68,7 @@ def insert_fake_data():
 
                 obs = schema.Observation(
                     schedule_block=schedule_block,
+                    field_name="PKS 1934-638",
                     boresight_ra="08:35:45.124",
                     boresight_dec="-45:35:15",
                     utc_start=start,
