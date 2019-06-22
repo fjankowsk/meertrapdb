@@ -20,7 +20,7 @@ class Observation(db.Entity):
     boresight_dec = Required(str, max_len=32)
     proj_main = Required(str, max_len=16)
     proj = Required(str, max_len=16)
-    observer = Required(str, max_len=16)
+    observer = Optional(str, max_len=16)
     utc_start = Required(datetime, precision=6)
     utc_end = Required(datetime, precision=6)
     utc_added = Required(datetime, precision=6, sql_default='CURRENT_TIMESTAMP')
@@ -45,6 +45,17 @@ class BeamConfig(db.Entity):
     nbeam = Required(int, size=16, unsigned=True)
     tiling_mode = Required(str, max_len=32)
     observation = Set('Observation')
+
+class Beam(db.Entity):
+    id = PrimaryKey(int, auto=True, size=64, unsigned=True)
+    number = Required(int, size=16, unsigned=True, index=True)
+    coherent = Required(bool)
+    source = Required(str, max_len=32)
+    ra = Required(str, max_len=32)
+    dec = Required(str, max_len=32)
+    gl = Required(float)
+    gb = Required(float)
+    sps_candidate = Set('SpsCandidate')
 
 """ class TuseStatus(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
@@ -85,17 +96,11 @@ class SpsCandidate(db.Entity):
     utc_added = Required(datetime, precision=6, sql_default='CURRENT_TIMESTAMP')
     mjd = Required(Decimal, precision=13, scale=8)
     observation = Set('Observation')
-    beam = Required(int, size=16, unsigned=True, index=True)
-    source = Required(str, max_len=32)
-    coherent = Required(bool)
+    beam = Set('Beam')
     snr = Required(float)
     dm = Required(float)
     dm_ex = Required(float)
     width = Required(float)
-    ra = Required(str, max_len=32)
-    dec = Required(str, max_len=32)
-    gl = Required(float)
-    gb = Required(float)
     node = Set('Node')
     dynamic_spectrum = Required(str, max_len=2048)
     profile = Required(str, max_len=2048)
@@ -107,6 +112,7 @@ class SpsCandidate(db.Entity):
 
 class Node(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
+    number = Required(int, size=8, unsigned=True)
     hostname = Required(str, max_len=64)
     #periodcandidate = Set('PeriodCandidate')
     sps_candidate = Set('SpsCandidate')

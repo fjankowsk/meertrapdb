@@ -71,10 +71,6 @@ def insert_fake_data():
                 beam_config=beam_config
             )
 
-            node = schema.Node(
-                hostname="tpn-0-23"
-            )
-
             pipeline_config = schema.PipelineConfig(
                 name="Test",
                 version="0.1",
@@ -88,26 +84,36 @@ def insert_fake_data():
             ncand = random.randint(1, 100)
 
             for _ in range(ncand):
-                beam = random.randint(0, 400)
+                beam_nr = random.randint(0, 400)
                 snr = random.uniform(5, 300)
                 dm = random.uniform(5, 5000)
                 width = random.uniform(1, 500)
+                node_nr = random.randint(0, 65)
+
+                node = schema.Node(
+                    number=node_nr,
+                    hostname="tpn-0-{0}".format(node_nr)
+                )
+
+                beam = schema.Beam(
+                    number=beam_nr,
+                    coherent=True,
+                    source="Test source",
+                    ra="08:35:44.7",
+                    dec="-45:35:15.7",
+                    gl=123.12,
+                    gb=-23.1
+                )
 
                 schema.SpsCandidate(
                     utc=start,
                     mjd=58000.123,
                     observation=obs,
                     beam=beam,
-                    source="Test source",
-                    coherent=True,
                     snr=snr,
                     dm=dm,
-                    dm_ex=0.01,
+                    dm_ex=0.7,
                     width=width,
-                    ra="08:35:44.7",
-                    dec="-45:35:15.7",
-                    gl=123.12,
-                    gb=-23.1,
                     node=node,
                     dynamic_spectrum="/raid/jankowsk/candidates/test/ds.png",
                     profile="/raid/jankowsk/candidates/test/profile.png",
