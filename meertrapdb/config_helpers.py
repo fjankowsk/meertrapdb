@@ -35,6 +35,6 @@ def get_config():
         raise RuntimeError("Config file does not exist: {0}".format(filename))
     
     with open(filename, 'r') as f:
-        config = yaml.load(f)
+        config = yaml.full_load(f)
 
     return config
