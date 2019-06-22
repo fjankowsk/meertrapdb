@@ -43,9 +43,12 @@ def insert_fake_data():
     start = datetime.now()
 
     with db_session:
+        # observations
         for _ in range(1000):
+            nbeam = random.randint(1, 390)
+
             beam_config = schema.BeamConfig(
-                nbeam=400,
+                nbeam=nbeam,
                 tiling_mode='fill'
             )
 
@@ -71,55 +74,57 @@ def insert_fake_data():
                 beam_config=beam_config
             )
 
-            pipeline_config = schema.PipelineConfig(
-                name="Test",
-                version="0.1",
-                dd_plan="Test",
-                dm_threshold="5.0",
-                snr_threshold="12.0",
-                width_threshold="500.0",
-                zerodm_zapping=True
-            )
-
-            ncand = random.randint(1, 100)
-
-            for _ in range(ncand):
-                beam_nr = random.randint(0, 400)
-                snr = random.uniform(5, 300)
-                dm = random.uniform(5, 5000)
-                width = random.uniform(1, 500)
-                node_nr = random.randint(0, 65)
+            # beams
+            for beam_nr in range(nbeam):
+                node_nr = beam_nr // 6
 
                 node = schema.Node(
-                    number=node_nr,
-                    hostname="tpn-0-{0}".format(node_nr)
-                )
+                        number=node_nr,
+                        hostname="tpn-0-{0}".format(node_nr)
+                    )
+                
+                # candidates
+                ncand = random.randint(0, 100)
+                for _ in range(ncand):
+                    snr = random.uniform(5, 300)
+                    dm = random.uniform(5, 5000)
+                    width = random.uniform(1, 500)
 
-                beam = schema.Beam(
-                    number=beam_nr,
-                    coherent=True,
-                    source="Test source",
-                    ra="08:35:44.7",
-                    dec="-45:35:15.7",
-                    gl=123.12,
-                    gb=-23.1
-                )
+                    pipeline_config = schema.PipelineConfig(
+                        name="Test",
+                        version="0.1",
+                        dd_plan="Test",
+                        dm_threshold="5.0",
+                        snr_threshold="12.0",
+                        width_threshold="500.0",
+                        zerodm_zapping=True
+                    )
 
-                schema.SpsCandidate(
-                    utc=start,
-                    mjd=58000.123,
-                    observation=obs,
-                    beam=beam,
-                    snr=snr,
-                    dm=dm,
-                    dm_ex=0.7,
-                    width=width,
-                    node=node,
-                    dynamic_spectrum="/raid/jankowsk/candidates/test/ds.png",
-                    profile="/raid/jankowsk/candidates/test/profile.png",
-                    heimdall_plot="/raid/jankowsk/candidates/test/hd.png",
-                    pipeline_config=pipeline_config
-                )
+                    beam = schema.Beam(
+                        number=beam_nr,
+                        coherent=True,
+                        source="Test source",
+                        ra="08:35:44.7",
+                        dec="-45:35:15.7",
+                        gl=123.12,
+                        gb=-23.1
+                    )
+
+                    schema.SpsCandidate(
+                        utc=start,
+                        mjd=58000.123,
+                        observation=obs,
+                        beam=beam,
+                        snr=snr,
+                        dm=dm,
+                        dm_ex=0.7,
+                        width=width,
+                        node=node,
+                        dynamic_spectrum="/raid/jankowsk/candidates/test/ds.png",
+                        profile="/raid/jankowsk/candidates/test/profile.png",
+                        heimdall_plot="/raid/jankowsk/candidates/test/hd.png",
+                        pipeline_config=pipeline_config
+                    )
 
     log.info("Done. Time taken: {0}".format(datetime.now() - start))
 
