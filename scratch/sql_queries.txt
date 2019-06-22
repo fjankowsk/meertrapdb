@@ -1,0 +1,11 @@
+select `spscandidate`.utc, `spscandidate`.snr, `spscandidate`.width, `observation_spscandidate`.`observation`, `beam_spscandidate`.beam, `beam`.number
+from spscandidate
+left join observation_spscandidate
+on spscandidate.id=observation_spscandidate.spscandidate
+left join `beam_spscandidate`
+on spscandidate.id=beam_spscandidate.spscandidate
+left join `beam`
+on beam_spscandidate.beam=`beam`.id
+where `observation_spscandidate`.`observation`=1
+and `beam`.number between 25 and 150
+order by spscandidate.snr;
