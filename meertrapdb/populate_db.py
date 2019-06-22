@@ -62,6 +62,7 @@ def insert_fake_data():
                 tobs=600.0,
                 finished=True,
                 nant=64,
+                receiver=1,
                 cfreq=1284.0,
                 bw=856.0,
                 nchan=4096,
