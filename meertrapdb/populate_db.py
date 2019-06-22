@@ -44,7 +44,7 @@ def insert_fake_data():
 
     with db_session:
         # observations
-        for _ in range(1000):
+        for _ in range(10):
             nbeam = random.randint(1, 390)
 
             beam_config = schema.BeamConfig(
