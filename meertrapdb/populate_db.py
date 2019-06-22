@@ -62,10 +62,11 @@ def insert_fake_data():
                 tobs=600.0,
                 finished=True,
                 nant=64,
-                cfreq=1400.123,
-                bw=800.0,
+                cfreq=1284.0,
+                bw=856.0,
+                nchan=4096,
                 npol=1,
-                tsamp=0.1234,
+                tsamp=7.65607476635514e-05,
                 beam_config=beam_config
             )
 
@@ -96,6 +97,8 @@ def insert_fake_data():
                     mjd=58000.123,
                     observation=obs,
                     beam=beam,
+                    source="Test source",
+                    coherent=True,
                     snr=snr,
                     dm=dm,
                     dm_ex=0.01,
