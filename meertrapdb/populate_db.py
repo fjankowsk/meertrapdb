@@ -42,6 +42,12 @@ def insert_fake_data():
 
     start = datetime.now()
 
+    dynamic_spectra = [
+        "2019-06-21_00:42:03/beam01/58653.8526978362_DM_9.21_beam_0.jpg",
+        "2019-06-21_00:42:03/beam02/58653.8530488991_DM_39.91_beam_0.jpg",
+        "tf_plot.jpg"
+    ]
+
     with db_session:
         # schedule blocks
         for _ in range(5):
@@ -119,6 +125,7 @@ def insert_fake_data():
                         snr = random.uniform(5, 300)
                         dm = random.uniform(5, 5000)
                         width = random.uniform(1, 500)
+                        dynamic_spectrum = random.choice(dynamic_spectra)
 
                         schema.SpsCandidate(
                             utc=start.isoformat(' '),
@@ -130,7 +137,7 @@ def insert_fake_data():
                             dm_ex=0.7,
                             width=width,
                             node=node,
-                            dynamic_spectrum="/raid/jankowsk/candidates/test/ds.png",
+                            dynamic_spectrum=dynamic_spectrum,
                             profile="/raid/jankowsk/candidates/test/profile.png",
                             heimdall_plot="/raid/jankowsk/candidates/test/hd.png",
                             pipeline_config=pipeline_config
