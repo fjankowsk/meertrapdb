@@ -121,7 +121,7 @@ def insert_fake_data():
                         width = random.uniform(1, 500)
 
                         schema.SpsCandidate(
-                            utc=start,
+                            utc=start.isoformat(' '),
                             mjd=58000.123,
                             observation=obs,
                             beam=beam,
