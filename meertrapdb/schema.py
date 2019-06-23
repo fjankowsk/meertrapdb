@@ -167,8 +167,9 @@ class PipelineConfig(db.Entity):
 
 class Logs(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
-    utc = Required(datetime, precision=6)
+    #utc = Required(datetime, precision=6)
     #utc_added = Required(datetime, precision=6, sql_default='CURRENT_TIMESTAMP')
+    utc = Required(datetime, precision=0)
     utc_added = Required(datetime, precision=0, default=datetime.utcnow())
     obs = Set('Observation')
     program = Required(str, max_len=32)
