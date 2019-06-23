@@ -9,6 +9,7 @@ import argparse
 from datetime import datetime
 import logging
 import random
+from time import sleep
 
 from pony.orm import db_session
 
@@ -23,12 +24,20 @@ from version import __version__
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Populate the database.")
+        description="Populate the database."
+    )
+    
+    parser.add_argument(
+        'mode',
+        choices=['fake', 'production'],
+        help='Mode of operation.'
+    )
     
     parser.add_argument(
         "--version",
         action="version",
-        version=__version__)
+        version=__version__
+    )
 
     return parser.parse_args()
 
@@ -146,12 +155,23 @@ def insert_fake_data():
     log.info("Done. Time taken: {0}".format(datetime.now() - start))
 
 
+def insert_candidates():
+    """
+    Insert candidates into the database.
+    """
+
+    log = logging.getLogger('meertrapdb')
+
+    start = datetime.now()
+
+    log.info("Done. Time taken: {0}".format(datetime.now() - start))
+
 #
 # MAIN
 #
 
 def main():
-    parse_args()
+    args = parse_args()
 
     log = logging.getLogger('meertrapdb')
     setup_logging()
@@ -168,7 +188,15 @@ def main():
 
     db.generate_mapping(create_tables=True)
 
-    insert_fake_data()
+    if args.mode == 'fake':
+        msg = "This operation mode will populate the database with random" + \
+              " fake data. Make sure you want this."
+        log.warning(msg)
+        sleep(20)
+        insert_fake_data()
+    
+    elif args.mode == "production":
+        insert_candidates()
     
     log.info("All done.")
 
