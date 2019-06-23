@@ -1,3 +1,4 @@
+# database related options
 db:
   provider: mysql
   host: 127.0.0.1
@@ -5,16 +6,24 @@ db:
   database: meertrap
   user:
     name: meertrap
-    password: XXX
+    password: "XXX"
   root:
     name: root
-    password: XXX
+    password: "XXX"
   users:
     - name: meertrap
-      password: XXX
+      password: "XXX"
     - name: meertrap_ro
-      password: XXX
+      password: "XXX"
   databases:
     - name: meertrap
     - name: production
     - name: old
+
+# filesystem related options
+filesystem:
+  ingest:
+    staging_dir: /raid/DWFcandidates/staging
+    processed_dir: /raid/DWFcandidates/processed
+  webserver:
+    candidate_dir: /raid/webhost/www/meerkatcands.com/html/meertrap_cands/candidates
