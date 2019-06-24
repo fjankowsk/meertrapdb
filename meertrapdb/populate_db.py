@@ -280,7 +280,7 @@ def insert_candidates(data, sb_info, obs_utc_start):
                 beam=beam,
                 snr=item['snr'],
                 dm=item['dm'],
-                dm_ex="",
+                #dm_ex=0.7,
                 width=item['width'],
                 node=node,
                 dynamic_spectrum=dynamic_spectrum,
