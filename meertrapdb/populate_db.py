@@ -7,9 +7,11 @@
 from __future__ import print_function
 import argparse
 from datetime import datetime
+import glob
 import logging
 import random
 from time import sleep
+import os.path
 
 from pony.orm import db_session
 
@@ -42,7 +44,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def insert_fake_data():
+def run_insert_fake_data():
     """
     Insert fake data into the database.
     """
@@ -155,14 +157,140 @@ def insert_fake_data():
     log.info("Done. Time taken: {0}".format(datetime.now() - start))
 
 
-def insert_candidates():
+def insert_cadidates(params):
+    """
+    Insert candidates into database.
+    """
+
+    with db_session:
+        # schedule blocks
+        schedule_block = schema.ScheduleBlock(
+            sb_id=1,
+            sb_id_code="2019-06-21-005",
+            proposal_id="DDT-20190513-FC-01",
+            proj_main="TRAPUM",
+            proj="commissioning",
+            utc_start=start,
+            observer = "Fabian",
+            description = "TRAPUM Test"
+        )
+
+        # observations
+        nobs = random.randint(1, 10)
+        for _ in range(nobs):
+            nbeam = random.randint(1, 390)
+
+            beam_config = schema.BeamConfig(
+                nbeam=nbeam,
+                tiling_mode='fill'
+            )
+
+            obs = schema.Observation(
+                schedule_block=schedule_block,
+                field_name="PKS 1934-638",
+                boresight_ra="08:35:45.124",
+                boresight_dec="-45:35:15",
+                utc_start=start,
+                utc_end=start,
+                tobs=600.0,
+                finished=True,
+                nant=64,
+                receiver=1,
+                cfreq=1284.0,
+                bw=856.0,
+                nchan=4096,
+                npol=1,
+                tsamp=7.65607476635514e-05,
+                beam_config=beam_config
+            )
+
+            # beams
+            for beam_nr in range(nbeam):
+                beam = schema.Beam(
+                        number=beam_nr,
+                        coherent=True,
+                        source="Test source",
+                        ra="08:35:44.7",
+                        dec="-45:35:15.7",
+                        gl=123.12,
+                        gb=-23.1
+                )
+
+                node_nr = beam_nr // 6
+                node = schema.Node(
+                        number=node_nr,
+                        hostname="tpn-0-{0}".format(node_nr)
+                )
+
+                pipeline_config = schema.PipelineConfig(
+                        name="Test",
+                        version="0.1",
+                        dd_plan="Test",
+                        dm_threshold="5.0",
+                        snr_threshold="12.0",
+                        width_threshold="500.0",
+                        zerodm_zapping=True
+                )
+                
+                # candidates
+                ncand = random.randint(0, 100)
+                for _ in range(ncand):
+                    snr = random.uniform(5, 300)
+                    dm = random.uniform(5, 5000)
+                    width = random.uniform(1, 500)
+                    dynamic_spectrum = random.choice(dynamic_spectra)
+
+                    schema.SpsCandidate(
+                        utc=start.isoformat(' '),
+                        mjd=58000.123,
+                        observation=obs,
+                        beam=beam,
+                        snr=snr,
+                        dm=dm,
+                        dm_ex=0.7,
+                        width=width,
+                        node=node,
+                        dynamic_spectrum=dynamic_spectrum,
+                        profile="/raid/jankowsk/candidates/test/profile.png",
+                        heimdall_plot="/raid/jankowsk/candidates/test/hd.png",
+                        pipeline_config=pipeline_config
+                    )
+
+
+def run_insert_candidates():
     """
     Insert candidates into the database.
     """
 
     log = logging.getLogger('meertrapdb')
+    
+    config = get_config()
+    fsconf = config['filesystem']
 
     start = datetime.now()
+
+    # 1) check for new directory
+    staging_dir = fsconf['ingest']['staging_dir']
+    log.info("Staging directory: {0}".format(staging_dir))
+
+    glob_pattern = os.path.join(
+        staging_dir,
+        "2*"
+    )
+
+    utcs = glob.glob(glob_pattern)
+
+    #sb_data = parse_schedule_block_data()
+
+    for utc in utcs:
+        log.info("Processing UTC: {0}".format(utc))
+        # 2) parse meta data
+
+        # 3) insert data into database
+
+        # 4) copy candidate plots to webserver
+
+        # 5) move directory to processed
 
     log.info("Done. Time taken: {0}".format(datetime.now() - start))
 
@@ -193,10 +321,10 @@ def main():
               " fake data. Make sure you want this."
         log.warning(msg)
         sleep(20)
-        insert_fake_data()
+        run_insert_fake_data()
     
     elif args.mode == "production":
-        insert_candidates()
+        run_insert_candidates()
     
     log.info("All done.")
 
