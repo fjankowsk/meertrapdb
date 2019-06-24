@@ -21,6 +21,7 @@ setup(name='meertrapdb',
       license='MIT',
       packages=['meertrapdb'],
       install_requires=[
+            'astropy',
             'matplotlib',
             'numpy',
             'pony',

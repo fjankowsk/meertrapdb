@@ -23,7 +23,7 @@ db:
 # filesystem related options
 filesystem:
   ingest:
-    staging_dir: /raid/DWFcandidates/staging
-    processed_dir: /raid/DWFcandidates/processed
+    staging_dir: /data/staging
+    processed_dir: /data/processed
   webserver:
-    candidate_dir: /raid/webhost/www/meerkatcands.com/html/meertrap_cands/candidates
+    candidate_dir: /webserver

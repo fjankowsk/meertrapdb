@@ -7,6 +7,8 @@ PRODDIR     =   /software/meertrapdb
 DOCKERFILE  =   ${BASEDIR}/docker/Dockerfile
 DBPATH      =   /raid/jankowsk/mariadb
 RUNPATH     =   /raid/jankowsk/mariadb_run
+DATAPATH    =   /raid/DWFcandidates/
+WEBPATH     =   /raid/webhost/www/meerkatcands.com/html/meertrap_cands/candidates
 
 help:
 	@echo 'Makefile for Meertrap DB'
@@ -35,7 +37,10 @@ clean:
 	rm -rf ${BASEDIR}/meertrapdb.egg-info
 
 interactive:
-	${DCK} run -it --rm --network=host meertrapdb bash
+	${DCK} run -it --rm --network=host \
+	--mount "type=bind,source=${DATAPATH},target=/data" \
+	--mount "type=bind,source=${WEBPATH},target=/webserver" \
+	meertrapdb bash
 
 run_db:
 	${DCK} run -it --rm --network=host \
