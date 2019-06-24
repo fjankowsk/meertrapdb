@@ -316,6 +316,13 @@ def run_insert_candidates():
         # 2) parse meta data
         spccl_data = parse_spccl_file(filename)
 
+        # check if we have candidates
+        if len(spccl_data) > 0:
+            log.info("Parsed {0} candidates.".format(len(spccl_data)))
+        else:
+            log.warning("No candidates found.")
+            continue
+
         # 3) insert data into database
         insert_candidates(spccl_data, utc)
 
