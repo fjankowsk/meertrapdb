@@ -31,7 +31,7 @@ def parse_args():
     
     parser.add_argument(
         'mode',
-        choices=['fake', 'production'],
+        choices=['fake', 'init_tables', 'production'],
         help='Mode of operation.'
     )
     
@@ -322,6 +322,9 @@ def main():
         log.warning(msg)
         sleep(20)
         run_insert_fake_data()
+    
+    elif args.mode == "init_tables":
+        pass
     
     elif args.mode == "production":
         run_insert_candidates()
