@@ -25,5 +25,6 @@ filesystem:
   ingest:
     staging_dir: /data/staging
     processed_dir: /data/processed
+  utc_format: "%Y-%m-%d_%H:%M:%S"
   webserver:
     candidate_dir: /webserver

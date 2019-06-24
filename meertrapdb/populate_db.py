@@ -160,14 +160,24 @@ def run_insert_fake_data():
     log.info("Done. Time taken: {0}".format(datetime.now() - start))
 
 
-def insert_cadidates(data, obs_utc_start):
+def insert_candidates(data, obs_utc_start):
     """
     Insert candidates into database.
+
+    Parameters
+    ----------
+    data: numpy.rec
+        The parsed candidate data.
+    obs_utc_start: datetime.datetime
+        The start UTC of the observation.
     """
 
-    utc_format = "%Y-%m-%d_%H:%M:%S"
+    log = logging.getLogger('meertrapdb')
 
-    sb_utc_start = datetime.strptime("2019-06-24_15:45:23", utc_format)
+    config = get_config()
+    fsconf = config['filesystem']
+
+    sb_utc_start = datetime.strptime("2019-06-24_15:45:23", fsconf['utc_format'])
 
     with db_session:
         # schedule blocks
@@ -237,7 +247,22 @@ def insert_cadidates(data, obs_utc_start):
             # candidates
             cand_utc = Time(item['mjd'], format='mjd').iso
 
-            dynamic_spectrum = item['plot_file']
+            # copy file to webserver directory
+            dynamic_spectrum = os.path.join(
+                fsconf['ingest']['staging_dir'],
+                item['plot_file']
+            )
+
+            if os.path.isfile(dynamic_spectrum):
+                web_file = os.path.join(
+                    fsconf['webserver']['candidate_dir'],
+                    item['plot_file']
+                )
+
+                shutil.copy(dynamic_spectrum, web_file)
+            else:
+                log.warning("Dynamic spectrum plot not found: {0}".format(dynamic_spectrum))
+                dynamic_spectrum = ""
 
             schema.SpsCandidate(
                 utc=cand_utc,
@@ -246,36 +271,14 @@ def insert_cadidates(data, obs_utc_start):
                 beam=beam,
                 snr=item['snr'],
                 dm=item['dm'],
-                dm_ex=0.7,
+                dm_ex="",
                 width=item['width'],
                 node=node,
                 dynamic_spectrum=dynamic_spectrum,
-                profile="/raid/jankowsk/candidates/test/profile.png",
-                heimdall_plot="/raid/jankowsk/candidates/test/hd.png",
+                profile="",
+                heimdall_plot="",
                 pipeline_config=pipeline_config
             )
-
-
-def copy_to_webserver(data):
-    """
-    Copy the candidate plots to web server.
-    """
-
-    config = get_config()
-    fsconf = config['filesystem']
-
-    for item in data:
-        filename = os.path.join(
-            fsconf['ingest']['staging_dir'],
-            item['plot_file']
-        )
-
-        web_file = os.path.join(
-            fsconf['webserver']['candidate_dir'],
-            item['plot_file']
-        )
-
-        shutil.copy(filename, web_file)
 
 
 def run_insert_candidates():
@@ -306,20 +309,17 @@ def run_insert_candidates():
         log.info("Processing SPCCL file: {0}".format(filename))
 
         utc_str = os.path.basename(filename)[:19]
-        utc_format = "%Y-%m-%d_%H:%M:%S"
-        utc = datetime.strptime(utc_str, utc_format)
+        utc = datetime.strptime(utc_str, fsconf['utc_format'])
+
         log.info("UTC: {0}".format(utc))
 
         # 2) parse meta data
         spccl_data = parse_spccl_file(filename)
 
         # 3) insert data into database
-        insert_cadidates(spccl_data, utc)
+        insert_candidates(spccl_data, utc)
 
-        # 4) copy candidate plots to webserver
-        copy_to_webserver(spccl_data)
-
-        # 5) move directory to processed
+        # 4) move directory to processed
         # processed_dir = os.path.join(
         #     fsconf['ingest']['processed_dir'],
         #     os.path.dirname(utc)
