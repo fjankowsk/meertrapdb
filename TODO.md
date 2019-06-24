@@ -3,8 +3,7 @@
 ## Important ##
 
 * check if schedule block or observation are already included in the database, if so reference them
-* parse schedule block meta data
-    * how to determine currently boresight?
+* how to determine current boresight?
 * parse 'pipeline_logs.txt' file
 * write code to match candidates to schedule blocks and observations
 * move to improved directory structure
