@@ -257,20 +257,21 @@ def insert_candidates(data, sb_info, obs_utc_start):
             cand_utc = Time(item['mjd'], format='mjd').iso
 
             # copy file to webserver directory
-            dynamic_spectrum = os.path.join(
+            dynamic_spectrum = item['plot_file']
+            dynamic_spectrum_staging = os.path.join(
                 fsconf['ingest']['staging_dir'],
-                item['plot_file']
+                dynamic_spectrum
             )
 
-            if os.path.isfile(dynamic_spectrum):
+            if os.path.isfile(dynamic_spectrum_staging):
                 web_file = os.path.join(
                     fsconf['webserver']['candidate_dir'],
-                    item['plot_file']
+                    dynamic_spectrum
                 )
 
-                shutil.copy(dynamic_spectrum, web_file)
+                shutil.copy(dynamic_spectrum_staging, web_file)
             else:
-                log.warning("Dynamic spectrum plot not found: {0}".format(dynamic_spectrum))
+                log.warning("Dynamic spectrum plot not found: {0}".format(dynamic_spectrum_staging))
                 dynamic_spectrum = ""
 
             schema.SpsCandidate(
