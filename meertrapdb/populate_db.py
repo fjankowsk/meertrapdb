@@ -7,6 +7,7 @@
 from __future__ import print_function
 import argparse
 from datetime import datetime
+import json
 import glob
 import logging
 import random
@@ -16,6 +17,7 @@ import shutil
 
 from astropy.time import Time
 from pony.orm import db_session
+from pytz import timezone
 
 from config_helpers import get_config
 from db_helpers import setup_db
@@ -160,7 +162,7 @@ def run_insert_fake_data():
     log.info("Done. Time taken: {0}".format(datetime.now() - start))
 
 
-def insert_candidates(data, obs_utc_start):
+def insert_candidates(data, sb_info, obs_utc_start):
     """
     Insert candidates into database.
 
@@ -168,6 +170,8 @@ def insert_candidates(data, obs_utc_start):
     ----------
     data: numpy.rec
         The parsed candidate data.
+    sb_info: dict
+        Information about the schedule block.
     obs_utc_start: datetime.datetime
         The start UTC of the observation.
     """
@@ -177,19 +181,22 @@ def insert_candidates(data, obs_utc_start):
     config = get_config()
     fsconf = config['filesystem']
 
-    sb_utc_start = datetime.strptime("2019-06-24_15:45:23", fsconf['utc_format'])
+    local_time_format = "%Y-%m-%d %H:%M:%S.%f"
+    sb_lt_start = datetime.strptime(sb_info['actual_start_time'][:-2],
+                                     local_time_format)
+    sb_utc_start = sb_lt_start.replace(tzinfo=timezone('UTC'))
 
     with db_session:
         # schedule blocks
         schedule_block = schema.ScheduleBlock(
-            sb_id=2,
-            sb_id_code="20190623-0013",
-            proposal_id="DDT-20190513-FC-01",
+            sb_id=4,
+            sb_id_code=sb_info['id_code'],
+            proposal_id=sb_info['proposal_id'],
             proj_main="TRAPUM",
-            proj="DWF run (day 1)",
+            proj="DWF run (day 2)",
             utc_start=sb_utc_start,
-            observer = "Maciej Serylak",
-            description = "A MeerTRAP/ThunderKAT proposal with Deeper Wider Faster (Day 1/5)"
+            observer=sb_info['owner'],
+            description=sb_info['description']
             )
         
         beam_config = schema.BeamConfig(
@@ -198,6 +205,8 @@ def insert_candidates(data, obs_utc_start):
             )
 
         # observations
+        nant = len(sb_info['antennas_alloc'].split(","))
+
         obs = schema.Observation(
             schedule_block=schedule_block,
             field_name="NGC 6744",
@@ -207,7 +216,7 @@ def insert_candidates(data, obs_utc_start):
             utc_end=obs_utc_start,
             tobs=600.0,
             finished=True,
-            nant=64,
+            nant=nant,
             receiver=1,
             cfreq=1284.0,
             bw=856.0,
@@ -281,6 +290,29 @@ def insert_candidates(data, obs_utc_start):
             )
 
 
+def get_sb_info():
+    """
+    Load the schedule block information from file.
+    """
+
+    config = get_config()
+    fsconf = config['filesystem']
+
+    sb_info_file = os.path.join(
+        os.path.dirname(__file__),
+        "config",
+        fsconf['sb_info_file']
+    )
+
+    if not os.path.isfile(sb_info_file):
+        raise RuntimeError("SB info file does not exist: {0}".format(sb_info_file))
+
+    with open(sb_info_file, 'r') as fh:
+        data = json.load(fh)
+
+    return data
+
+
 def run_insert_candidates():
     """
     Insert candidates into the database.
@@ -293,7 +325,10 @@ def run_insert_candidates():
 
     start = datetime.now()
 
-    # 1) check for new directory
+    # 1) load schedule block information
+    sb_info = get_sb_info()
+
+    # 2) check for new directory
     staging_dir = fsconf['ingest']['staging_dir']
     log.info("Staging directory: {0}".format(staging_dir))
 
@@ -313,7 +348,7 @@ def run_insert_candidates():
 
         log.info("UTC: {0}".format(utc))
 
-        # 2) parse meta data
+        # 3) parse meta data
         spccl_data = parse_spccl_file(filename)
 
         # check if we have candidates
@@ -323,8 +358,8 @@ def run_insert_candidates():
             log.warning("No candidates found.")
             continue
 
-        # 3) insert data into database
-        insert_candidates(spccl_data, utc)
+        # 4) insert data into database
+        insert_candidates(spccl_data, sb_info, utc)
 
         # 4) move directory to processed
         # processed_dir = os.path.join(

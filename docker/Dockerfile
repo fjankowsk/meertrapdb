@@ -41,7 +41,8 @@ RUN pip install \
     mysqlclient \
     numpy \
     pony \
-    pyyaml
+    pyyaml \
+    pytz
 
 # install our software in docker image
 ARG SOFT_PATH="/software/meertrapdb"

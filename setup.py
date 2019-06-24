@@ -25,6 +25,7 @@ setup(name='meertrapdb',
             'matplotlib',
             'numpy',
             'pony',
+            'pytz',
             'pyyaml'
       ],
       zip_safe=False)
