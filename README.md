@@ -1,4 +1,4 @@
-# MeerTRAP database repo #
+# MeerTRAP database backend #
 
 ## Requirements ##
 
@@ -6,3 +6,4 @@
 
 All of these are included in the provided docker file or can be easily
 installed via `pip`.
+
