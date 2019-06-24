@@ -1,11 +1,14 @@
 # Todo #
 
-* benchmark MariaDB, check if it can sustain 64-128 concurrent connections, especially table INSERTs.
+Important:
+* parse schedule block meta data
+    * how to determine currently boresight?
+* parse 'pipeline_logs.txt' file
+* treat case when candidate plot was not found (can just leave dynamic_spectrum field empty, treat on website then)
+* write code to match candidates to schedule blocks and observations
+* move to improved directory structure
+
+General:
 * hook up logging functionality in TUSEMCS to database.
 * how should we partition the data for fast lookup?
 * check database triggers for retiring old data.
-
-* implement mode to ingest candidates
-* parse candidate meta data
-* parse schedule block meta data
-* copy candidate plots to correct locations on webserver
