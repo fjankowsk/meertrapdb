@@ -9,6 +9,7 @@ are assigned to specific subarrays.
 """
 from __future__ import print_function
 
+import json
 import logging
 import argparse
 
@@ -78,6 +79,10 @@ def main():
         #              u'notes': u'(Cloned from 20170123-0017) ',
         #              u'outcome': u'UNKNOWN',
         #              u'data_quality': None}
+
+        # output JSON dump
+        print("JSON dump:")
+        print(json.dumps(sb_detail))
 
 
 if __name__ == '__main__':
