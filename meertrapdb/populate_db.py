@@ -256,6 +256,28 @@ def insert_cadidates(data, obs_utc_start):
             )
 
 
+def copy_to_webserver(data):
+    """
+    Copy the candidate plots to web server.
+    """
+
+    config = get_config()
+    fsconf = config['filesystem']
+
+    for item in data:
+        filename = os.path.join(
+            fsconf['ingest']['staging_dir'],
+            item['plot_file']
+        )
+
+        web_file = os.path.join(
+            fsconf['webserver']['candidate_dir'],
+            item['plot_file']
+        )
+
+        shutil.copy(filename, web_file)
+
+
 def run_insert_candidates():
     """
     Insert candidates into the database.
@@ -295,7 +317,7 @@ def run_insert_candidates():
         insert_cadidates(spccl_data, utc)
 
         # 4) copy candidate plots to webserver
-        #copy_to_webserver(spccl_data)
+        copy_to_webserver(spccl_data)
 
         # 5) move directory to processed
         # processed_dir = os.path.join(
