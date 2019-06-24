@@ -190,7 +190,7 @@ def insert_cadidates(data, obs_utc_start):
         # observations
         obs = schema.Observation(
             schedule_block=schedule_block,
-            field_name="",
+            field_name="NGC 6744",
             boresight_ra="08:35:45.124",
             boresight_dec="-45:35:15",
             utc_start=obs_utc_start,
@@ -274,7 +274,7 @@ def run_insert_candidates():
 
     glob_pattern = os.path.join(
         staging_dir,
-        "2*_beam??_.spccl.log"
+        "2*_beam??.spccl.log"
     )
 
     spcll_files = glob.glob(glob_pattern)
@@ -283,7 +283,7 @@ def run_insert_candidates():
     for filename in spcll_files:
         log.info("Processing SPCCL file: {0}".format(filename))
 
-        utc_str = filename[:15]
+        utc_str = os.path.basename(filename)[:19]
         utc_format = "%Y-%m-%d_%H:%M:%S"
         utc = datetime.strptime(utc_str, utc_format)
         log.info("UTC: {0}".format(utc))
