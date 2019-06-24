@@ -35,6 +35,7 @@ RUN pip install --upgrade pip
 
 # python packages
 RUN pip install \
+    astropy \
     ipython \
     matplotlib \
     mysqlclient \
