@@ -15,7 +15,7 @@ def parse_spccl_file(filename):
     #          ('ra','|S32'), ('dec', '|S32'),
     #          ('fil_file','|S128'), ('plot_file','|S256')]
 
-    names = ['mjd', 'dm', 'width', 'snr', 'beam', 'ra', 'dec', 'fil_file', 'plot_file']
+    names = ['index', 'mjd', 'dm', 'width', 'snr', 'beam', 'ra', 'dec', 'fil_file', 'plot_file']
 
     data = np.genfromtxt(filename, dtype=None, names=names, delimiter="\t",
                          encoding='ascii',
