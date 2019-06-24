@@ -1,6 +1,7 @@
 # Todo #
 
-Important:
+## Important ##
+
 * parse schedule block meta data
     * how to determine currently boresight?
 * parse 'pipeline_logs.txt' file
@@ -8,7 +9,12 @@ Important:
 * write code to match candidates to schedule blocks and observations
 * move to improved directory structure
 
-General:
+## Less Important ##
+
+* switch to python 3
+
+## General ##
+
 * hook up logging functionality in TUSEMCS to database.
 * how should we partition the data for fast lookup?
 * check database triggers for retiring old data.
