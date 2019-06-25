@@ -227,13 +227,17 @@ def insert_candidates(data, sb_info, obs_utc_start):
             beam_config=beam_config
         )
 
+        # candidates
         for item in data:
+            cand_mjd = Decimal("{0:.8f}".format(item['mjd']))
+            cand_utc = Time(item['mjd'], format='mjd').iso
+
             # check if candidate is already in the database
-            mjd = Decimal("{0}".format(item['mjd']))
-            count = schema.SpsCandidate.select(lambda c: c.mjd == mjd).count()
+            eps = Decimal('0.00000001')
+            count = schema.SpsCandidate.select(lambda c: abs(c.mjd - cand_mjd) <= eps).count()
 
             if count > 0:
-                log.error("Candidate is already in the database: {0}".format(mjd))
+                log.error("Candidate is already in the database: {0}".format(cand_mjd))
                 continue
 
             beam = schema.Beam(
@@ -261,8 +265,7 @@ def insert_candidates(data, sb_info, obs_utc_start):
                 width_threshold="500.0",
                 zerodm_zapping=True
             )
-            
-            # candidates
+
             # copy file to webserver directory
             dynamic_spectrum = item['plot_file']
             dynamic_spectrum_staging = os.path.join(
@@ -276,16 +279,14 @@ def insert_candidates(data, sb_info, obs_utc_start):
                     dynamic_spectrum
                 )
 
-                shutil.copy(dynamic_spectrum_staging, web_file)
+                #shutil.copy(dynamic_spectrum_staging, web_file)
             else:
                 log.warning("Dynamic spectrum plot not found: {0}".format(dynamic_spectrum_staging))
                 dynamic_spectrum = ""
 
-            cand_utc = Time(item['mjd'], format='mjd').iso
-
             schema.SpsCandidate(
                 utc=cand_utc,
-                mjd=item['mjd'],
+                mjd=cand_mjd,
                 observation=obs,
                 beam=beam,
                 snr=item['snr'],
