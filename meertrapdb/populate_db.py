@@ -363,6 +363,10 @@ def insert_candidates(data, sb_info, obs_utc_start):
                 pipeline_config=pipeline_config
             )
 
+            # we need to explicitly commit the candidate to the database
+            # otherwise the duplicate detection won't work
+            db.commit()
+
     return plots
 
 
