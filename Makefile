@@ -9,6 +9,7 @@ DBPATH      =   /raid/jankowsk/mariadb
 RUNPATH     =   /raid/jankowsk/mariadb_run
 DATAPATH    =   /raid/DWFcandidates/
 WEBPATH     =   /raid/webhost/www/meerkatcands.com/html/meertrap_cands/candidates
+USERID      =   $(shell id -u)
 
 help:
 	@echo 'Makefile for Meertrap DB'
@@ -40,6 +41,7 @@ interactive:
 	${DCK} run -it --rm --network=host \
 	--mount "type=bind,source=${DATAPATH},target=/data" \
 	--mount "type=bind,source=${WEBPATH},target=/webserver" \
+	--user ${USERID} \
 	meertrapdb bash
 
 run_db:
