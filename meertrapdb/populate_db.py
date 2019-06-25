@@ -386,6 +386,7 @@ def run_insert_candidates():
     )
 
     spcll_files = glob.glob(glob_pattern)
+    spcll_files = sorted(spcll_files)
     log.info("Found {0} SPCCL files.".format(len(spcll_files)))
 
     for filename in spcll_files:
