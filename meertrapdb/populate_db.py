@@ -7,6 +7,7 @@
 from __future__ import print_function
 import argparse
 from datetime import datetime
+from decimal import Decimal
 import json
 import glob
 import logging
@@ -225,8 +226,16 @@ def insert_candidates(data, sb_info, obs_utc_start):
             tsamp=7.65607476635514e-05,
             beam_config=beam_config
         )
-        
+
         for item in data:
+            # check if candidate is already in the database
+            mjd = Decimal("{0}".format(item['mjd']))
+            count = schema.SpsCandidate.select(lambda c: c.mjd == mjd).count()
+
+            if count > 0:
+                log.error("Candidate is already in the database: {0}".format(mjd))
+                continue
+
             beam = schema.Beam(
                 number=item['beam'],
                 coherent=True,
@@ -254,8 +263,6 @@ def insert_candidates(data, sb_info, obs_utc_start):
             )
             
             # candidates
-            cand_utc = Time(item['mjd'], format='mjd').iso
-
             # copy file to webserver directory
             dynamic_spectrum = item['plot_file']
             dynamic_spectrum_staging = os.path.join(
@@ -273,6 +280,8 @@ def insert_candidates(data, sb_info, obs_utc_start):
             else:
                 log.warning("Dynamic spectrum plot not found: {0}".format(dynamic_spectrum_staging))
                 dynamic_spectrum = ""
+
+            cand_utc = Time(item['mjd'], format='mjd').iso
 
             schema.SpsCandidate(
                 utc=cand_utc,
