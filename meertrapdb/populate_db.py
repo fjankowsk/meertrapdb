@@ -335,6 +335,7 @@ def insert_candidates(data, sb_info, obs_utc_start):
 
                 ds_processed = os.path.join(
                     fsconf['ingest']['processed_dir'],
+                    obs_utc_start,
                     item['plot_file']
                 )
 
