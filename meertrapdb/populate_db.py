@@ -263,7 +263,7 @@ def insert_candidates(data, sb_info, obs_utc_start):
         plots = []
 
         for item in data:
-            cand_mjd = Decimal("{0:.8f}".format(item['mjd']))
+            cand_mjd = Decimal("{0:.10f}".format(item['mjd']))
             cand_utc = Time(item['mjd'], format='mjd').iso
             cand_beam_nr = int(item['beam'])
             node_nr = 0
