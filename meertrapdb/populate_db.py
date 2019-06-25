@@ -269,7 +269,7 @@ def insert_candidates(data, sb_info, obs_utc_start):
                 for obs in c.observation
                 if (beam.number == cand_beam_nr
                 and obs.utc_start == obs_utc_start
-                and abs(c.mjd - cand_mjd) <= Decimal('0.00000001'))
+                and abs(c.mjd - cand_mjd) <= Decimal('0.0000000001'))
                 )
 
             if cand_queried.count() > 0:
