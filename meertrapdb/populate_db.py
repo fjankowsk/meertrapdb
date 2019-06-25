@@ -258,6 +258,8 @@ def insert_candidates(data, sb_info, obs_utc_start):
         for item in data:
             cand_mjd = Decimal("{0:.8f}".format(item['mjd']))
             cand_utc = Time(item['mjd'], format='mjd').iso
+            cand_beam_nr = int(item['beam'])
+            node_nr = 0
 
             # check if candidate is already in the database
             cand_queried = select(
@@ -265,19 +267,19 @@ def insert_candidates(data, sb_info, obs_utc_start):
                 for c in schema.SpsCandidate
                 for beam in c.beam
                 for obs in c.observation
-                if (beam.number == item['beam']
+                if (beam.number == cand_beam_nr
                 and obs.utc_start == obs_utc_start
                 and abs(c.mjd - cand_mjd) <= Decimal('0.00000001'))
                 )
 
             if cand_queried.count() > 0:
                 msg = "Candidate is already in the database:" + \
-                      " {0}, {1}, {2}".format(obs_utc_start, item['beam'], cand_mjd)
+                      " {0}, {1}, {2}".format(obs_utc_start, cand_beam_nr, cand_mjd)
                 log.error(msg)
                 continue
 
             beam = schema.Beam(
-                number=item['beam'],
+                number=cand_beam_nr,
                 coherent=True,
                 source="Test source",
                 ra=item['ra'],
@@ -286,7 +288,6 @@ def insert_candidates(data, sb_info, obs_utc_start):
                 #gb=0
             )
 
-            node_nr = 0
             node = schema.Node(
                 number=node_nr,
                 hostname="tpn-0-{0}".format(node_nr)
