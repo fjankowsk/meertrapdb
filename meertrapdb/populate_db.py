@@ -191,29 +191,42 @@ def insert_candidates(data, sb_info, obs_utc_start):
 
     with db_session:
         # schedule blocks
-        schedule_block = schema.ScheduleBlock(
-            sb_id=4,
-            sb_id_mk=sb_info['id'],
-            sb_id_code_mk=sb_info['id_code'],
-            proposal_id_mk=sb_info['proposal_id'],
-            proj_main="TRAPUM",
-            proj="DWF run (day 2)",
-            utc_start=sb_utc_start,
-            sub_array=sb_info['sub_nr'],
-            observer=sb_info['owner'],
-            description=sb_info['description']
+        # check if schedule block is already in the database, otherwise reference it
+        sb_id = 4
+        sb_queried = schema.ScheduleBlock.select(lambda sb: sb.sb_id == sb_id)[:]
+
+        if len(sb_queried) == 0:
+            schedule_block = schema.ScheduleBlock(
+                sb_id=sb_id,
+                sb_id_mk=sb_info['id'],
+                sb_id_code_mk=sb_info['id_code'],
+                proposal_id_mk=sb_info['proposal_id'],
+                proj_main="TRAPUM",
+                proj="DWF run (day 2)",
+                utc_start=sb_utc_start,
+                sub_array=sb_info['sub_nr'],
+                observer=sb_info['owner'],
+                description=sb_info['description']
             )
-        
-        beam_config = schema.BeamConfig(
-                nbeam=390,
-                tiling_mode='fill'
-            )
+
+        elif len(sb_queried) == 1:
+            log.info("Schedule block is already in the database: {0}".format(sb_id))
+            schedule_block = sb_queried[0]
+
+        else:
+            msg = 'There are duplicate schedule blocks: {0}'.format(sb_id)
+            raise RuntimeError(msg)
 
         # observations
         # check if observation is already in the database, otherwise reference it
         obs_queried = schema.Observation.select(lambda o: o.utc_start == obs_utc_start)[:]
 
         if len(obs_queried) == 0:
+            beam_config = schema.BeamConfig(
+                nbeam=390,
+                tiling_mode='fill'
+            )
+
             observation = schema.Observation(
                 schedule_block=schedule_block,
                 field_name="NGC 6101",
