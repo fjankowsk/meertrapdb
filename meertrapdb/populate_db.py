@@ -229,7 +229,7 @@ def insert_candidates(data, sb_info, obs_utc_start):
                 beam_config=beam_config
             )
 
-        elif len(observation) == 1:
+        elif len(obs_queried) == 1:
             log.info("Observation is already in the database: {0}".format(obs_utc_start))
             observation = obs_queried[0]
 
