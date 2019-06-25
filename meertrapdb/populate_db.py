@@ -70,13 +70,15 @@ def run_insert_fake_data():
         for _ in range(5):
             schedule_block = schema.ScheduleBlock(
                 sb_id=1,
-                sb_id_code="2019-06-21-005",
-                proposal_id="DDT-20190513-FC-01",
+                sb_id_mk=31606,
+                sb_id_code_mk="2019-06-21-005",
+                proposal_id_mk="DDT-20190513-FC-01",
                 proj_main="TRAPUM",
                 proj="commissioning",
                 utc_start=start,
-                observer = "Fabian",
-                description = "TRAPUM Test"
+                sub_array=1,
+                observer="Fabian",
+                description="TRAPUM Test"
             )
 
             # observations
@@ -191,11 +193,13 @@ def insert_candidates(data, sb_info, obs_utc_start):
         # schedule blocks
         schedule_block = schema.ScheduleBlock(
             sb_id=4,
-            sb_id_code=sb_info['id_code'],
-            proposal_id=sb_info['proposal_id'],
+            sb_id_mk=sb_info['id'],
+            sb_id_code_mk=sb_info['id_code'],
+            proposal_id_mk=sb_info['proposal_id'],
             proj_main="TRAPUM",
             proj="DWF run (day 2)",
             utc_start=sb_utc_start,
+            sub_array=sb_info['sub_nr'],
             observer=sb_info['owner'],
             description=sb_info['description']
             )
