@@ -72,8 +72,8 @@ class Beam(db.Entity):
     source = Required(str, max_len=32)
     ra = Required(str, max_len=32)
     dec = Required(str, max_len=32)
-    gl = Required(float)
-    gb = Required(float)
+    gl = Optional(float)
+    gb = Optional(float)
     sps_candidate = Set('SpsCandidate')
 
 
