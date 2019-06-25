@@ -2,6 +2,7 @@
 
 ## Important ##
 
+* preprocess the candidates and move them into correct sub-directories
 * check if schedule block or observation are already included in the database, if so reference them
 * how to determine current boresight?
 * parse 'pipeline_logs.txt' file
