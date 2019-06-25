@@ -30,6 +30,10 @@ RUN rm -rf /var/lib/mysql \
 
 RUN sed -i 's/3306/3310/' /etc/mysql/mariadb.conf.d/50-server.cnf
 
+# smart history search
+RUN echo "\"\e[A\":history-search-backward" >> ~/.inputrc && \
+    echo "\"\e[B\":history-search-forward" >> ~/.inputrc
+
 RUN easy_install pip
 RUN pip install --upgrade pip
 
