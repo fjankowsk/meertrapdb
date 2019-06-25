@@ -26,6 +26,8 @@ filesystem:
     staging_dir: /data/staging
     processed_dir: /data/processed
   sb_info_file: schedule_block.json
-  utc_format: "%Y-%m-%d_%H:%M:%S"
+  date_formats:
+    utc: "%Y-%m-%d_%H:%M:%S"
+    local: "%Y-%m-%d %H:%M:%S.%f"
   webserver:
     candidate_dir: /webserver

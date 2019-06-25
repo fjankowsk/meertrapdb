@@ -189,9 +189,8 @@ def insert_candidates(data, sb_info, obs_utc_start):
     config = get_config()
     fsconf = config['filesystem']
 
-    local_time_format = "%Y-%m-%d %H:%M:%S.%f"
     sb_lt_start = datetime.strptime(sb_info['actual_start_time'][:-2],
-                                     local_time_format)
+                                    fsconf["date_formats"]["local"])
     sb_utc_start = sb_lt_start.replace(tzinfo=timezone('UTC'))
 
     with db_session:
@@ -322,9 +321,10 @@ def insert_candidates(data, sb_info, obs_utc_start):
             if not os.path.isfile(ds_staging):
                 log.warning("Dynamic spectrum plot not found: {0}".format(ds_staging))
             else:
+                obs_utc_start_str = obs_utc_start.strftime(fsconf['date_formats']['utc'])
                 ds_web = os.path.join(
                     sb_id,
-                    obs_utc_start,
+                    obs_utc_start_str,
                     item['plot_file']
                 )
 
@@ -335,7 +335,7 @@ def insert_candidates(data, sb_info, obs_utc_start):
 
                 ds_processed = os.path.join(
                     fsconf['ingest']['processed_dir'],
-                    obs_utc_start,
+                    obs_utc_start_str,
                     item['plot_file']
                 )
 
@@ -454,7 +454,8 @@ def run_insert_candidates():
         log.info("Processing SPCCL file: {0}".format(filename))
 
         utc_start_str = os.path.basename(filename)[:19]
-        obs_utc_start = datetime.strptime(utc_start_str, fsconf['utc_format'])
+        obs_utc_start = datetime.strptime(utc_start_str,
+                                          fsconf['date_formats']['utc'])
 
         log.info("UTC start: {0}".format(obs_utc_start))
 
