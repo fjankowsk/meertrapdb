@@ -177,6 +177,11 @@ def insert_candidates(data, sb_info, obs_utc_start):
         Information about the schedule block.
     obs_utc_start: datetime.datetime
         The start UTC of the observation.
+    
+    Returns
+    -------
+    plots: list of dict
+        Plot files to be copied.
     """
 
     log = logging.getLogger('meertrapdb')
@@ -255,6 +260,9 @@ def insert_candidates(data, sb_info, obs_utc_start):
             raise RuntimeError(msg)
 
         # candidates
+        # plot files to be copied
+        plots = []
+
         for item in data:
             cand_mjd = Decimal("{0:.8f}".format(item['mjd']))
             cand_utc = Time(item['mjd'], format='mjd').iso
@@ -303,23 +311,40 @@ def insert_candidates(data, sb_info, obs_utc_start):
                 zerodm_zapping=True
             )
 
-            # copy file to webserver directory
-            dynamic_spectrum = item['plot_file']
-            dynamic_spectrum_staging = os.path.join(
+            # assemble candidate plots
+            ds_staging = os.path.join(
                 fsconf['ingest']['staging_dir'],
-                dynamic_spectrum
+                item['plot_file']
             )
 
-            if os.path.isfile(dynamic_spectrum_staging):
-                web_file = os.path.join(
-                    fsconf['webserver']['candidate_dir'],
-                    dynamic_spectrum
+            ds_web = ""
+
+            if not os.path.isfile(ds_staging):
+                log.warning("Dynamic spectrum plot not found: {0}".format(ds_staging))
+            else:
+                ds_web = os.path.join(
+                    sb_id,
+                    obs_utc_start,
+                    item['plot_file']
                 )
 
-                #shutil.copy(dynamic_spectrum_staging, web_file)
-            else:
-                log.warning("Dynamic spectrum plot not found: {0}".format(dynamic_spectrum_staging))
-                dynamic_spectrum = ""
+                ds_web_full = os.path.join(
+                    fsconf['webserver']['candidate_dir'],
+                    ds_web
+                )
+
+                ds_processed = os.path.join(
+                    fsconf['ingest']['processed_dir'],
+                    item['plot_file']
+                )
+
+                file_info = {
+                    "staging": ds_staging,
+                    "processed": ds_processed,
+                    "webserver": ds_web_full
+                }
+
+                plots.append(file_info)
 
             schema.SpsCandidate(
                 utc=cand_utc,
@@ -331,11 +356,46 @@ def insert_candidates(data, sb_info, obs_utc_start):
                 #dm_ex=0.7,
                 width=item['width'],
                 node=node,
-                dynamic_spectrum=dynamic_spectrum,
+                dynamic_spectrum=ds_web,
                 profile="",
                 heimdall_plot="",
                 pipeline_config=pipeline_config
             )
+
+    return plots
+
+
+def copy_plots(plots):
+    """
+    Copy plots to webserver.
+
+    Parameters
+    ----------
+    plots: list of dict
+        Plot files to be copied.
+    """
+
+    log = logging.getLogger('meertrapdb')
+
+    for item in plots:
+        filename = item['staging']
+        log.info("Copying plot: {0}".format(filename))
+
+        # copy to webserver
+        web_dir = os.path.dirname(item['webserver'])
+
+        if not os.path.isdir(web_dir):
+            os.makedirs(web_dir)
+
+        shutil.copy(filename, item['webserver'])
+
+        # move to processed
+        processed_dir = os.path.dirname(item['processed'])
+
+        if not os.path.isdir(processed_dir):
+            os.makedirs(processed_dir)
+
+        shutil.move(filename, item['processed'])
 
 
 def get_sb_info():
@@ -408,16 +468,16 @@ def run_insert_candidates():
             continue
 
         # 4) insert data into database
-        insert_candidates(spccl_data, sb_info, obs_utc_start)
+        plots = insert_candidates(spccl_data, sb_info, obs_utc_start)
 
-        # 4) move directory to processed
-        # processed_dir = os.path.join(
-        #     fsconf['ingest']['processed_dir'],
-        #     os.path.dirname(utc)
-        # )
-
-        # log.info("Processed dir: {0}".format(processed_dir))
-        #shutil.move(utc, processed_dir)
+        # 5) move directory to processed
+        if len(plots) > 0:
+            log.info("Copying {0} plots.".format(len(plots)))
+            copy_plots(plots)
+        else:
+            log.warning("No plots to copy found.")
+        
+        # 6) move spccl file to processed
 
     log.info("Done. Time taken: {0}".format(datetime.now() - start))
 
