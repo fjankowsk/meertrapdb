@@ -492,6 +492,18 @@ def run_insert_candidates():
             log.warning("No plots to copy found.")
         
         # 6) move spccl file to processed
+        outfile = os.path.join(
+            fsconf['ingest']['processed_dir'],
+            utc_start_str,
+            os.path.basename(filename)
+        )
+
+        outdir = os.path.dirname(outfile)
+
+        if not os.path.isdir(outdir):
+            os.makedirs(outdir)
+
+        shutil.move(filename, outfile)
 
     log.info("Done. Time taken: {0}".format(datetime.now() - start))
 
