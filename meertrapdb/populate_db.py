@@ -89,7 +89,7 @@ def run_insert_fake_data():
                     tiling_mode='fill'
                 )
 
-                obs = schema.Observation(
+                observation = schema.Observation(
                     schedule_block=schedule_block,
                     field_name="PKS 1934-638",
                     boresight_ra="08:35:45.124",
@@ -147,7 +147,7 @@ def run_insert_fake_data():
                         schema.SpsCandidate(
                             utc=start.isoformat(' '),
                             mjd=58000.123,
-                            observation=obs,
+                            observation=observation,
                             beam=beam,
                             snr=snr,
                             dm=dm,
@@ -206,26 +206,36 @@ def insert_candidates(data, sb_info, obs_utc_start):
             )
 
         # observations
-        nant = len(sb_info['antennas_alloc'].split(","))
+        # check if observation is already in the database, otherwise reference it
+        obs_queried = schema.Observation.select(lambda o: o.utc_start == obs_utc_start)[:]
 
-        obs = schema.Observation(
-            schedule_block=schedule_block,
-            field_name="NGC 6101",
-            boresight_ra="16:26:00.00",
-            boresight_dec="-73:00:00.0",
-            utc_start=obs_utc_start,
-            utc_end=obs_utc_start,
-            tobs=600.0,
-            finished=True,
-            nant=nant,
-            receiver=1,
-            cfreq=1284.0,
-            bw=856.0,
-            nchan=4096,
-            npol=1,
-            tsamp=7.65607476635514e-05,
-            beam_config=beam_config
-        )
+        if len(obs_queried) == 0:
+            observation = schema.Observation(
+                schedule_block=schedule_block,
+                field_name="NGC 6101",
+                boresight_ra="16:26:00.00",
+                boresight_dec="-73:00:00.0",
+                utc_start=obs_utc_start,
+                utc_end=obs_utc_start,
+                tobs=600.0,
+                finished=True,
+                nant=len(sb_info['antennas_alloc'].split(",")),
+                receiver=1,
+                cfreq=1284.0,
+                bw=856.0,
+                nchan=4096,
+                npol=1,
+                tsamp=7.65607476635514e-05,
+                beam_config=beam_config
+            )
+
+        elif len(observation) == 1:
+            log.info("Observation is already in the database: {0}".format(obs_utc_start))
+            observation = obs_queried[0]
+
+        else:
+            msg = 'There are duplicate observations: {0}'.format(obs_utc_start)
+            raise RuntimeError(msg)
 
         # candidates
         for item in data:
@@ -287,7 +297,7 @@ def insert_candidates(data, sb_info, obs_utc_start):
             schema.SpsCandidate(
                 utc=cand_utc,
                 mjd=cand_mjd,
-                observation=obs,
+                observation=observation,
                 beam=beam,
                 snr=item['snr'],
                 dm=item['dm'],
@@ -354,10 +364,10 @@ def run_insert_candidates():
     for filename in spcll_files:
         log.info("Processing SPCCL file: {0}".format(filename))
 
-        utc_str = os.path.basename(filename)[:19]
-        utc = datetime.strptime(utc_str, fsconf['utc_format'])
+        utc_start_str = os.path.basename(filename)[:19]
+        obs_utc_start = datetime.strptime(utc_start_str, fsconf['utc_format'])
 
-        log.info("UTC: {0}".format(utc))
+        log.info("UTC start: {0}".format(obs_utc_start))
 
         # 3) parse meta data
         spccl_data = parse_spccl_file(filename)
@@ -370,7 +380,7 @@ def run_insert_candidates():
             continue
 
         # 4) insert data into database
-        insert_candidates(spccl_data, sb_info, utc)
+        insert_candidates(spccl_data, sb_info, obs_utc_start)
 
         # 4) move directory to processed
         # processed_dir = os.path.join(
