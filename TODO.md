@@ -2,7 +2,6 @@
 
 ## Important ##
 
-* preprocess the candidates and move them into correct sub-directories
 * how to determine current boresight?
 * parse 'pipeline_logs.txt' file
 
