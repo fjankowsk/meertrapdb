@@ -6,10 +6,10 @@
 * how to determine current boresight?
 * parse 'pipeline_logs.txt' file
 * write code to match candidates to schedule blocks and observations
-* move to improved directory structure
 
 ## Less Important ##
 
+* move to improved directory structure
 * switch to python 3
 
 ## General ##
