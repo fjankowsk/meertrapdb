@@ -17,7 +17,7 @@ import os.path
 import shutil
 
 from astropy.time import Time
-from pony.orm import db_session
+from pony.orm import db_session, select
 from pytz import timezone
 
 from config_helpers import get_config
@@ -260,11 +260,20 @@ def insert_candidates(data, sb_info, obs_utc_start):
             cand_utc = Time(item['mjd'], format='mjd').iso
 
             # check if candidate is already in the database
-            eps = Decimal('0.00000001')
-            count = schema.SpsCandidate.select(lambda c: abs(c.mjd - cand_mjd) <= eps).count()
+            cand_queried = select(
+                (c.mjd, beam.number, obs.utc_start)
+                for c in schema.SpsCandidate
+                for beam in c.beam
+                for obs in c.observation
+                if (beam.number == item['beam']
+                and obs.utc_start == obs_utc_start
+                and abs(c.mjd - cand_mjd) <= Decimal('0.00000001'))
+                )
 
-            if count > 0:
-                log.error("Candidate is already in the database: {0}".format(cand_mjd))
+            if cand_queried.count() > 0:
+                msg = "Candidate is already in the database:" + \
+                      " {0}, {1}, {2}".format(obs_utc_start, item['beam'], cand_mjd)
+                log.error(msg)
                 continue
 
             beam = schema.Beam(
@@ -273,8 +282,8 @@ def insert_candidates(data, sb_info, obs_utc_start):
                 source="Test source",
                 ra=item['ra'],
                 dec=item['dec'],
-                gl=0,
-                gb=0
+                #gl=0,
+                #gb=0
             )
 
             node_nr = 0
