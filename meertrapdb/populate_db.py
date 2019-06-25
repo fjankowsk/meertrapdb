@@ -378,6 +378,11 @@ def copy_plots(plots):
     ----------
     plots: list of dict
         Plot files to be copied.
+    
+    Raises
+    ------
+    RuntimeError
+        On errors.
     """
 
     log = logging.getLogger('meertrapdb')
@@ -385,6 +390,9 @@ def copy_plots(plots):
     for item in plots:
         filename = item['staging']
         log.info("Copying plot: {0}".format(filename))
+
+        if not os.path.isfile(filename):
+            raise RuntimeError("Staging file does not exist: {0}".format(filename))
 
         # copy to webserver
         web_dir = os.path.dirname(item['webserver'])
