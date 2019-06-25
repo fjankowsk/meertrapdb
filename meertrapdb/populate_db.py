@@ -209,9 +209,9 @@ def insert_candidates(data, sb_info, obs_utc_start):
 
         obs = schema.Observation(
             schedule_block=schedule_block,
-            field_name="NGC 6744",
-            boresight_ra="08:35:45.124",
-            boresight_dec="-45:35:15",
+            field_name="NGC 6101",
+            boresight_ra="16:26:00.00",
+            boresight_dec="-73:00:00.0",
             utc_start=obs_utc_start,
             utc_end=obs_utc_start,
             tobs=600.0,
