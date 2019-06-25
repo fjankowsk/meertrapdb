@@ -323,7 +323,7 @@ def insert_candidates(data, sb_info, obs_utc_start):
             else:
                 obs_utc_start_str = obs_utc_start.strftime(fsconf['date_formats']['utc'])
                 ds_web = os.path.join(
-                    sb_id,
+                    "{0}".format(sb_id),
                     obs_utc_start_str,
                     item['plot_file']
                 )
