@@ -2,6 +2,7 @@
 
 ## Important ##
 
+* match on beam number and node
 * how to determine current boresight?
 * parse 'pipeline_logs.txt' file
 
