@@ -196,7 +196,7 @@ def insert_candidates(data, sb_info, obs_utc_start):
     with db_session:
         # schedule blocks
         # check if schedule block is already in the database, otherwise reference it
-        sb_id = 4
+        sb_id = 2
         sb_queried = schema.ScheduleBlock.select(lambda sb: sb.sb_id == sb_id)[:]
 
         if len(sb_queried) == 0:
