@@ -283,7 +283,7 @@ def insert_candidates(data, sb_info, obs_utc_start):
             msg = 'There are duplicate nodes: {0}, {1}'.format(obs_utc_start, node_nr)
             raise RuntimeError(msg)
 
-        # check if pipeline config is already in the database
+        """ # check if pipeline config is already in the database
         pc_queried = select(
             pc
             for pc in schema.PipelineConfig
@@ -313,7 +313,17 @@ def insert_candidates(data, sb_info, obs_utc_start):
         else:
             msg = "There are duplicate pipeline configs:" + \
                   " {0}, {1}".format(obs_utc_start, node_nr)
-            raise RuntimeError(msg)
+            raise RuntimeError(msg) """
+        
+        pipeline_config = schema.PipelineConfig(
+            name="Test",
+            version="0.1",
+            dd_plan="Test",
+            dm_threshold=10.0,
+            snr_threshold=10.0,
+            width_threshold=500.0,
+            zerodm_zapping=True
+        )
 
         # candidates
         # plot files to be copied
