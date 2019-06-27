@@ -196,7 +196,7 @@ def insert_candidates(data, sb_info, obs_utc_start):
     with db_session:
         # schedule blocks
         # check if schedule block is already in the database, otherwise reference it
-        sb_id = 4
+        sb_id = 5
         sb_queried = schema.ScheduleBlock.select(lambda sb: sb.sb_id == sb_id)[:]
 
         if len(sb_queried) == 0:
@@ -206,7 +206,7 @@ def insert_candidates(data, sb_info, obs_utc_start):
                 sb_id_code_mk=sb_info['id_code'],
                 proposal_id_mk=sb_info['proposal_id'],
                 proj_main="TRAPUM",
-                proj="DWF run (day 2)",
+                proj="DWF run (day 5)",
                 utc_start=sb_utc_start,
                 sub_array=sb_info['sub_nr'],
                 observer=sb_info['owner'],
