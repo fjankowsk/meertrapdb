@@ -132,9 +132,9 @@ def run_insert_fake_data():
                             name="Test",
                             version="0.1",
                             dd_plan="Test",
-                            dm_threshold="5.0",
-                            snr_threshold="12.0",
-                            width_threshold="500.0",
+                            dm_threshold=5.0,
+                            snr_threshold=12.0,
+                            width_threshold=500.0,
                             zerodm_zapping=True
                     )
                     
@@ -273,7 +273,7 @@ def insert_candidates(data, sb_info, obs_utc_start):
             dd_plan="Test",
             dm_threshold=10.0,
             snr_threshold=10.0,
-            width_threshold="500.0",
+            width_threshold=500.0,
             zerodm_zapping=True
         )
 
