@@ -311,8 +311,8 @@ def insert_candidates(data, sb_info, obs_utc_start):
             pipeline_config = pc_queried[0]
 
         else:
-            msg = 'There are duplicate pipeline configs:" + \
-                  " {0}, {1}'.format(obs_utc_start, node_nr)
+            msg = "There are duplicate pipeline configs:" + \
+                  " {0}, {1}".format(obs_utc_start, node_nr)
             raise RuntimeError(msg)
 
         # candidates
