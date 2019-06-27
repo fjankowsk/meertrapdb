@@ -3,6 +3,7 @@
 ## Important ##
 
 * match on beam number and node
+* script to delete or update specific candidates
 * how to determine current boresight?
 * parse 'pipeline_logs.txt' file
 
