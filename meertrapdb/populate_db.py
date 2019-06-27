@@ -258,24 +258,62 @@ def insert_candidates(data, sb_info, obs_utc_start):
             msg = 'There are duplicate observations: {0}'.format(obs_utc_start)
             raise RuntimeError(msg)
 
-        # node and pipeline config
-        # use a single one for now
-        # XXX: this needs to be changed later
-        node_nr = 0
-        node = schema.Node(
-            number=node_nr,
-            hostname="tpn-0-{0}".format(node_nr)
-        )
+        # check if node is already in the database
+        # XXX: hardcode node number for now
+        node_nr = 1
+        node_queried = select(
+            n
+            for n in schema.Node
+            for obs in schema.Observation
+            if (obs.utc_start == obs_utc_start
+            and n.number == node_nr)
+        )[:]
 
-        pipeline_config = schema.PipelineConfig(
-            name="Test",
-            version="0.1",
-            dd_plan="Test",
-            dm_threshold=10.0,
-            snr_threshold=10.0,
-            width_threshold=500.0,
-            zerodm_zapping=True
-        )
+        if len(node_queried) == 0:
+            node = schema.Node(
+                number=node_nr,
+                hostname="tpn-0-{0}".format(node_nr)
+            )
+
+        elif len(node_queried) == 1:
+            log.info("Node is already in the database: {0}, {1}".format(obs_utc_start, node_nr))
+            node = node_queried[0]
+
+        else:
+            msg = 'There are duplicate nodes: {0}, {1}'.format(obs_utc_start, node_nr)
+            raise RuntimeError(msg)
+
+        # check if pipeline config is already in the database
+        pc_queried = select(
+            pc
+            for pc in schema.PipelineConfig
+            for n in schema.Node
+            for obs in schema.Observation
+            if (obs.utc_start == obs_utc_start
+            and n.number == node_nr)
+        )[:]
+
+        if len(pc_queried) == 0:
+            pipeline_config = schema.PipelineConfig(
+                name="Test",
+                version="0.1",
+                dd_plan="Test",
+                dm_threshold=10.0,
+                snr_threshold=10.0,
+                width_threshold=500.0,
+                zerodm_zapping=True
+            )
+
+        elif len(pc_queried) == 1:
+            msg = "Pipeline config is already in the database:" + \
+                  " {0}, {1}".format(obs_utc_start, node_nr)
+            log.info(msg)
+            pipeline_config = pc_queried[0]
+
+        else:
+            msg = 'There are duplicate pipeline configs:" + \
+                  " {0}, {1}'.format(obs_utc_start, node_nr)
+            raise RuntimeError(msg)
 
         # candidates
         # plot files to be copied
