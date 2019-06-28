@@ -246,7 +246,7 @@ def insert_candidates(data, sb_info, obs_utc_start):
                 bw=856.0,
                 nchan=4096,
                 npol=1,
-                tsamp=7.65607476635514e-05,
+                tsamp=0.0003062429906542056,
                 beam_config=beam_config
             )
 
