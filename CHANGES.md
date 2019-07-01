@@ -4,7 +4,9 @@
 
 ## 0.2 (2019-07-01) ##
 
-* Increase to 10 decimal digits for the MJD field, convert other fields to unique
+This version reflects the state of the code after the DWF run.
+
+* Increase precision to 10 decimal digits for the MJD field, convert other fields to unique
 * Reference schedule blocks and observations if they are already in the database
 * Added logic to prevent adding duplicate candidates
 * Parse schedule block information from JSON dump
