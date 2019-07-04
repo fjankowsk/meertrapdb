@@ -1,9 +1,3 @@
 # MeerTRAP database backend #
 
-## Requirements ##
-
-* [Python](https://www.python.org/) (2.x >= 2.7)
-
-All of these are included in the provided docker file or can be easily
-installed via `pip`.
-
+The code is mainly developed for Python 3 (and in particular version 3.5), but Python 2 (e.g. version 2.7) should work fine.

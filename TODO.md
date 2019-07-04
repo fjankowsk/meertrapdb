@@ -12,7 +12,6 @@
 * determine node
 * determine incoherent beam
 * move to improved directory structure
-* switch to python 3
 
 ## General ##
 

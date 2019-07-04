@@ -2,6 +2,8 @@
 
 ## HEAD ##
 
+* Switched to python 3
+
 ## 0.2 (2019-07-01) ##
 
 This version reflects the state of the code after the DWF run.
