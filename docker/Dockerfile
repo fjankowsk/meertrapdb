@@ -15,9 +15,10 @@ RUN apt-get update && apt-get install -y \
     netcat \
     net-tools \
     procps \
-    python2.7 \
-    python2.7-dev \
-    python-setuptools \
+    python3 \
+    python3-dev \
+    python3-pip \
+    python3-setuptools \
     vim \
  && rm -rf /var/lib/apt/lists/*
 
@@ -34,11 +35,10 @@ RUN sed -i 's/3306/3310/' /etc/mysql/mariadb.conf.d/50-server.cnf
 RUN echo "\"\e[A\":history-search-backward" >> ~/.inputrc && \
     echo "\"\e[B\":history-search-forward" >> ~/.inputrc
 
-RUN easy_install pip
-RUN pip install --upgrade pip
+RUN pip3 install --upgrade pip
 
 # python packages
-RUN pip install \
+RUN pip3 install \
     astropy \
     ipython \
     matplotlib \
