@@ -17,15 +17,15 @@ from time import sleep
 import pony.orm as pn
 from pony.orm import db_session
 
-from config_helpers import get_config
-from db_helpers import setup_db
-from db_logger import  DBHandler
-from general_helpers import setup_logging
-from schema import (db, Observation, BeamConfig, TuseStatus,
+from .config_helpers import get_config
+from .db_helpers import setup_db
+from .db_logger import DBHandler
+from .general_helpers import setup_logging
+from .schema import (db, Observation, BeamConfig, TuseStatus,
                     FbfuseStatus, PeriodCandidate, SpsCandidate,
                     Node, PipelineConfig, ClassifierConfig,
                     Logs, Benchmark)
-from version import __version__
+from .version import __version__
 
 
 def insert_data(task):

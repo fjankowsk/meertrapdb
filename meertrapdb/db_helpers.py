@@ -8,7 +8,7 @@ from __future__ import print_function
 import logging
 from pony.orm import (Database, db_session)
 
-from config_helpers import get_config
+from .config_helpers import get_config
 
 
 def setup_db():

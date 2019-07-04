@@ -20,14 +20,14 @@ from astropy.time import Time
 from pony.orm import db_session, select
 from pytz import timezone
 
-from config_helpers import get_config
-from db_helpers import setup_db
-from db_logger import  DBHandler
-from general_helpers import setup_logging
-from parsing_helpers import parse_spccl_file
-import schema
-from schema import db
-from version import __version__
+from .config_helpers import get_config
+from .db_helpers import setup_db
+from .db_logger import DBHandler
+from .general_helpers import setup_logging
+from .parsing_helpers import parse_spccl_file
+from . import schema
+from .schema import db
+from .version import __version__
 
 
 def parse_args():
