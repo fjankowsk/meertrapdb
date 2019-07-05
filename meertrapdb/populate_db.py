@@ -113,29 +113,29 @@ def run_insert_fake_data():
                 # beams
                 for beam_nr in range(nbeam):
                     beam = schema.Beam(
-                            number=beam_nr,
-                            coherent=True,
-                            source="Test source",
-                            ra="08:35:44.7",
-                            dec="-45:35:15.7",
-                            gl=123.12,
-                            gb=-23.1
+                        number=beam_nr,
+                        coherent=True,
+                        source="Test source",
+                        ra="08:35:44.7",
+                        dec="-45:35:15.7",
+                        gl=123.12,
+                        gb=-23.1
                     )
 
                     node_nr = beam_nr // 6
                     node = schema.Node(
-                            number=node_nr,
-                            hostname="tpn-0-{0}".format(node_nr)
+                        number=node_nr,
+                        hostname="tpn-0-{0}".format(node_nr)
                     )
 
                     pipeline_config = schema.PipelineConfig(
-                            name="Test",
-                            version="0.1",
-                            dd_plan="Test",
-                            dm_threshold=5.0,
-                            snr_threshold=12.0,
-                            width_threshold=500.0,
-                            zerodm_zapping=True
+                        name="Test",
+                        version="0.1",
+                        dd_plan="Test",
+                        dm_threshold=5.0,
+                        snr_threshold=12.0,
+                        width_threshold=500.0,
+                        zerodm_zapping=True
                     )
                     
                     # candidates
