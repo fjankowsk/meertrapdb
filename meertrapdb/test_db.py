@@ -53,7 +53,6 @@ def insert_data(task):
                 observer="Fabian",
                 utcstart=now,
                 utcend=now,
-                utcadded=now,
                 tobs=360.0,
                 finished=False,
                 nant=64,
@@ -90,7 +89,6 @@ def insert_data(task):
             for _ in range(500):
                 SpsCandidate(
                     utc=now,
-                    utcadded=now,
                     ra=0.0,
                     dec=0.0,
                     beam='in0',
@@ -109,7 +107,6 @@ def insert_data(task):
             for _ in range(200):
                 PeriodCandidate(
                     utc=now,
-                    utcadded=now,
                     ra=0.0,
                     dec=0.0,
                     beam='in0',
@@ -274,7 +271,6 @@ def run_test():
             observer="Fabian",
             utcstart=now,
             utcend=now,
-            utcadded=now,
             tobs=360.0,
             finished=False,
             nant=64,
@@ -311,7 +307,6 @@ def run_test():
         for _ in range(500):
             SpsCandidate(
                 utc=now,
-                utcadded=now,
                 ra=0.0,
                 dec=0.0,
                 beam='in0',
@@ -330,7 +325,6 @@ def run_test():
         for _ in range(200):
             PeriodCandidate(
                 utc=now,
-                utcadded=now,
                 ra=0.0,
                 dec=0.0,
                 beam='in0',
