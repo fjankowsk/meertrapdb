@@ -21,8 +21,8 @@ from config_helpers import get_config
 from db_helpers import setup_db
 from db_logger import  DBHandler
 from general_helpers import setup_logging
-from schema import (db, Observation, BeamConfig, TuseStatus,
-                    FbfuseStatus, PeriodCandidate, SpsCandidate,
+from schema import (db, Observation, BeamConfig,
+                    PeriodCandidate, SpsCandidate,
                     Node, PipelineConfig, ClassifierConfig,
                     Logs, Benchmark)
 from version import __version__
@@ -43,16 +43,6 @@ def insert_data(task):
         buf = b'jfdsajlkfdsjlafjaklsfjladksflkdsjfklsjflkas'
         
         with db_session:
-            fbfusestatus = FbfuseStatus(
-                status='good',
-                description='all fine'
-            )
-
-            tusestatus = TuseStatus(
-                status='good',
-                description='all fine'
-            )
-
             beamconfig = BeamConfig(
                 nbeam=396,
                 tilingmode='fill'
