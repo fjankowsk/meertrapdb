@@ -7,6 +7,7 @@
 from __future__ import print_function
 from datetime import datetime
 import logging
+
 from pony.orm import db_session
 
 from meertrapdb.schema import Logs

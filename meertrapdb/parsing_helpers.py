@@ -4,8 +4,9 @@
 #   Parsing related helper functions.
 #
 
-import numpy as np
 import os.path
+
+import numpy as np
 
 
 def parse_spccl_file(filename):

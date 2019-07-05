@@ -8,16 +8,16 @@ from __future__ import print_function
 import argparse
 from datetime import datetime
 from decimal import Decimal
-import json
 import glob
+import json
 import logging
-import random
-from time import sleep
 import os.path
+import random
 import shutil
+from time import sleep
 
 from astropy.time import Time
-from pony.orm import db_session, select
+from pony.orm import (db_session, select)
 from pytz import timezone
 
 from meertrapdb.config_helpers import get_config

@@ -8,12 +8,13 @@ from __future__ import print_function
 import argparse
 from datetime import datetime
 import logging
+from multiprocessing import Pool
+from time import sleep
+
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from multiprocessing import Pool
 import numpy as np
-from time import sleep
 import pony.orm as pn
 from pony.orm import db_session
 

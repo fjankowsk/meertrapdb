@@ -7,7 +7,8 @@
 from __future__ import print_function
 from datetime import datetime
 from decimal import Decimal
-from pony.orm import (Database, PrimaryKey, Optional, Required, Set)
+
+from pony.orm import (Database, Optional, PrimaryKey, Required, Set)
 
 
 db = Database()
