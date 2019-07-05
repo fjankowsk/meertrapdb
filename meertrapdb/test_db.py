@@ -17,15 +17,15 @@ from time import sleep
 import pony.orm as pn
 from pony.orm import db_session
 
-from .config_helpers import get_config
-from .db_helpers import setup_db
-from .db_logger import DBHandler
-from .general_helpers import setup_logging
-from .schema import (db, Observation, BeamConfig, TuseStatus,
-                    FbfuseStatus, PeriodCandidate, SpsCandidate,
-                    Node, PipelineConfig, ClassifierConfig,
-                    Logs, Benchmark)
-from .version import __version__
+from meertrapdb.config_helpers import get_config
+from meertrapdb.db_helpers import setup_db
+from meertrapdb.db_logger import DBHandler
+from meertrapdb.general_helpers import setup_logging
+from meertrapdb.schema import (db, Observation, BeamConfig, TuseStatus,
+                               FbfuseStatus, PeriodCandidate, SpsCandidate,
+                               Node, PipelineConfig, ClassifierConfig,
+                               Logs, Benchmark)
+from meertrapdb.version import __version__
 
 
 def insert_data(task):

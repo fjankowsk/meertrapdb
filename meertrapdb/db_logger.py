@@ -9,7 +9,7 @@ from datetime import datetime
 import logging
 from pony.orm import db_session
 
-from .schema import Logs
+from meertrapdb.schema import Logs
 
 
 class DBHandler(logging.Handler):

@@ -20,14 +20,14 @@ from astropy.time import Time
 from pony.orm import db_session, select
 from pytz import timezone
 
-from .config_helpers import get_config
-from .db_helpers import setup_db
-from .db_logger import DBHandler
-from .general_helpers import setup_logging
-from .parsing_helpers import parse_spccl_file
-from . import schema
-from .schema import db
-from .version import __version__
+from meertrapdb.config_helpers import get_config
+from meertrapdb.db_helpers import setup_db
+from meertrapdb.db_logger import DBHandler
+from meertrapdb.general_helpers import setup_logging
+from meertrapdb.parsing_helpers import parse_spccl_file
+from meertrapdb import schema
+from meertrapdb.schema import db
+from meertrapdb.version import __version__
 
 
 def parse_args():
