@@ -11,6 +11,7 @@ DATAPATH    =   /raid/DWFcandidates/
 WEBPATH     =   /raid/webhost/www/meerkatcands.com/html/meertrap_cands/candidates
 USERID      =   $(shell id -u)
 
+
 help:
 	@echo 'Makefile for Meertrap DB'
 	@echo 'Usage:'
@@ -22,7 +23,10 @@ help:
 	@echo
 
 production:
-	${DCK} build --file ${DOCKERFILE} --tag meertrapdb ${BASEDIR}
+	${DCK} build \
+	--build-arg USERID=${USERID} \
+	--file ${DOCKERFILE} \
+	--tag meertrapdb ${BASEDIR}
 
 init_db:
 	${DCK} run -it --rm \

@@ -31,13 +31,19 @@ RUN rm -rf /var/lib/mysql \
 
 RUN sed -i 's/3306/3310/' /etc/mysql/mariadb.conf.d/50-server.cnf
 
-# smart history search
-RUN echo "\"\e[A\":history-search-backward" >> ~/.inputrc && \
-    echo "\"\e[B\":history-search-forward" >> ~/.inputrc
+# add smart history search
+RUN echo "\"\e[A\":history-search-backward" >> /etc/skel/.inputrc && \
+    echo "\"\e[B\":history-search-forward" >> /etc/skel/.inputrc
 
-RUN pip3 install --upgrade pip
+# add normal user
+ARG USERID=1234
+ARG USERNAME=meertrap
+RUN adduser --disabled-password --gecos ${USERNAME} \
+    --uid ${USERID} ${USERNAME}
 
 # python packages
+RUN pip3 install --upgrade pip
+
 RUN pip3 install \
     astropy \
     ipython \
