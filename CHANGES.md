@@ -2,6 +2,9 @@
 
 ## HEAD ##
 
+* Added normal user to the docker image to run the ingest script
+* Sorted imports
+* General code cleanup
 * Switched to Python 3
 
 ## 0.2 (2019-07-01) ##
