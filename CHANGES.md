@@ -2,7 +2,7 @@
 
 ## HEAD ##
 
-* Switched to python 3
+* Switched to Python 3
 
 ## 0.2 (2019-07-01) ##
 
