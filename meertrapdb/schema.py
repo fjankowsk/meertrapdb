@@ -158,17 +158,3 @@ class Logs(db.Entity):
     level = Required(int, size=8, unsigned=True)
     message = Required(str, max_len=512)
     node = Set('Node')
-
-
-""" class Benchmark(db.Entity):
-    id = PrimaryKey(int, auto=True, size=64, unsigned=True)
-    utc = Required(datetime, precision=6)
-    utc_added = Required(datetime, precision=0, default=datetime.utcnow())
-    nproc = Required(int, size=8, unsigned=True)
-    nobs = Required(int, size=64, unsigned=True)
-    nsps = Required(int, size=64, unsigned=True)
-    nperiod = Required(int, size=64, unsigned=True)
-    dt = Required(float)
-    dobs = Required(float)
-    dsps = Required(float)
-    dperiod = Required(float) """

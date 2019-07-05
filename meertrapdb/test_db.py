@@ -22,9 +22,9 @@ from db_helpers import setup_db
 from db_logger import  DBHandler
 from general_helpers import setup_logging
 from schema import (db, Observation, BeamConfig,
-                    PeriodCandidate, SpsCandidate,
-                    Node, PipelineConfig, ClassifierConfig,
-                    Logs, Benchmark)
+                    SpsCandidate, Node, PipelineConfig,
+                    Logs)
+from schema_bench import (Benchmark, ClassifierConfig, PeriodCandidate)
 from version import __version__
 
 
@@ -32,9 +32,6 @@ def insert_data(task):
     """
     Insert data into the database.
     """
-
-    config = get_config()
-    pconf = config['pipeline']
 
     log = logging.getLogger('meertrapdb')
 
@@ -64,9 +61,7 @@ def insert_data(task):
                 bw=800.0,
                 npol=1,
                 tsamp=0.1234,
-                beamconfig=beamconfig,
-                fbfuse_status=fbfusestatus,
-                tuse_status=tusestatus
+                beamconfig=beamconfig
             )
 
             node1 = Node(
@@ -266,16 +261,6 @@ def run_test():
     buf = b'jfdsajlkfdsjlafjaklsfjladksflkdsjfklsjflkas'
 
     with db_session:
-        fbfusestatus = FbfuseStatus(
-            status='good',
-            description='all fine'
-        )
-
-        tusestatus = TuseStatus(
-            status='good',
-            description='all fine'
-        )
-
         beamconfig = BeamConfig(
             nbeam=396,
             tilingmode='fill'
@@ -297,9 +282,7 @@ def run_test():
             bw=800.0,
             npol=1,
             tsamp=0.1234,
-            beamconfig=beamconfig,
-            fbfuse_status=fbfusestatus,
-            tuse_status=tusestatus
+            beamconfig=beamconfig
         )
 
         node1 = Node(
