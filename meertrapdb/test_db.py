@@ -21,10 +21,10 @@ from meertrapdb.config_helpers import get_config
 from meertrapdb.db_helpers import setup_db
 from meertrapdb.db_logger import DBHandler
 from meertrapdb.general_helpers import setup_logging
-from meertrapdb.schema import (db, Observation, BeamConfig, TuseStatus,
-                               FbfuseStatus, PeriodCandidate, SpsCandidate,
-                               Node, PipelineConfig, ClassifierConfig,
-                               Logs, Benchmark)
+from meertrapdb.schema import (db, Observation, BeamConfig,
+                               SpsCandidate, Node, PipelineConfig,
+                               Logs)
+from meertrapdb.schema_bench import (Benchmark, ClassifierConfig, PeriodCandidate)
 from meertrapdb.version import __version__
 
 
@@ -33,9 +33,6 @@ def insert_data(task):
     Insert data into the database.
     """
 
-    config = get_config()
-    pconf = config['pipeline']
-
     log = logging.getLogger('meertrapdb')
 
     while True:
@@ -43,16 +40,6 @@ def insert_data(task):
         buf = b'jfdsajlkfdsjlafjaklsfjladksflkdsjfklsjflkas'
         
         with db_session:
-            fbfusestatus = FbfuseStatus(
-                status='good',
-                description='all fine'
-            )
-
-            tusestatus = TuseStatus(
-                status='good',
-                description='all fine'
-            )
-
             beamconfig = BeamConfig(
                 nbeam=396,
                 tilingmode='fill'
@@ -66,7 +53,6 @@ def insert_data(task):
                 observer="Fabian",
                 utcstart=now,
                 utcend=now,
-                utcadded=now,
                 tobs=360.0,
                 finished=False,
                 nant=64,
@@ -74,9 +60,7 @@ def insert_data(task):
                 bw=800.0,
                 npol=1,
                 tsamp=0.1234,
-                beamconfig=beamconfig,
-                fbfuse_status=fbfusestatus,
-                tuse_status=tusestatus
+                beamconfig=beamconfig
             )
 
             node1 = Node(
@@ -105,7 +89,6 @@ def insert_data(task):
             for _ in range(500):
                 SpsCandidate(
                     utc=now,
-                    utcadded=now,
                     ra=0.0,
                     dec=0.0,
                     beam='in0',
@@ -124,7 +107,6 @@ def insert_data(task):
             for _ in range(200):
                 PeriodCandidate(
                     utc=now,
-                    utcadded=now,
                     ra=0.0,
                     dec=0.0,
                     beam='in0',
@@ -276,16 +258,6 @@ def run_test():
     buf = b'jfdsajlkfdsjlafjaklsfjladksflkdsjfklsjflkas'
 
     with db_session:
-        fbfusestatus = FbfuseStatus(
-            status='good',
-            description='all fine'
-        )
-
-        tusestatus = TuseStatus(
-            status='good',
-            description='all fine'
-        )
-
         beamconfig = BeamConfig(
             nbeam=396,
             tilingmode='fill'
@@ -299,7 +271,6 @@ def run_test():
             observer="Fabian",
             utcstart=now,
             utcend=now,
-            utcadded=now,
             tobs=360.0,
             finished=False,
             nant=64,
@@ -307,9 +278,7 @@ def run_test():
             bw=800.0,
             npol=1,
             tsamp=0.1234,
-            beamconfig=beamconfig,
-            fbfuse_status=fbfusestatus,
-            tuse_status=tusestatus
+            beamconfig=beamconfig
         )
 
         node1 = Node(
@@ -338,7 +307,6 @@ def run_test():
         for _ in range(500):
             SpsCandidate(
                 utc=now,
-                utcadded=now,
                 ra=0.0,
                 dec=0.0,
                 beam='in0',
@@ -357,7 +325,6 @@ def run_test():
         for _ in range(200):
             PeriodCandidate(
                 utc=now,
-                utcadded=now,
                 ra=0.0,
                 dec=0.0,
                 beam='in0',

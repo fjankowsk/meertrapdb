@@ -48,8 +48,6 @@ class Observation(db.Entity):
     tsamp = Required(float)
     beam_config = Set('BeamConfig')
     sps_candidate = Set('SpsCandidate')
-    #tuse_status = Set('TuseStatus')
-    #fbfuse_status = Set('FbfuseStatus')
     logs = Set('Logs')
     notes = Optional(str, max_len=256)
 
@@ -71,20 +69,6 @@ class Beam(db.Entity):
     gl = Optional(float)
     gb = Optional(float)
     sps_candidate = Set('SpsCandidate')
-
-
-""" class TuseStatus(db.Entity):
-    id = PrimaryKey(int, auto=True, size=64, unsigned=True)
-    status = Required(str, max_len=32)
-    description = Optional(str, max_len=64)
-    obs = Set('Observation') """
-
-
-""" class FbfuseStatus(db.Entity):
-    id = PrimaryKey(int, auto=True, size=64, unsigned=True)
-    status = Required(str, max_len=32)
-    description = Optional(str, max_len=64)
-    obs = Set('Observation') """
 
 
 """ class PeriodCandidate(db.Entity):
@@ -174,17 +158,3 @@ class Logs(db.Entity):
     level = Required(int, size=8, unsigned=True)
     message = Required(str, max_len=512)
     node = Set('Node')
-
-
-""" class Benchmark(db.Entity):
-    id = PrimaryKey(int, auto=True, size=64, unsigned=True)
-    utc = Required(datetime, precision=6)
-    utc_added = Required(datetime, precision=0, default=datetime.utcnow())
-    nproc = Required(int, size=8, unsigned=True)
-    nobs = Required(int, size=64, unsigned=True)
-    nsps = Required(int, size=64, unsigned=True)
-    nperiod = Required(int, size=64, unsigned=True)
-    dt = Required(float)
-    dobs = Required(float)
-    dsps = Required(float)
-    dperiod = Required(float) """
