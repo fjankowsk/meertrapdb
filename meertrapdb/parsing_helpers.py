@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+#
+#   2019 Fabian Jankowski
+#   Parsing related helper functions.
+#
+
 import numpy as np
 import os.path
 

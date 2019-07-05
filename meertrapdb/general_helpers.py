@@ -1,11 +1,18 @@
+# -*- coding: utf-8 -*-
+#
+#   2019 Fabian Jankowski
+#   General helper functions.
+#
+
 import logging
+
 
 def setup_logging():
     """
     Setup the logging configuration.
     """
 
-    log = logging.getLogger('meertrapdb.general_helpers')
+    log = logging.getLogger('meertrapdb')
 
     log.setLevel(logging.DEBUG)
     log.propagate = False
