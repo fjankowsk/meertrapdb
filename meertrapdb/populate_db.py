@@ -55,7 +55,7 @@ def run_insert_fake_data():
     Insert fake data into the database.
     """
 
-    log = logging.getLogger('meertrapdb')
+    log = logging.getLogger('meertrapdb.populate_db')
 
     start = datetime.now()
 
@@ -184,7 +184,7 @@ def insert_candidates(data, sb_info, obs_utc_start):
         Plot files to be copied.
     """
 
-    log = logging.getLogger('meertrapdb')
+    log = logging.getLogger('meertrapdb.populate_db')
 
     config = get_config()
     fsconf = config['filesystem']
@@ -428,7 +428,7 @@ def copy_plots(plots):
         On errors.
     """
 
-    log = logging.getLogger('meertrapdb')
+    log = logging.getLogger('meertrapdb.populate_db')
 
     for item in plots:
         filename = item['staging']
@@ -482,7 +482,7 @@ def run_insert_candidates():
     Insert candidates into the database.
     """
 
-    log = logging.getLogger('meertrapdb')
+    log = logging.getLogger('meertrapdb.populate_db')
     
     config = get_config()
     fsconf = config['filesystem']
@@ -557,7 +557,7 @@ def run_insert_candidates():
 def main():
     args = parse_args()
 
-    log = logging.getLogger('meertrapdb')
+    log = logging.getLogger('meertrapdb.populate_db')
     setup_logging()
 
     config = get_config()

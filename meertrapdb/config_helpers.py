@@ -28,7 +28,7 @@ def get_config():
     filename = os.path.join(os.path.dirname(__file__), 'config', 'config.yml')
     filename = os.path.abspath(filename)
 
-    log = logging.getLogger('meertrapdb')
+    log = logging.getLogger('meertrapdb.config_helpers')
     log.debug("Configuration file: {0}".format(filename))
 
     if not os.path.isfile(filename):

@@ -19,7 +19,7 @@ def setup_db():
     config = get_config()
     dbconf = config['db']
 
-    log = logging.getLogger('meertrapdb')
+    log = logging.getLogger('meertrapdb.db_helpers')
     log.info('Setting root password.')
 
     # set root password

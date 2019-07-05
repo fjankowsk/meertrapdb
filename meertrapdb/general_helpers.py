@@ -5,7 +5,7 @@ def setup_logging():
     Setup the logging configuration.
     """
 
-    log = logging.getLogger('meertrapdb')
+    log = logging.getLogger('meertrapdb.general_helpers')
 
     log.setLevel(logging.DEBUG)
     log.propagate = False

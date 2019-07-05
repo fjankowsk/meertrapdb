@@ -33,7 +33,7 @@ def insert_data(task):
     Insert data into the database.
     """
 
-    log = logging.getLogger('meertrapdb')
+    log = logging.getLogger('meertrapdb.test_db')
 
     while True:
         now = datetime.now()
@@ -134,7 +134,7 @@ def run_benchmark(nproc):
     Benchmark concurrent database connections.
     """
 
-    log = logging.getLogger('meertrapdb')
+    log = logging.getLogger('meertrapdb.test_db')
 
     p = Pool(processes=nproc)
     tasks = [500 for _ in range(nproc)]
@@ -245,7 +245,7 @@ def run_test():
     Test the database.
     """
 
-    log = logging.getLogger('meertrapdb')
+    log = logging.getLogger('meertrapdb.test_db')
 
     with db_session:
         #print(Observation.describe())
@@ -349,7 +349,7 @@ def run_test_log():
     Test the logging functionality.
     """
 
-    log = logging.getLogger('meertrapdb')
+    log = logging.getLogger('meertrapdb.test_db')
 
     log.setLevel(logging.DEBUG)
     log.propagate = False
@@ -403,7 +403,7 @@ def parse_args():
 def main():
     args = parse_args()
 
-    log = logging.getLogger('meertrapdb')
+    log = logging.getLogger('meertrapdb.test_db')
     setup_logging()
 
     try:
