@@ -2,6 +2,7 @@
 
 ## HEAD ##
 
+* Added contributors file and extended description in readme file
 * Added normal user to the docker image to run the ingest script
 * Sorted imports
 * General code cleanup
