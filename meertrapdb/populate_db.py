@@ -165,7 +165,7 @@ def run_insert_fake_data():
     log.info("Done. Time taken: {0}".format(datetime.now() - start))
 
 
-def insert_candidates(data, sb_info, obs_utc_start):
+def insert_candidates(data, sb_info, obs_utc_start, node_name):
     """
     Insert candidates into database.
 
@@ -177,6 +177,8 @@ def insert_candidates(data, sb_info, obs_utc_start):
         Information about the schedule block.
     obs_utc_start: datetime.datetime
         The start UTC of the observation.
+    node_name: str
+        The name of the node, e.g. `tpn-0-37`.
     
     Returns
     -------
@@ -259,8 +261,9 @@ def insert_candidates(data, sb_info, obs_utc_start):
             raise RuntimeError(msg)
 
         # check if node is already in the database
-        # XXX: hardcode node number for now
-        node_nr = 1
+        node_nr = int(node_name[6:])
+        log.info("Node number: {0}".format(node_nr))
+
         node_queried = select(
             n
             for n in schema.Node
@@ -348,9 +351,7 @@ def insert_candidates(data, sb_info, obs_utc_start):
                 coherent=True,
                 source="Test source",
                 ra=item['ra'],
-                dec=item['dec'],
-                #gl=0,
-                #gb=0
+                dec=item['dec']
             )
 
             # assemble candidate plots
@@ -368,6 +369,7 @@ def insert_candidates(data, sb_info, obs_utc_start):
                 ds_web = os.path.join(
                     "{0}".format(sb_id),
                     obs_utc_start_str,
+                    node_name,
                     item['plot_file']
                 )
 
@@ -379,6 +381,7 @@ def insert_candidates(data, sb_info, obs_utc_start):
                 ds_processed = os.path.join(
                     fsconf['ingest']['processed_dir'],
                     obs_utc_start_str,
+                    node_name,
                     item['plot_file']
                 )
 
@@ -397,7 +400,6 @@ def insert_candidates(data, sb_info, obs_utc_start):
                 beam=beam,
                 snr=item['snr'],
                 dm=item['dm'],
-                #dm_ex=0.7,
                 width=item['width'],
                 node=node,
                 dynamic_spectrum=ds_web,
@@ -498,7 +500,7 @@ def run_insert_candidates():
 
     glob_pattern = os.path.join(
         staging_dir,
-        "2*_beam??.spccl.log"
+        fsconf['ingest']['glob_pattern']
     )
 
     spcll_files = glob.glob(glob_pattern)
@@ -514,7 +516,13 @@ def run_insert_candidates():
 
         log.info("UTC start: {0}".format(obs_utc_start))
 
-        # 3) parse meta data
+        node_name = os.path.basename(
+            os.path.dirname(filename)
+        )
+
+        log.info("Node: {0}".format(node_name))
+
+        # 3) parse candidate data
         spccl_data = parse_spccl_file(filename)
 
         # check if we have candidates
@@ -525,7 +533,7 @@ def run_insert_candidates():
             continue
 
         # 4) insert data into database
-        plots = insert_candidates(spccl_data, sb_info, obs_utc_start)
+        plots = insert_candidates(spccl_data, sb_info, obs_utc_start, node_name)
 
         # 5) move directory to processed
         if len(plots) > 0:
