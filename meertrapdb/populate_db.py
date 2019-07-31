@@ -14,6 +14,7 @@ import logging
 import os.path
 import random
 import shutil
+import sys
 from time import sleep
 
 from astropy.time import Time
@@ -39,6 +40,12 @@ def parse_args():
         'mode',
         choices=['fake', 'init_tables', 'production'],
         help='Mode of operation.'
+    )
+
+    parser.add_argument(
+        '-t', '--test_run',
+        action='store_true',
+        help='Do neither move, nor copy files. This flag works with "production" mode only.'
     )
     
     parser.add_argument(
@@ -483,9 +490,14 @@ def get_sb_info():
     return data
 
 
-def run_production():
+def run_production(test_run):
     """
     Run the processing for 'production' mode, i.e. insert real candidates into the database.
+
+    Parameters
+    ----------
+    test_run: bool
+        Determines whether to run in test mode, where no files are moved, nor copied.
     """
 
     log = logging.getLogger('meertrapdb.populate_db')
@@ -540,26 +552,27 @@ def run_production():
         # 4) insert data into database
         plots = insert_candidates(spccl_data, sb_info, obs_utc_start, node_name)
 
-        # 5) move directory to processed
-        if len(plots) > 0:
-            log.info("Copying {0} plots.".format(len(plots)))
-            copy_plots(plots)
-        else:
-            log.warning("No plots to copy found.")
+        if not test_run:
+            # 5) move directory to processed
+            if len(plots) > 0:
+                log.info("Copying {0} plots.".format(len(plots)))
+                copy_plots(plots)
+            else:
+                log.warning("No plots to copy found.")
 
-        # 6) move spccl file to processed
-        outfile = os.path.join(
-            fsconf['ingest']['processed_dir'],
-            utc_start_str,
-            os.path.basename(filename)
-        )
+            # 6) move spccl file to processed
+            outfile = os.path.join(
+                fsconf['ingest']['processed_dir'],
+                utc_start_str,
+                os.path.basename(filename)
+            )
 
-        outdir = os.path.dirname(outfile)
+            outdir = os.path.dirname(outfile)
 
-        if not os.path.isdir(outdir):
-            os.makedirs(outdir)
+            if not os.path.isdir(outdir):
+                os.makedirs(outdir)
 
-        shutil.move(filename, outfile)
+            shutil.move(filename, outfile)
 
     log.info("Done. Time taken: {0}".format(datetime.now() - start))
 
@@ -569,6 +582,12 @@ def run_production():
 
 def main():
     args = parse_args()
+
+    if args.test_run is True \
+    and args.mode == 'production':
+        pass
+    else:
+        sys.exit('The "test_run" flag is only valid for "production" mode.')
 
     log = logging.getLogger('meertrapdb.populate_db')
     setup_logging()
@@ -596,7 +615,7 @@ def main():
         pass
     
     elif args.mode == "production":
-        run_production()
+        run_production(args.test_run)
     
     log.info("All done.")
 
