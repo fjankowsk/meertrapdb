@@ -545,7 +545,7 @@ def run_insert_candidates():
             copy_plots(plots)
         else:
             log.warning("No plots to copy found.")
-        
+
         # 6) move spccl file to processed
         outfile = os.path.join(
             fsconf['ingest']['processed_dir'],
