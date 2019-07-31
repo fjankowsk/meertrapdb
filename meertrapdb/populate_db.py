@@ -355,8 +355,12 @@ def insert_candidates(data, sb_info, obs_utc_start, node_name):
             )
 
             # assemble candidate plots
+            obs_utc_start_str = obs_utc_start.strftime(fsconf['date_formats']['utc'])
+
             ds_staging = os.path.join(
                 fsconf['ingest']['staging_dir'],
+                obs_utc_start_str,
+                node_name,
                 item['plot_file']
             )
 
@@ -365,7 +369,6 @@ def insert_candidates(data, sb_info, obs_utc_start, node_name):
             if not os.path.isfile(ds_staging):
                 log.warning("Dynamic spectrum plot not found: {0}".format(ds_staging))
             else:
-                obs_utc_start_str = obs_utc_start.strftime(fsconf['date_formats']['utc'])
                 ds_web = os.path.join(
                     "{0}".format(sb_id),
                     obs_utc_start_str,
@@ -502,6 +505,7 @@ def run_insert_candidates():
         staging_dir,
         fsconf['ingest']['glob_pattern']
     )
+    log.info("Glob pattern: {0}".format(glob_pattern))
 
     spcll_files = glob.glob(glob_pattern)
     spcll_files = sorted(spcll_files)
