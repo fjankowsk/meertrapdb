@@ -2,6 +2,8 @@
 
 ## HEAD ##
 
+* The node numbers are included now for each candidate
+* Switched to more descriptive directory structure for storing candidate files
 * Added contributors file and extended description in readme file
 * Added normal user to the docker image to run the ingest script
 * Sorted imports
