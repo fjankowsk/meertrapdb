@@ -195,10 +195,11 @@ def insert_candidates(data, sb_info, obs_utc_start, node_name):
                                     fsconf["date_formats"]["local"])
     sb_utc_start = sb_lt_start.replace(tzinfo=timezone('UTC'))
 
+    sb_id = config['schedule_block']['id']
+
     with db_session:
         # schedule blocks
         # check if schedule block is already in the database, otherwise reference it
-        sb_id = 5
         sb_queried = schema.ScheduleBlock.select(lambda sb: sb.sb_id == sb_id)[:]
 
         if len(sb_queried) == 0:
