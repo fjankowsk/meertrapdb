@@ -205,7 +205,7 @@ def insert_candidates(data, sb_info, obs_utc_start, node_name):
     sb_id = config['schedule_block']['id']
 
     with db_session:
-        # schedule blocks
+        # 1) schedule blocks
         # check if schedule block is already in the database, otherwise reference it
         sb_queried = schema.ScheduleBlock.select(lambda sb: sb.sb_id == sb_id)[:]
 
@@ -231,7 +231,7 @@ def insert_candidates(data, sb_info, obs_utc_start, node_name):
             msg = 'There are duplicate schedule blocks: {0}'.format(sb_id)
             raise RuntimeError(msg)
 
-        # observations
+        # 2) observations
         # check if observation is already in the database, otherwise reference it
         obs_queried = schema.Observation.select(lambda o: o.utc_start == obs_utc_start)[:]
 
@@ -247,8 +247,6 @@ def insert_candidates(data, sb_info, obs_utc_start, node_name):
                 boresight_ra="16:26:00.00",
                 boresight_dec="-73:00:00.0",
                 utc_start=obs_utc_start,
-                #utc_end=obs_utc_start,
-                #tobs=600.0,
                 finished=True,
                 nant=len(sb_info['antennas_alloc'].split(",")),
                 receiver=1,
@@ -268,7 +266,8 @@ def insert_candidates(data, sb_info, obs_utc_start, node_name):
             msg = 'There are duplicate observations: {0}'.format(obs_utc_start)
             raise RuntimeError(msg)
 
-        # check if node is already in the database
+        # 3) nodes
+        # check if node is already in the database, otherwise reference it
         node_nr = int(node_name[6:])
         log.info("Node number: {0}".format(node_nr))
 
@@ -294,7 +293,8 @@ def insert_candidates(data, sb_info, obs_utc_start, node_name):
             msg = 'There are duplicate nodes: {0}, {1}'.format(obs_utc_start, node_nr)
             raise RuntimeError(msg)
 
-        # check if pipeline config is already in the database
+        # 4) pipeline config
+        # check if pipeline config is already in the database, otherwise reference it
         pc_queried = select(
             pc
             for pc in schema.PipelineConfig
@@ -327,15 +327,58 @@ def insert_candidates(data, sb_info, obs_utc_start, node_name):
                   " {0}, {1}".format(obs_utc_start, node_nr)
             log.error(msg)
             pipeline_config = pc_queried[0]
+        
+        # 5) beams
+        # check if beam is already in the database, otherwise reference it
 
-        # candidates
+        # this assumes that there is one candidate file per beam, i.e no
+        # mixing of beams within a candidate file
+        beam_nr = int(data['beam'][0])
+        beam_coherent = True
+        beam_source = "Test source"
+        ra = data['ra'][0]
+        dec = data['dec'][0]
+
+        beam_queried = select(
+            beam
+            for beam in schema.Beam
+            for c in beam.sps_candidate
+            for obs in c.observation
+            for n in c.node
+            if (obs.utc_start == obs_utc_start
+            and beam.number == beam_nr
+            and n.number == node_nr
+            and beam.coherent == beam_coherent)
+        )[:]
+
+        if len(beam_queried) == 0:
+            beam = schema.Beam(
+                number=beam_nr,
+                coherent=beam_coherent,
+                source=beam_source,
+                ra=ra,
+                dec=dec
+            )
+
+        elif len(beam_queried) == 1:
+            msg = "Beam is already in the database:" + \
+                  " {0}, {1}, {2}".format(obs_utc_start, node_nr, beam_nr)
+            log.info(msg)
+            beam = beam_queried[0]
+
+        else:
+            msg = "There are duplicate beams:" + \
+                  " {0}, {1}, {2}".format(obs_utc_start, node_nr, beam_nr)
+            log.error(msg)
+            beam = beam_queried[0]
+
+        # 6) candidates
         # plot files to be copied
         plots = []
 
         for item in data:
             cand_mjd = Decimal("{0:.10f}".format(item['mjd']))
             cand_utc = Time(item['mjd'], format='mjd').iso
-            cand_beam_nr = int(item['beam'])
 
             # check if candidate is already in the database
             cand_queried = select(
@@ -343,24 +386,16 @@ def insert_candidates(data, sb_info, obs_utc_start, node_name):
                 for c in schema.SpsCandidate
                 for beam in c.beam
                 for obs in c.observation
-                if (beam.number == cand_beam_nr
+                if (beam.number == beam_nr
                 and obs.utc_start == obs_utc_start
                 and abs(c.mjd - cand_mjd) <= Decimal('0.0000000001'))
             )
 
             if cand_queried.count() > 0:
                 msg = "Candidate is already in the database:" + \
-                      " {0}, {1}, {2}".format(obs_utc_start, cand_beam_nr, cand_mjd)
+                      " {0}, {1}, {2}".format(obs_utc_start, beam_nr, cand_mjd)
                 log.error(msg)
                 continue
-
-            beam = schema.Beam(
-                number=cand_beam_nr,
-                coherent=True,
-                source="Test source",
-                ra=item['ra'],
-                dec=item['dec']
-            )
 
             # assemble candidate plots
             obs_utc_start_str = obs_utc_start.strftime(fsconf['date_formats']['utc'])
