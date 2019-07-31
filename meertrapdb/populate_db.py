@@ -50,9 +50,9 @@ def parse_args():
     return parser.parse_args()
 
 
-def run_insert_fake_data():
+def run_fake():
     """
-    Insert fake data into the database.
+    Run the processing for 'fake' mode, i.e. insert fake data into the database.
     """
 
     log = logging.getLogger('meertrapdb.populate_db')
@@ -482,9 +482,9 @@ def get_sb_info():
     return data
 
 
-def run_insert_candidates():
+def run_production():
     """
-    Insert candidates into the database.
+    Run the processing for 'production' mode, i.e. insert real candidates into the database.
     """
 
     log = logging.getLogger('meertrapdb.populate_db')
@@ -589,13 +589,13 @@ def main():
               " fake data. Make sure you want this."
         log.warning(msg)
         sleep(20)
-        run_insert_fake_data()
+        run_fake()
     
     elif args.mode == "init_tables":
         pass
     
     elif args.mode == "production":
-        run_insert_candidates()
+        run_production()
     
     log.info("All done.")
 
