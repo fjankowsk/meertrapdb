@@ -618,10 +618,9 @@ def run_production(test_run):
 def main():
     args = parse_args()
 
+    # sanity check test_run flag
     if args.test_run is True \
-    and args.mode == 'production':
-        pass
-    else:
+    and args.mode != 'production':
         sys.exit('The "test_run" flag is only valid for "production" mode.')
 
     log = logging.getLogger('meertrapdb.populate_db')
