@@ -10,8 +10,6 @@ This version of the code has seen constant use and testing over the last two mon
 * Added `test_run` command line option that is useful for testing the database ingest logic. It is only valid for `production` mode. Files are neither copied, nor moved when the option is specified.
 * Moved schedule block ID definition into the configuration file
 * We switched to a much improved directory structure for storing the candidate files on disk. The code was adjusted to reflect that. As a consequence, we now know the nodes on which the candidates were generated.
-* The node numbers are included now for each candidate
-* Switched to more descriptive directory structure for storing candidate files
 * Added contributors file and extended description in the readme file
 * Added normal user to the docker image to run the ingest script
 * Sorted imports
