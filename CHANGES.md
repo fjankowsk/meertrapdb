@@ -4,7 +4,7 @@
 
 ## 0.3 (2019-09-04) ##
 
-This version of the code has seen constant usage and testing over the last two months.
+This version of the code has seen constant use and testing over the last two months.
 
 * The candidates are now grouped by absolute beam number
 * Added `test_run` command line option that is useful for testing the database ingest logic. It is only valid for `production` mode. Files are neither copied, nor moved when the option is specified.
