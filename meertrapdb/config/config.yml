@@ -24,6 +24,7 @@ db:
 filesystem:
   ingest:
     staging_dir: /data/staging
+    glob_pattern: "2*/tpn*/2*.spccl.log"
     processed_dir: /data/processed
   sb_info_file: schedule_block.json
   date_formats:
@@ -31,3 +32,7 @@ filesystem:
     local: "%Y-%m-%d %H:%M:%S.%f"
   webserver:
     candidate_dir: /webserver
+
+# schedule block related options
+schedule_block:
+  id: 10

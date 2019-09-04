@@ -14,6 +14,7 @@ import logging
 import os.path
 import random
 import shutil
+import sys
 from time import sleep
 
 from astropy.time import Time
@@ -40,6 +41,12 @@ def parse_args():
         choices=['fake', 'init_tables', 'production'],
         help='Mode of operation.'
     )
+
+    parser.add_argument(
+        '-t', '--test_run',
+        action='store_true',
+        help='Do neither move, nor copy files. This flag works with "production" mode only.'
+    )
     
     parser.add_argument(
         "--version",
@@ -50,9 +57,9 @@ def parse_args():
     return parser.parse_args()
 
 
-def run_insert_fake_data():
+def run_fake():
     """
-    Insert fake data into the database.
+    Run the processing for 'fake' mode, i.e. insert fake data into the database.
     """
 
     log = logging.getLogger('meertrapdb.populate_db')
@@ -165,7 +172,7 @@ def run_insert_fake_data():
     log.info("Done. Time taken: {0}".format(datetime.now() - start))
 
 
-def insert_candidates(data, sb_info, obs_utc_start):
+def insert_candidates(data, sb_info, obs_utc_start, node_name):
     """
     Insert candidates into database.
 
@@ -177,6 +184,8 @@ def insert_candidates(data, sb_info, obs_utc_start):
         Information about the schedule block.
     obs_utc_start: datetime.datetime
         The start UTC of the observation.
+    node_name: str
+        The name of the node, e.g. `tpn-0-37`.
     
     Returns
     -------
@@ -193,10 +202,11 @@ def insert_candidates(data, sb_info, obs_utc_start):
                                     fsconf["date_formats"]["local"])
     sb_utc_start = sb_lt_start.replace(tzinfo=timezone('UTC'))
 
+    sb_id = config['schedule_block']['id']
+
     with db_session:
-        # schedule blocks
+        # 1) schedule blocks
         # check if schedule block is already in the database, otherwise reference it
-        sb_id = 5
         sb_queried = schema.ScheduleBlock.select(lambda sb: sb.sb_id == sb_id)[:]
 
         if len(sb_queried) == 0:
@@ -221,7 +231,7 @@ def insert_candidates(data, sb_info, obs_utc_start):
             msg = 'There are duplicate schedule blocks: {0}'.format(sb_id)
             raise RuntimeError(msg)
 
-        # observations
+        # 2) observations
         # check if observation is already in the database, otherwise reference it
         obs_queried = schema.Observation.select(lambda o: o.utc_start == obs_utc_start)[:]
 
@@ -237,8 +247,6 @@ def insert_candidates(data, sb_info, obs_utc_start):
                 boresight_ra="16:26:00.00",
                 boresight_dec="-73:00:00.0",
                 utc_start=obs_utc_start,
-                #utc_end=obs_utc_start,
-                #tobs=600.0,
                 finished=True,
                 nant=len(sb_info['antennas_alloc'].split(",")),
                 receiver=1,
@@ -258,9 +266,11 @@ def insert_candidates(data, sb_info, obs_utc_start):
             msg = 'There are duplicate observations: {0}'.format(obs_utc_start)
             raise RuntimeError(msg)
 
-        # check if node is already in the database
-        # XXX: hardcode node number for now
-        node_nr = 1
+        # 3) nodes
+        # check if node is already in the database, otherwise reference it
+        node_nr = int(node_name[6:])
+        log.info("Node number: {0}".format(node_nr))
+
         node_queried = select(
             n
             for n in schema.Node
@@ -283,7 +293,8 @@ def insert_candidates(data, sb_info, obs_utc_start):
             msg = 'There are duplicate nodes: {0}, {1}'.format(obs_utc_start, node_nr)
             raise RuntimeError(msg)
 
-        # check if pipeline config is already in the database
+        # 4) pipeline config
+        # check if pipeline config is already in the database, otherwise reference it
         pc_queried = select(
             pc
             for pc in schema.PipelineConfig
@@ -316,15 +327,58 @@ def insert_candidates(data, sb_info, obs_utc_start):
                   " {0}, {1}".format(obs_utc_start, node_nr)
             log.error(msg)
             pipeline_config = pc_queried[0]
+        
+        # 5) beams
+        # check if beam is already in the database, otherwise reference it
 
-        # candidates
+        # this assumes that there is one candidate file per beam, i.e no
+        # mixing of beams within a candidate file
+        beam_nr = int(data['beam'][0])
+        beam_coherent = True
+        beam_source = "Test source"
+        ra = data['ra'][0]
+        dec = data['dec'][0]
+
+        beam_queried = select(
+            beam
+            for beam in schema.Beam
+            for c in beam.sps_candidate
+            for obs in c.observation
+            for n in c.node
+            if (obs.utc_start == obs_utc_start
+            and beam.number == beam_nr
+            and n.number == node_nr
+            and beam.coherent == beam_coherent)
+        )[:]
+
+        if len(beam_queried) == 0:
+            beam = schema.Beam(
+                number=beam_nr,
+                coherent=beam_coherent,
+                source=beam_source,
+                ra=ra,
+                dec=dec
+            )
+
+        elif len(beam_queried) == 1:
+            msg = "Beam is already in the database:" + \
+                  " {0}, {1}, {2}".format(obs_utc_start, node_nr, beam_nr)
+            log.info(msg)
+            beam = beam_queried[0]
+
+        else:
+            msg = "There are duplicate beams:" + \
+                  " {0}, {1}, {2}".format(obs_utc_start, node_nr, beam_nr)
+            log.error(msg)
+            beam = beam_queried[0]
+
+        # 6) candidates
         # plot files to be copied
         plots = []
 
         for item in data:
             cand_mjd = Decimal("{0:.10f}".format(item['mjd']))
             cand_utc = Time(item['mjd'], format='mjd').iso
-            cand_beam_nr = int(item['beam'])
 
             # check if candidate is already in the database
             cand_queried = select(
@@ -332,30 +386,24 @@ def insert_candidates(data, sb_info, obs_utc_start):
                 for c in schema.SpsCandidate
                 for beam in c.beam
                 for obs in c.observation
-                if (beam.number == cand_beam_nr
+                if (beam.number == beam_nr
                 and obs.utc_start == obs_utc_start
                 and abs(c.mjd - cand_mjd) <= Decimal('0.0000000001'))
             )
 
             if cand_queried.count() > 0:
                 msg = "Candidate is already in the database:" + \
-                      " {0}, {1}, {2}".format(obs_utc_start, cand_beam_nr, cand_mjd)
+                      " {0}, {1}, {2}".format(obs_utc_start, beam_nr, cand_mjd)
                 log.error(msg)
                 continue
 
-            beam = schema.Beam(
-                number=cand_beam_nr,
-                coherent=True,
-                source="Test source",
-                ra=item['ra'],
-                dec=item['dec'],
-                #gl=0,
-                #gb=0
-            )
-
             # assemble candidate plots
+            obs_utc_start_str = obs_utc_start.strftime(fsconf['date_formats']['utc'])
+
             ds_staging = os.path.join(
                 fsconf['ingest']['staging_dir'],
+                obs_utc_start_str,
+                node_name,
                 item['plot_file']
             )
 
@@ -364,10 +412,10 @@ def insert_candidates(data, sb_info, obs_utc_start):
             if not os.path.isfile(ds_staging):
                 log.warning("Dynamic spectrum plot not found: {0}".format(ds_staging))
             else:
-                obs_utc_start_str = obs_utc_start.strftime(fsconf['date_formats']['utc'])
                 ds_web = os.path.join(
                     "{0}".format(sb_id),
                     obs_utc_start_str,
+                    node_name,
                     item['plot_file']
                 )
 
@@ -379,6 +427,7 @@ def insert_candidates(data, sb_info, obs_utc_start):
                 ds_processed = os.path.join(
                     fsconf['ingest']['processed_dir'],
                     obs_utc_start_str,
+                    node_name,
                     item['plot_file']
                 )
 
@@ -397,7 +446,6 @@ def insert_candidates(data, sb_info, obs_utc_start):
                 beam=beam,
                 snr=item['snr'],
                 dm=item['dm'],
-                #dm_ex=0.7,
                 width=item['width'],
                 node=node,
                 dynamic_spectrum=ds_web,
@@ -477,9 +525,14 @@ def get_sb_info():
     return data
 
 
-def run_insert_candidates():
+def run_production(test_run):
     """
-    Insert candidates into the database.
+    Run the processing for 'production' mode, i.e. insert real candidates into the database.
+
+    Parameters
+    ----------
+    test_run: bool
+        Determines whether to run in test mode, where no files are moved, nor copied.
     """
 
     log = logging.getLogger('meertrapdb.populate_db')
@@ -498,8 +551,9 @@ def run_insert_candidates():
 
     glob_pattern = os.path.join(
         staging_dir,
-        "2*_beam??.spccl.log"
+        fsconf['ingest']['glob_pattern']
     )
+    log.info("Glob pattern: {0}".format(glob_pattern))
 
     spcll_files = glob.glob(glob_pattern)
     spcll_files = sorted(spcll_files)
@@ -514,7 +568,13 @@ def run_insert_candidates():
 
         log.info("UTC start: {0}".format(obs_utc_start))
 
-        # 3) parse meta data
+        node_name = os.path.basename(
+            os.path.dirname(filename)
+        )
+
+        log.info("Node: {0}".format(node_name))
+
+        # 3) parse candidate data
         spccl_data = parse_spccl_file(filename)
 
         # check if we have candidates
@@ -525,28 +585,29 @@ def run_insert_candidates():
             continue
 
         # 4) insert data into database
-        plots = insert_candidates(spccl_data, sb_info, obs_utc_start)
+        plots = insert_candidates(spccl_data, sb_info, obs_utc_start, node_name)
 
-        # 5) move directory to processed
-        if len(plots) > 0:
-            log.info("Copying {0} plots.".format(len(plots)))
-            copy_plots(plots)
-        else:
-            log.warning("No plots to copy found.")
-        
-        # 6) move spccl file to processed
-        outfile = os.path.join(
-            fsconf['ingest']['processed_dir'],
-            utc_start_str,
-            os.path.basename(filename)
-        )
+        if not test_run:
+            # 5) move directory to processed
+            if len(plots) > 0:
+                log.info("Copying {0} plots.".format(len(plots)))
+                copy_plots(plots)
+            else:
+                log.warning("No plots to copy found.")
 
-        outdir = os.path.dirname(outfile)
+            # 6) move spccl file to processed
+            outfile = os.path.join(
+                fsconf['ingest']['processed_dir'],
+                utc_start_str,
+                os.path.basename(filename)
+            )
 
-        if not os.path.isdir(outdir):
-            os.makedirs(outdir)
+            outdir = os.path.dirname(outfile)
 
-        shutil.move(filename, outfile)
+            if not os.path.isdir(outdir):
+                os.makedirs(outdir)
+
+            shutil.move(filename, outfile)
 
     log.info("Done. Time taken: {0}".format(datetime.now() - start))
 
@@ -556,6 +617,11 @@ def run_insert_candidates():
 
 def main():
     args = parse_args()
+
+    # sanity check test_run flag
+    if args.test_run is True \
+    and args.mode != 'production':
+        sys.exit('The "test_run" flag is only valid for "production" mode.')
 
     log = logging.getLogger('meertrapdb.populate_db')
     setup_logging()
@@ -577,13 +643,13 @@ def main():
               " fake data. Make sure you want this."
         log.warning(msg)
         sleep(20)
-        run_insert_fake_data()
+        run_fake()
     
     elif args.mode == "init_tables":
         pass
     
     elif args.mode == "production":
-        run_insert_candidates()
+        run_production(args.test_run)
     
     log.info("All done.")
 
