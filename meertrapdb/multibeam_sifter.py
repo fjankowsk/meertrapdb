@@ -64,7 +64,7 @@ def main():
 
     candidates = parse_spccl_file(args.filename)
 
-    candidates['MJD'] = np.around(candidates['MJD'], decimals=args.mjd[0])
+    candidates['MJD'] = np.around(candidates['MJD'], decimals=args.mjd)
     candidates_sorted = np.sort(candidates, order=['MJD', 'DM', 'SNR'])
     unique_cands = []
     cand_iter = np.nditer(candidates_sorted, flags=['f_index', 'refs_ok'], order='C')
@@ -76,7 +76,7 @@ def main():
         # iterate first to match the first line
         if (candidates_sorted[cand_iter.index][1] == match_line[1]) and \
            ((candidates_sorted[cand_iter.index][2] - match_line[2]) / \
-             candidates_sorted[cand_iter.index][2] < args.dm[0]):
+             candidates_sorted[cand_iter.index][2] < args.dm):
             match_cnt += 1
 
             if (candidates_sorted[cand_iter.index][4] > match_line[4]):
