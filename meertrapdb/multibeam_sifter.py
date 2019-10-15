@@ -9,6 +9,8 @@ import sys
 
 import numpy as np
 
+from meertrapdb.parsing_helpers import parse_spccl_file
+
 
 def parse_args():
     """
@@ -33,29 +35,6 @@ def parse_args():
                         help='MJD is rounded off after this many decimals. Default: 7')
 
     return parser.parse_args()
-
-
-def parse_spccl_file(filename):
-    """
-    Parse an SPCCL candidate file.
-
-    Parameters
-    ----------
-    filename: str
-        The name of the SPCCL file to load.
-
-    Returns
-    -------
-    data: ~np.record
-    """
-
-    dtype = [('n',int), ('mjd',float), ('dm',float), ('width',float), ('snr',float),
-             ('beam',int), ('raj','|S16'), ('decj','|S16'), ('filfile','|S64'),
-             ('jpeg','|S256')]
-
-    data = np.genfromtxt(filename, dtype=dtype)
-
-    return data
 
 
 def match_candidates(candidates, num_decimals, dm_thresh):
