@@ -67,12 +67,12 @@ def match_candidates(candidates, num_decimals, dm_thresh):
 
     while not cand_iter.finished:
         # iterate first to match the first line
-        if (candidates_sorted[cand_iter.index][1] == match_line[1]) and \
-           ((candidates_sorted[cand_iter.index][2] - match_line[2]) / \
-             candidates_sorted[cand_iter.index][2] < dm_thresh):
+        if (candidates_sorted[cand_iter.index]['mjd'] == match_line['mjd']) and \
+           ((candidates_sorted[cand_iter.index]['dm'] - match_line['dm']) / \
+             candidates_sorted[cand_iter.index]['dm'] < dm_thresh):
             match_cnt += 1
 
-            if (candidates_sorted[cand_iter.index][4] > match_line[4]):
+            if (candidates_sorted[cand_iter.index]['snr'] > match_line['snr']):
                 match_line = candidates_sorted[cand_iter.index]
         else:
             unique_cands.append(match_line)
