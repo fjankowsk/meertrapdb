@@ -23,11 +23,11 @@ def parse_args():
 
     parser.add_argument('filename', type=str)
 
-    parser.add_argument('-dm', type=float,
+    parser.add_argument('--dm', type=float,
                         default=0.02,
                         help='Fractional DM tolerance. Default: 0.02')
 
-    parser.add_argument('-mjd',
+    parser.add_argument('--mjd',
                         type=int,
                         default=7,
                         help='MJD is rounded off after this many decimals. Default: 7')
@@ -49,11 +49,11 @@ def parse_spccl_file(filename):
     data: ~np.record
     """
 
-    dtype = [('a',int), ('b',float), ('c',float), ('d',float), ('e',float), ('f',int),
-              ('g','|S12'), ('h','|S12'), ('i','|S23'), ('j','|S128')]
-    names = ["N", "MJD", "DM", "WIDTH", "SNR", "BEAM", "RAJ", "DECJ", "FILFILE", "JPEG"]
+    dtype = [('n',int), ('mjd',float), ('dm',float), ('width',float), ('snr',float),
+             ('beam',int), ('raj','|S16'), ('decj','|S16'), ('filfile','|S64'),
+             ('jpeg','|S256')]
 
-    data = np.genfromtxt(filename, names=names, dtype=dtype)
+    data = np.genfromtxt(filename, dtype=dtype)
 
     return data
 
@@ -74,8 +74,8 @@ def match_candidates(candidates, num_decimals, dm_thresh):
     num_matches: list (int)
     """
 
-    candidates['MJD'] = np.around(candidates['MJD'], decimals=num_decimals)
-    candidates_sorted = np.sort(candidates, order=['MJD', 'DM', 'SNR'])
+    candidates['mjd'] = np.around(candidates['mjd'], decimals=num_decimals)
+    candidates_sorted = np.sort(candidates, order=['mjd', 'dm', 'snr'])
 
     unique_cands = []
     cand_iter = np.nditer(candidates_sorted, flags=['f_index', 'refs_ok'], order='C')
@@ -114,7 +114,7 @@ def main():
 
     unique_cands, num_matches = match_candidates(candidates, args.mjd, args.dm)
 
-    with open ("unique_cands.txt", "w") as f:
+    with open('unique_cands.txt', 'w') as f:
         for i in range(len(unique_cands)):
             unique_cands[i] = '	'.join(str(x) for x in unique_cands[i])
             info = "{0} {1}\n".format(unique_cands[i], num_matches[i])
