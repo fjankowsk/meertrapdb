@@ -60,14 +60,17 @@ def parse_spccl_file(filename):
 
 def match_candidates(candidates, num_decimals, dm_thresh):
     """
+    Match candidates based on MJD and DM.
+
+    This function implements a simplistic multi-beam sifter.
 
     Parameters
     ----------
     num_decimals: int
-        The number of decimals the detection MJDs to round to.
+        The number of decimals the detection MJDs are rounded to.
     dm_thresh: float
         The fractional DM tolerance to use for matching.
-    
+
     Returns
     -------
     unique_cands: list (object)
