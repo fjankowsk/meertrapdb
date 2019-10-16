@@ -68,9 +68,9 @@ def match_candidates(candidates, num_decimals, dm_thresh):
     while not cand_iter.finished:
         info[cand_iter.index]['index'] = match_line['index']
 
-        # iterate first to match the first line
+        # check for matches in mjd and dm space
         if (candidates_sorted[cand_iter.index]['mjd'] == match_line['mjd']) and \
-           ((candidates_sorted[cand_iter.index]['dm'] - match_line['dm']) / \
+           (abs(candidates_sorted[cand_iter.index]['dm'] - match_line['dm']) / \
              candidates_sorted[cand_iter.index]['dm'] < dm_thresh):
             match_cnt += 1
 
