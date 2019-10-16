@@ -109,6 +109,18 @@ def main():
     info = match_candidates(candidates, args.mjd, args.dm)
 
     mask = info['uniq']
+
+    print('Total candidates: {0}'.format(len(candidates)))
+    print('Unique candidates: {0}'.format(len(candidates[mask])))
+    for field in ['matches', 'beams']:
+        print('{0} (min, mean, median, max): {1}, {2}, {3}, {4}'.format(
+            field.capitalize(),
+            np.min(info[field]),
+            np.mean(info[field]),
+            np.median(info[field]),
+            np.max(info[field]))
+            )
+    
     unique_cands = candidates[mask]
     num_matches = info['matches'][mask]
 
