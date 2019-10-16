@@ -633,7 +633,7 @@ def run_sift(schedule_block):
 
     with db_session:
         candidates = select(
-                    (c.mjd, c.dm, c.snr, beam.number)
+                    (c.id, c.mjd, c.dm, c.snr, beam.number)
                     for c in schema.SpsCandidate
                     for beam in c.beam
                     for obs in c.observation
@@ -641,19 +641,19 @@ def run_sift(schedule_block):
                     if (sb.sb_id == schedule_block)
                 ).sort_by(1)[:]
 
-        if len(candidates) == 0:
-            raise RuntimeError('No single-pulse candidates found.')
-        
-        log.info('Candidates loaded: {0}'.format(len(candidates)))
+    if len(candidates) == 0:
+        raise RuntimeError('No single-pulse candidates found.')
 
-        # convert to numpy record
-        candidates = [item for item in candidates]
-        dtype = [('mjd',float), ('dm',float), ('snr',float), ('beam',int)]
-        candidates = np.array(candidates, dtype=dtype)
+    log.info('Candidates loaded: {0}'.format(len(candidates)))
 
-        unique_cands, num_match = match_candidates(candidates,
-                                                sconfig['num_decimals'],
-                                                sconfig['dm_thresh'])
+    # convert to numpy record
+    candidates = [item for item in candidates]
+    dtype = [('id',int), ('mjd',float), ('dm',float), ('snr',float), ('beam',int)]
+    candidates = np.array(candidates, dtype=dtype)
+
+    unique_cands, num_match = match_candidates(candidates,
+                                            sconfig['num_decimals'],
+                                            sconfig['dm_thresh'])
 
     log.info("Done. Time taken: {0}".format(datetime.now() - start))
 
