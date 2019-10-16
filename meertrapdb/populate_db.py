@@ -18,6 +18,7 @@ import sys
 from time import sleep
 
 from astropy.time import Time
+import numpy as np
 from pony.orm import (db_session, select)
 from pytz import timezone
 
@@ -632,7 +633,7 @@ def run_sift(schedule_block):
 
     with db_session:
         candidates = select(
-                    (c.mjd, c.dm, c.snr, beam.number, obs.utc_start)
+                    (c.mjd, c.dm, c.snr, beam.number)
                     for c in schema.SpsCandidate
                     for beam in c.beam
                     for obs in c.observation
@@ -645,8 +646,10 @@ def run_sift(schedule_block):
         
         log.info('Candidates loaded: {0}'.format(len(candidates)))
 
-        for item in candidates:
-            print(item)
+        # convert to numpy record
+        candidates = [item for item in candidates]
+        dtype = [('mjd',float), ('dm',float), ('snr',float), ('beam',int)]
+        candidates = np.array(candidates, dtype=dtype)
 
         unique_cands, num_match = match_candidates(candidates,
                                                 sconfig['num_decimals'],
