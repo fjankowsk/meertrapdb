@@ -37,7 +37,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def match_candidates(candidates, num_decimals, dm_thresh):
+def match_candidates(t_candidates, num_decimals, dm_thresh):
     """
     Match candidates based on MJD and DM.
 
@@ -45,6 +45,8 @@ def match_candidates(candidates, num_decimals, dm_thresh):
 
     Parameters
     ----------
+    t_candidates: ~np.record
+        The meta data of the single-pulse candidates.
     num_decimals: int
         The number of decimals the detection MJDs are rounded to.
     dm_thresh: float
@@ -55,34 +57,38 @@ def match_candidates(candidates, num_decimals, dm_thresh):
     info: ~np.record
     """
 
+    candidates = np.copy(t_candidates)
+
     candidates['mjd'] = np.around(candidates['mjd'], decimals=num_decimals)
-    candidates_sorted = np.sort(candidates, order=['mjd', 'dm', 'snr'])
+    candidates = np.sort(candidates, order=['mjd', 'dm', 'snr'])
 
-    cand_iter = np.nditer(candidates_sorted, flags=['f_index', 'refs_ok'], order='C')
-    match_line = candidates_sorted[0]
-    match_cnt = -1
+    cand_iter = np.nditer(candidates, flags=['f_index', 'refs_ok'], order='C')
+    match_line = candidates[0]
+    matches = []
 
-    dtype = [('index',int), ('uniq',bool), ('matches',int)]
+    dtype = [('index',int), ('uniq',bool), ('matches',int), ('beams',int)]
     info = np.zeros(len(candidates), dtype=dtype)
 
     while not cand_iter.finished:
+        comp = candidates[cand_iter.index]
+
         info[cand_iter.index]['index'] = match_line['index']
 
         # check for matches in mjd and dm space
-        if (candidates_sorted[cand_iter.index]['mjd'] == match_line['mjd']) and \
-           (abs(candidates_sorted[cand_iter.index]['dm'] - match_line['dm']) / \
-             candidates_sorted[cand_iter.index]['dm'] < dm_thresh):
-            match_cnt += 1
+        if (comp['mjd'] == match_line['mjd']) and \
+           (abs(comp['dm'] - match_line['dm']) / comp['dm'] < dm_thresh):
+            matches.append(comp)
 
-            if (candidates_sorted[cand_iter.index]['snr'] > match_line['snr']):
-                match_line = candidates_sorted[cand_iter.index]
+            if (comp['snr'] > match_line['snr']):
+                match_line = comp
         else:
             info[cand_iter.index]['uniq'] = True
-            info[cand_iter.index]['matches'] = match_cnt
+            info[cand_iter.index]['matches'] = len(matches)
+            info[cand_iter.index]['beams'] = len(set([item['beam'] for item in matches]))
 
             # step to next candidate
-            match_line = candidates_sorted[cand_iter.index]
-            match_cnt = 0
+            match_line = comp
+            matches = []
 
         cand_iter.iternext()
     
