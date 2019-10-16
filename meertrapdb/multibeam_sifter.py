@@ -52,20 +52,22 @@ def match_candidates(candidates, num_decimals, dm_thresh):
 
     Returns
     -------
-    unique_cands: list (object)
-    num_matches: list (int)
+    info: ~np.record
     """
 
     candidates['mjd'] = np.around(candidates['mjd'], decimals=num_decimals)
     candidates_sorted = np.sort(candidates, order=['mjd', 'dm', 'snr'])
 
-    unique_cands = []
     cand_iter = np.nditer(candidates_sorted, flags=['f_index', 'refs_ok'], order='C')
     match_line = candidates_sorted[0]
-    num_matches = []
     match_cnt = -1
 
+    dtype = [('index',int), ('uniq',bool), ('matches',int)]
+    info = np.zeros(len(candidates), dtype=dtype)
+
     while not cand_iter.finished:
+        info[cand_iter.index]['index'] = match_line['index']
+
         # iterate first to match the first line
         if (candidates_sorted[cand_iter.index]['mjd'] == match_line['mjd']) and \
            ((candidates_sorted[cand_iter.index]['dm'] - match_line['dm']) / \
@@ -75,14 +77,18 @@ def match_candidates(candidates, num_decimals, dm_thresh):
             if (candidates_sorted[cand_iter.index]['snr'] > match_line['snr']):
                 match_line = candidates_sorted[cand_iter.index]
         else:
-            unique_cands.append(match_line)
+            info[cand_iter.index]['uniq'] = True
+            info[cand_iter.index]['matches'] = match_cnt
+
+            # step to next candidate
             match_line = candidates_sorted[cand_iter.index]
-            num_matches.append(match_cnt)
             match_cnt = 0
 
         cand_iter.iternext()
+    
+    info = np.sort(info, order='index')
 
-    return unique_cands, num_matches
+    return info
 
 
 #
@@ -94,12 +100,16 @@ def main():
 
     candidates = parse_spccl_file(args.filename)
 
-    unique_cands, num_matches = match_candidates(candidates, args.mjd, args.dm)
+    info = match_candidates(candidates, args.mjd, args.dm)
+
+    mask = info['uniq']
+    unique_cands = candidates[mask]
+    num_matches = info['matches'][mask]
 
     with open('unique_cands.txt', 'w') as f:
         for i in range(len(unique_cands)):
-            unique_cands[i] = '	'.join(str(x) for x in unique_cands[i])
-            info = "{0} {1}\n".format(unique_cands[i], num_matches[i])
+            cand_str = '\t'.join(str(x) for x in unique_cands[i])
+            info = "{0} {1}\n".format(cand_str, num_matches[i])
             f.write(info)
 
 

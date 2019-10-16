@@ -36,6 +36,9 @@ def parse_spccl_file(filename):
     # treat case where the file is empty
     data = np.atleast_1d(data)
 
+    # ensure a unique running index
+    data['index'] = range(len(data))
+
     return data
 
 
