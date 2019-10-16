@@ -656,7 +656,7 @@ def run_sift(schedule_block):
     uniq_mask = info['uniq']
     log.info('Total number: {0}'.format(len(candidates)))
     log.info('Unique candidates: {0}'.format(len(info[uniq_mask])))
-    log.info('Matches (mean, median, max): {0}, {1}, {2}'.format(np.mean(info['matches'])
+    log.info('Matches (mean, median, max): {0}, {1}, {2}'.format(np.mean(info['matches']),
                                                                  np.median(info['matches']),
                                                                  np.max(info['matches'])))
 
