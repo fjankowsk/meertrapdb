@@ -636,10 +636,10 @@ def run_sift(schedule_block):
                     for c in schema.SpsCandidate
                     for beam in c.beam
                     for obs in c.observation
-                    for sb in obs.scheduleblock
-                    if (sb == schedule_block)
-                )[:]
-        
+                    for sb in obs.schedule_block
+                    if (sb.sb_id == schedule_block)
+                ).sort_by(1)[:]
+
         if len(candidates) == 0:
             raise RuntimeError('No single-pulse candidates found.')
         
