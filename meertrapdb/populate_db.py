@@ -664,7 +664,7 @@ def run_sift(schedule_block):
     with db_session:
         for item, result in zip(candidates, info):
             # find sps candidate
-            cand_queried = schema.SpsCandidate.select(lambda c: c.id == item['index'])[:]
+            cand_queried = schema.SpsCandidate.select(lambda c: c.id == int(item['index']))[:]
 
             if len(cand_queried) == 1:
                 cand = cand_queried[0]
@@ -673,7 +673,7 @@ def run_sift(schedule_block):
             
             schema.SiftResult(
                 sps_candidate=cand,
-                is_uniq=result['is_uniq'],
+                is_uniq=result['uniq'],
                 matches=result['matches']
             )
 
