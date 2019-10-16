@@ -660,6 +660,23 @@ def run_sift(schedule_block):
                                                                  np.median(info['matches']),
                                                                  np.max(info['matches'])))
 
+    # write results back to database
+    with db_session:
+        for item, result in zip(candidates, info):
+            # find sps candidate
+            cand_queried = schema.SpsCandidate.select(lambda c: c.id == item['index'])[:]
+
+            if len(cand_queried) == 1:
+                cand = cand_queried[0]
+            else:
+                raise RuntimeError('Something is wrong with the candidate index mapping.')
+            
+            schema.SiftResult(
+                sps_candidate=cand,
+                is_uniq=result['is_uniq'],
+                matches=result['matches']
+            )
+
     log.info("Done. Time taken: {0}".format(datetime.now() - start))
 
 

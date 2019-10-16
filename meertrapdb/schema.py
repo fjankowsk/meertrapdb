@@ -114,6 +114,7 @@ class SpsCandidate(db.Entity):
     viewed = Optional(int, size=16, unsigned=True, default=0)
     pipeline_config = Set('PipelineConfig')
     #classifierconfig = Set('ClassifierConfig')
+    sift_result = Set('SiftResult')
 
 
 class Node(db.Entity):
@@ -144,6 +145,13 @@ class PipelineConfig(db.Entity):
     version = Required(str, max_len=32)
     period_candidate = Set('PeriodCandidate')
     sps_candidate = Set('SpsCandidate') """
+
+
+class SiftResult(db.Entity):
+    id = PrimaryKey(int, auto=True, size=64, unsigned=True)
+    sps_candidate = Set('SpsCandidate')
+    is_uniq = Required(bool)
+    matches = Required(int, size=32)
 
 
 class Logs(db.Entity):
