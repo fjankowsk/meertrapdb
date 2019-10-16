@@ -20,7 +20,6 @@ help:
 	@echo 'make clean           remove temporary files'
 	@echo 'make interactive     run an interactive shell'
 	@echo 'make run_db          start the database'
-	@echo
 
 production:
 	${DCK} build \
