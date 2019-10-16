@@ -653,7 +653,7 @@ def run_sift(schedule_block):
 
     info = match_candidates(candidates, sconfig['num_decimals'], sconfig['dm_thresh'])
 
-    uniq_mask = info['uniq']
+    mask = info['uniq']
 
     log.info('Total candidates: {0}'.format(len(candidates)))
     log.info('Unique candidates: {0}'.format(len(candidates[mask])))
