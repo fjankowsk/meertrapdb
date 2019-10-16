@@ -25,6 +25,7 @@ from meertrapdb.config_helpers import get_config
 from meertrapdb.db_helpers import setup_db
 from meertrapdb.db_logger import DBHandler
 from meertrapdb.general_helpers import setup_logging
+from meertrapdb.multibeam_sifter import match_candidates
 from meertrapdb.parsing_helpers import parse_spccl_file
 from meertrapdb import schema
 from meertrapdb.schema import db
@@ -38,7 +39,7 @@ def parse_args():
     
     parser.add_argument(
         'mode',
-        choices=['fake', 'init_tables', 'production'],
+        choices=['fake', 'init_tables', 'production', 'sift'],
         help='Mode of operation.'
     )
 
@@ -611,6 +612,49 @@ def run_production(test_run):
 
     log.info("Done. Time taken: {0}".format(datetime.now() - start))
 
+
+def run_sift(schedule_block):
+    """
+    Run the processing for 'sift' mode.
+
+    Parameters
+    ----------
+    schedule_block: int
+        The schedule block ID to process.
+    """
+
+    log = logging.getLogger('meertrapdb.populate_db')
+
+    config = get_config()
+    sconfig = config['sifter']
+
+    start = datetime.now()
+
+    with db_session:
+        candidates = select(
+                    (c.mjd, c.dm, c.snr, beam.number, obs.utc_start)
+                    for c in schema.SpsCandidate
+                    for beam in c.beam
+                    for obs in c.observation
+                    for sb in obs.scheduleblock
+                    if (sb == schedule_block)
+                )[:]
+        
+        if len(candidates) == 0:
+            raise RuntimeError('No single-pulse candidates found.')
+        
+        log.info('Candidates loaded: {0}'.format(len(candidates)))
+
+        for item in candidates:
+            print(item)
+
+        unique_cands, num_match = match_candidates(candidates,
+                                                sconfig['num_decimals'],
+                                                sconfig['dm_thresh'])
+
+    log.info("Done. Time taken: {0}".format(datetime.now() - start))
+
+
 #
 # MAIN
 #
@@ -650,6 +694,9 @@ def main():
     
     elif args.mode == "production":
         run_production(args.test_run)
+
+    elif args.mode == "sift":
+        run_sift(20)
     
     log.info("All done.")
 

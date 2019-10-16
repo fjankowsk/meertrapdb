@@ -33,6 +33,13 @@ filesystem:
   webserver:
     candidate_dir: /webserver
 
+# multibeam sifter related options
+sifter:
+  # MJD is rounded off after this many decimals
+  num_decimals: 7
+  # fractional DM tolerance
+  dm_thresh: 0.02
+
 # schedule block related options
 schedule_block:
   id: 10
