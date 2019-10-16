@@ -654,11 +654,17 @@ def run_sift(schedule_block):
     info = match_candidates(candidates, sconfig['num_decimals'], sconfig['dm_thresh'])
 
     uniq_mask = info['uniq']
-    log.info('Total number: {0}'.format(len(candidates)))
-    log.info('Unique candidates: {0}'.format(len(info[uniq_mask])))
-    log.info('Matches (mean, median, max): {0}, {1}, {2}'.format(np.mean(info['matches']),
-                                                                 np.median(info['matches']),
-                                                                 np.max(info['matches'])))
+
+    log.info('Total candidates: {0}'.format(len(candidates)))
+    log.info('Unique candidates: {0}'.format(len(candidates[mask])))
+    for field in ['matches', 'beams']:
+        log.info('{0} (min, mean, median, max): {1}, {2}, {3}, {4}'.format(
+            field.capitalize(),
+            np.min(info[field]),
+            np.mean(info[field]),
+            np.median(info[field]),
+            np.max(info[field]))
+            )
 
     # write results back to database
     with db_session:
