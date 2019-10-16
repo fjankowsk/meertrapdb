@@ -648,12 +648,17 @@ def run_sift(schedule_block):
 
     # convert to numpy record
     candidates = [item for item in candidates]
-    dtype = [('id',int), ('mjd',float), ('dm',float), ('snr',float), ('beam',int)]
+    dtype = [('index',int), ('mjd',float), ('dm',float), ('snr',float), ('beam',int)]
     candidates = np.array(candidates, dtype=dtype)
 
-    unique_cands, num_match = match_candidates(candidates,
-                                            sconfig['num_decimals'],
-                                            sconfig['dm_thresh'])
+    info = match_candidates(candidates, sconfig['num_decimals'], sconfig['dm_thresh'])
+
+    uniq_mask = info['uniq']
+    log.info('Total number: {0}'.format(len(candidates)))
+    log.info('Unique candidates: {0}'.format(len(info[uniq_mask])))
+    log.info('Matches (mean, median, max): {0}, {1}, {2}'.format(np.mean(info['matches'])
+                                                                 np.median(info['matches']),
+                                                                 np.max(info['matches'])))
 
     log.info("Done. Time taken: {0}".format(datetime.now() - start))
 
