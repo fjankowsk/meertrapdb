@@ -54,28 +54,41 @@ def plot_sift_overview(t_data):
 
     data = np.copy(t_data)
 
+    fact = 1E-3
+
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
-    ax.scatter(data['sb'], data['candidates'],
+    ax.scatter(data['sb'], fact * data['candidates'],
                marker='x',
                color='black',
-               label='total')
+               label='Total')
 
-    ax.scatter(data['sb'], data['heads'],
-               marker='s',
-               color='darkgray',
-               label='cluster heads')
+    ax.scatter(data['sb'], fact * data['heads'],
+               marker='+',
+               color='dimgray',
+               label='Cluster heads')
+
+    # reduction on second axis
+    ax2 = ax.twinx()
+
+    ax2.scatter(data['sb'],
+                100 * (1.0 - data['heads'] / float(data['candidates'])),
+                marker='d',
+                color='darkred',
+                label='Reduction')
 
     ax.grid(True)
     ax.legend(loc='best', frameon=False)
     ax.set_xlabel('Schedule block')
-    ax.set_ylabel('Candidates')
+    ax.set_ylabel('Candidates (k)')
+
+    ax2.set_ylabel('Reduction (per cent)')
 
     fig.tight_layout()
 
-    fig.savefig('siftoverview.pdf')
-    fig.savefig('siftoverview.png', dpi=300)
+    fig.savefig('sift_overview.pdf')
+    fig.savefig('sift_overview.png', dpi=300)
     plt.close(fig)
 
 
