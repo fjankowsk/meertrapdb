@@ -553,7 +553,7 @@ def run_production(schedule_block, test_run):
 
     start = datetime.now()
 
-    # check if schedule block if already in the database
+    # check if schedule block is already in the database
     with db_session:
         sb_queried = schema.ScheduleBlock.select(lambda sb: sb.sb_id == schedule_block)[:]
 
@@ -653,6 +653,21 @@ def run_sift(schedule_block):
     sconfig = config['sifter']
 
     start = datetime.now()
+
+    # check if schedule block is in the database
+    with db_session:
+        sb_queried = schema.ScheduleBlock.select(lambda sb: sb.sb_id == schedule_block)[:]
+
+        if len(sb_queried) == 1:
+            pass
+
+        elif len(sb_queried) > 1:
+            msg = 'There are duplicate schedule blocks: {0}'.format(schedule_block)
+            raise RuntimeError(msg)
+
+        else:
+            print('The schedule block is not in the database: {0}'.format(schedule_block))
+            sys.exit(1)
 
     # delete any previous sift results for that schedule block
     log.info('Deleting previous sift results for schedule block: {0}'.format(schedule_block))
