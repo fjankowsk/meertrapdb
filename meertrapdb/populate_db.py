@@ -553,6 +553,20 @@ def run_production(schedule_block, test_run):
 
     start = datetime.now()
 
+    # check if schedule block if already in the database
+    with db_session:
+        sb_queried = schema.ScheduleBlock.select(lambda sb: sb.sb_id == schedule_block)[:]
+
+        if len(sb_queried) == 1:
+            msg = 'The schedule block is already in the database: {0}\n'.format(schedule_block) + \
+                  'Are you sure you want to continue?'
+            log.warning(msg)
+            sleep(20)
+
+        elif len(sb_queried) > 1:
+            msg = 'There are duplicate schedule blocks: {0}'.format(schedule_block)
+            raise RuntimeError(msg)
+
     # 1) load schedule block information
     sb_info = get_sb_info()
 
@@ -755,7 +769,7 @@ def main():
     # check that there is a schedule block id given
     if args.mode in ['production', 'sift']:
         if not args.schedule_block:
-            log.error('Please specify a schedule block ID to use.')
+            print('Please specify a schedule block ID to use.')
             sys.exit(1)
 
     if args.mode == 'fake':
