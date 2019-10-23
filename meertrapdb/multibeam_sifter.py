@@ -64,7 +64,8 @@ def match_candidates(t_candidates, num_decimals, dm_thresh):
     candidates['mjd'] = np.around(candidates['mjd'], decimals=num_decimals)
     candidates = np.sort(candidates, order=['mjd', 'dm', 'snr'])
 
-    dtype = [('index',int), ('cluster_id',int), ('is_head',bool),
+    dtype = [('index',int), ('cluster_id',int),
+             ('head',int), ('is_head',bool),
              ('members',int), ('beams',int)]
     info = np.zeros(len(candidates), dtype=dtype)
 
@@ -94,6 +95,20 @@ def match_candidates(t_candidates, num_decimals, dm_thresh):
             cluster_id += 1
             members = []
             match_line = comp
+    
+    # fill in head
+    mask = (info['is_head'] == False)
+    for i in range(len(info[mask])):
+        cluster_id = info[i]['cluster_id']
+        head_mask = np.logical_and(info['is_head'] == True, info['cluster_id'] == cluster_id)
+        head = info[head_mask]['index']
+
+        if len(head) != 1:
+            raise RuntimeError('Something is wrong with the head selection.')
+        else:
+            head = head[0]
+
+        info[i]['head'] = head
 
     info = np.sort(info, order='index')
 
