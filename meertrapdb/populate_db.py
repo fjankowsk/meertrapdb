@@ -656,7 +656,7 @@ def run_sift(schedule_block):
     mask = info['is_head']
 
     log.info('Total candidates: {0}'.format(len(candidates)))
-    log.info('Unique candidates: {0}'.format(len(candidates[mask])))
+    log.info('Cluster heads: {0}'.format(len(candidates[mask])))
     for field in ['members', 'beams']:
         log.info('{0} (min, mean, median, max): {1}, {2}, {3}, {4}'.format(
             field.capitalize(),
@@ -668,7 +668,7 @@ def run_sift(schedule_block):
 
     # write results back to database
     with db_session:
-        for item, result in zip(candidates, info):
+        for item in info:
             # find sps candidate
             cand_queried = schema.SpsCandidate.select(lambda c: c.id == int(item['index']))[:]
 
@@ -687,11 +687,11 @@ def run_sift(schedule_block):
             
             schema.SiftResult(
                 sps_candidate=cand,
-                cluster_id=result['cluster_id'],
+                cluster_id=item['cluster_id'],
                 head=head,
-                is_head=result['is_head'],
-                members=result['members'],
-                beams=result['beams']
+                is_head=item['is_head'],
+                members=item['members'],
+                beams=item['beams']
             )
 
     log.info("Done. Time taken: {0}".format(datetime.now() - start))
