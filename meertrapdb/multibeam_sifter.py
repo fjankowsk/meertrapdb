@@ -5,6 +5,7 @@
 
 from __future__ import print_function
 import argparse
+import logging
 import sys
 
 from astropy import units
@@ -60,6 +61,12 @@ def match_candidates(t_candidates, num_decimals, dm_thresh):
     """
 
     candidates = np.copy(t_candidates)
+
+    log = logging.getLogger('meertrapdb.multibeam_sifter')
+
+    mjd_tol = 24 * 60 * 60 * 1E-3 * pow(10, -1.0 * num_decimals)
+    log.info('MJD tolerance: {0:.2f} ms'.format(mjd_tol))
+    log.info('DM tolerance: {0:%}'.format(dm_thresh))
 
     candidates['mjd'] = np.around(candidates['mjd'], decimals=num_decimals)
     candidates = np.sort(candidates, order=['mjd', 'dm', 'snr'])
