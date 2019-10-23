@@ -47,6 +47,38 @@ def parse_args():
     return parser.parse_args()
 
 
+def plot_snr_timeline(t_data, prefix):
+    """
+    Plot S/N versus time.
+
+    Parameters
+    ----------
+    filename: str
+        The prefix for the output file.
+    """
+
+    data = np.copy(t_data)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+
+    ax.scatter(data['mjd'], data['snr'] + 1,
+              marker='x',
+              color='black')
+
+    ax.grid(True)
+    #ax.legend(loc='best', frameon=False)
+    ax.set_yscale('log', nonposy='clip')
+    ax.set_xlabel('MJD')
+    ax.set_ylabel('S/N + 1')
+
+    fig.tight_layout()
+
+    fig.savefig('{0}.pdf'.format(prefix))
+    fig.savefig('{0}.png'.format(prefix), dpi=300)
+    plt.close(fig)
+
+
 def run_timeline():
     """
     Run the processing for timeline mode.
@@ -75,23 +107,16 @@ def run_timeline():
 
     data = DataFrame.from_dict(temp2)
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
+    # total timeline
+    plot_snr_timeline(data, 'timeline_total')
 
-    ax.scatter(data['mjd'], data['snr'] + 1,
-              marker='x',
-              color='black')
+    sb_ids = np.unique(data['sb'])
 
-    ax.grid(True)
-    #ax.legend(loc='best', frameon=False)
-    ax.set_yscale('log', nonposy='clip')
-    ax.set_xlabel('MJD')
-    ax.set_ylabel('S/N + 1')
+    for sb_id in sb_ids:
+        sel = data[data['sb'] == sb_id]
 
-    fig.tight_layout()
-
-    fig.savefig('timeline.pdf')
-    fig.savefig('timeline.png', dpi=300)
+        prefix = 'timeline_sb_{0}'.format(sb_id)
+        plot_snr_timeline(sel, prefix)
 
 
 #
