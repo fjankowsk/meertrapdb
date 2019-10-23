@@ -64,17 +64,19 @@ def match_candidates(t_candidates, num_decimals, dm_thresh):
     candidates['mjd'] = np.around(candidates['mjd'], decimals=num_decimals)
     candidates = np.sort(candidates, order=['mjd', 'dm', 'snr'])
 
-    cand_iter = np.nditer(candidates, flags=['f_index', 'refs_ok'], order='C')
-    match_line = candidates[0]
-    members = []
-
-    dtype = [('index',int), ('is_head',bool), ('members',int), ('beams',int)]
+    dtype = [('index',int), ('cluster_id',int), ('is_head',bool),
+             ('members',int), ('beams',int)]
     info = np.zeros(len(candidates), dtype=dtype)
 
-    while not cand_iter.finished:
-        comp = candidates[cand_iter.index]
+    match_line = candidates[0]
+    members = []
+    cluster_id = 0
 
-        info[cand_iter.index]['index'] = match_line['index']
+    for i in range(len(candidates)):
+        comp = candidates[i]
+
+        info[i]['index'] = match_line['index']
+        info[i]['cluster_id'] = cluster_id
 
         # check for matches in mjd and dm space
         if (comp['mjd'] == match_line['mjd']) and \
@@ -84,16 +86,15 @@ def match_candidates(t_candidates, num_decimals, dm_thresh):
             if (comp['snr'] > match_line['snr']):
                 match_line = comp
         else:
-            info[cand_iter.index]['is_head'] = True
-            info[cand_iter.index]['members'] = len(members)
-            info[cand_iter.index]['beams'] = len(set([item['beam'] for item in members]))
+            info[i]['is_head'] = True
+            info[i]['members'] = len(members)
+            info[i]['beams'] = len(set([item['beam'] for item in members]))
 
-            # step to next candidate
-            match_line = comp
+            # step to next cluster
+            cluster_id += 1
             members = []
+            match_line = comp
 
-        cand_iter.iternext()
-    
     info = np.sort(info, order='index')
 
     return info
