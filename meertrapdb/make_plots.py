@@ -72,17 +72,28 @@ def plot_sift_overview(t_data):
     # reduction on second axis
     ax2 = ax.twinx()
 
-    ax2.scatter(data['sb'],
-                100 * (1.0 - data['heads'] / data['candidates']),
-                marker='d',
-                color='darkred',
+    reduction = 100 * (1.0 - data['heads'] / data['candidates'])
+
+    ax2.scatter(data['sb'], reduction,
+                marker='o',
+                color='indianred',
                 label='Reduction')
 
+    # median reduction
+    med_red = np.median(reduction)
+    ax2.axhline(y=med_red,
+                color='indianred',
+                lw=2,
+                ls='dashed',
+                label='median: {0:.1f}'.format(med_red))
+
     ax.grid(True)
-    ax.legend(loc='best', frameon=False)
+    ax.legend(loc='upper left', frameon=False)
     ax.set_xlabel('Schedule block')
     ax.set_ylabel('Candidates (k)')
 
+    ax2.legend(loc='upper right', frameon=False)
+    ax.set_ylim(0, 100)
     ax2.set_ylabel('Reduction (per cent)')
 
     fig.tight_layout()
