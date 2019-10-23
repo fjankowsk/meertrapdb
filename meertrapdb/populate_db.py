@@ -45,6 +45,13 @@ def parse_args():
     )
 
     parser.add_argument(
+        '-s', '--schedule_block',
+        dest='schedule_block',
+        type=int,
+        help='The schedule block ID to use.'
+    )
+
+    parser.add_argument(
         '-t', '--test_run',
         action='store_true',
         help='Do neither move, nor copy files. This flag works with "production" mode only.'
@@ -174,7 +181,7 @@ def run_fake():
     log.info("Done. Time taken: {0}".format(datetime.now() - start))
 
 
-def insert_candidates(data, sb_info, obs_utc_start, node_name):
+def insert_candidates(data, sb_id, sb_info, obs_utc_start, node_name):
     """
     Insert candidates into database.
 
@@ -182,6 +189,8 @@ def insert_candidates(data, sb_info, obs_utc_start, node_name):
     ----------
     data: numpy.rec
         The parsed candidate data.
+    sb_id: int
+        The ID of the schedule block in the MeerTRAP database.
     sb_info: dict
         Information about the schedule block.
     obs_utc_start: datetime.datetime
@@ -203,8 +212,6 @@ def insert_candidates(data, sb_info, obs_utc_start, node_name):
     sb_lt_start = datetime.strptime(sb_info['actual_start_time'][:-2],
                                     fsconf["date_formats"]["local"])
     sb_utc_start = sb_lt_start.replace(tzinfo=timezone('UTC'))
-
-    sb_id = config['schedule_block']['id']
 
     with db_session:
         # 1) schedule blocks
@@ -527,12 +534,14 @@ def get_sb_info():
     return data
 
 
-def run_production(test_run):
+def run_production(schedule_block, test_run):
     """
     Run the processing for 'production' mode, i.e. insert real candidates into the database.
 
     Parameters
     ----------
+    schedule_block: int
+        The schedule block ID to use to reference the candidates in the database.
     test_run: bool
         Determines whether to run in test mode, where no files are moved, nor copied.
     """
@@ -587,7 +596,7 @@ def run_production(test_run):
             continue
 
         # 4) insert data into database
-        plots = insert_candidates(spccl_data, sb_info, obs_utc_start, node_name)
+        plots = insert_candidates(spccl_data, schedule_block, sb_info, obs_utc_start, node_name)
 
         if not test_run:
             # 5) move directory to processed
@@ -632,7 +641,7 @@ def run_sift(schedule_block):
     start = datetime.now()
 
     # delete any previous sift results for that schedule block
-    log.info('Deleting previous sift results for schedule block {0}'.format(schedule_block))
+    log.info('Deleting previous sift results for schedule block: {0}'.format(schedule_block))
     with db_session:
         delete(
             sr
@@ -754,10 +763,10 @@ def main():
         pass
     
     elif args.mode == "production":
-        run_production(args.test_run)
+        run_production(args.schedule_block, args.test_run)
 
     elif args.mode == "sift":
-        run_sift(20)
+        run_sift(args.schedule_block)
     
     log.info("All done.")
 
