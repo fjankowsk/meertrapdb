@@ -676,11 +676,22 @@ def run_sift(schedule_block):
                 cand = cand_queried[0]
             else:
                 raise RuntimeError('Something is wrong with the candidate index mapping.')
+
+            # find cluster head
+            head_queried = schema.SpsCandidate.select(lambda c: c.id == int(item['head']))[:]
+
+            if len(head_queried) == 1:
+                head = head_queried[0]
+            else:
+                raise RuntimeError('Something is wrong with the head index mapping.')
             
             schema.SiftResult(
                 sps_candidate=cand,
+                cluster_id=result['cluster_id'],
+                head=head,
                 is_head=result['is_head'],
-                members=result['members']
+                members=result['members'],
+                beams=result['beams']
             )
 
     log.info("Done. Time taken: {0}".format(datetime.now() - start))
