@@ -644,8 +644,6 @@ def run_sift(schedule_block):
 
         db.commit()
 
-    sys.exit()
-
     # get the candidates
     with db_session:
         candidates = select(
