@@ -16,6 +16,7 @@ from time import sleep
 from astropy.time import Time
 import matplotlib.pyplot as plt
 import numpy as np
+from pandas import DataFrame
 from pony.orm import (db_session, delete, select)
 
 from meertrapdb.config_helpers import get_config
@@ -52,15 +53,39 @@ def run_timeline():
     """
 
     with db_session:
-        cands = select(
-                    (c.id, c.mjd, c.dm, c.snr, beam.number, obs.utc_start, sb.sb_id)
+        temp = select(
+                    (c.id, c.mjd, c.dm, c.snr, beam.number, sb.sb_id)
                     for c in schema.SpsCandidate
                     for beam in c.beam
                     for obs in c.observation
                     for sb in obs.schedule_block
                 ).sort_by(2)[:]
 
-    print(len(cands))
+    print('Candidates loaded: {0}'.format(len(temp)))
+
+    # convert to pandas dataframe
+    temp2 = {
+            'id':   [item[0] for item in temp],
+            'mjd':  [item[1] for item in temp],
+            'dm':   [item[2] for item in temp],
+            'snr':  [item[3] for item in temp],
+            'beam': [item[4] for item in temp],
+            'sb':   [item[5] for item in temp]
+        }
+
+    data = DataFrame.from_dict(temp2)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+
+    ax.scatter(data['mjd'], data['snr'],
+              marker='x',
+              color='black')
+
+    ax.grid(True)
+    #ax.legend(loc='best', frameon=False)
+    ax.set_xlabel('MJD')
+    ax.set_ylabel('S/N')
 
 
 #
