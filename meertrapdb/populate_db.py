@@ -675,7 +675,8 @@ def run_sift(schedule_block):
             if len(cand_queried) == 1:
                 cand = cand_queried[0]
             else:
-                raise RuntimeError('Something is wrong with the candidate index mapping.')
+                raise RuntimeError('Something is wrong with the candidate index mapping: {0}, {1}, {2}'.format(
+                                   item['index'], len(cand_queried), cand_queried))
 
             # find cluster head
             head_queried = schema.SpsCandidate.select(lambda c: c.id == int(item['head']))[:]
@@ -683,7 +684,8 @@ def run_sift(schedule_block):
             if len(head_queried) == 1:
                 head = head_queried[0]
             else:
-                raise RuntimeError('Something is wrong with the head index mapping.')
+                raise RuntimeError('Something is wrong with the head index mapping: {0}, {1}, {2}'.format(item['head'],
+                                   len(head_queried), head_queried))
             
             schema.SiftResult(
                 sps_candidate=cand,
