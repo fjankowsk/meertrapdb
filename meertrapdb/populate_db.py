@@ -632,6 +632,7 @@ def run_sift(schedule_block):
     start = datetime.now()
 
     # delete any previous sift results for that schedule block
+    log.info('Deleting previous sift results for schedule block {0}'.format(schedule_block))
     with db_session:
         delete(
             sr
@@ -645,6 +646,7 @@ def run_sift(schedule_block):
         db.commit()
 
     # get the candidates
+    log.info('Loading candidates from database.')
     with db_session:
         candidates = select(
                     (c.id, c.mjd, c.dm, c.snr, beam.number)
@@ -681,6 +683,7 @@ def run_sift(schedule_block):
             )
 
     # write results back to database
+    log.info('Writing results into database.')
     with db_session:
         for item in info:
             # find sps candidate
