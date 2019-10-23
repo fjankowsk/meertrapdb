@@ -93,7 +93,7 @@ def plot_sift_overview(t_data):
     ax.set_ylabel('Candidates (k)')
 
     ax2.legend(loc='upper right', frameon=False)
-    ax.set_ylim(0, 100)
+    ax2.set_ylim(0, 100)
     ax2.set_ylabel('Reduction (per cent)')
 
     fig.tight_layout()
