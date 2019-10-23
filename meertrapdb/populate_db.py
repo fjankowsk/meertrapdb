@@ -19,7 +19,7 @@ from time import sleep
 
 from astropy.time import Time
 import numpy as np
-from pony.orm import (db_session, select)
+from pony.orm import (db_session, delete, select)
 from pytz import timezone
 
 from meertrapdb.config_helpers import get_config
@@ -631,6 +631,22 @@ def run_sift(schedule_block):
 
     start = datetime.now()
 
+    # delete any previous sift results for that schedule block
+    with db_session:
+        delete(
+            sr
+            for sr in schema.SiftResult
+            for c in sr.sps_candidate
+            for obs in c.observation
+            for sb in sb.schedule_block
+            if (sb.sb_id == schedule_block)
+        )
+
+        db.commit()
+
+    sys.exit()
+
+    # get the candidates
     with db_session:
         candidates = select(
                     (c.id, c.mjd, c.dm, c.snr, beam.number)
