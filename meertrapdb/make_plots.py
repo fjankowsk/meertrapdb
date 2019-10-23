@@ -90,6 +90,7 @@ def run_timeline():
     fig.tight_layout()
 
     fig.savefig('timeline.pdf')
+    fig.savefig('timeline.png', dpi=300)
 
 
 #
