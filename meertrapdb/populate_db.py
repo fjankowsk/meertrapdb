@@ -679,8 +679,8 @@ def run_sift(schedule_block):
             
             schema.SiftResult(
                 sps_candidate=cand,
-                is_head=result['uniq'],
-                members=result['matches']
+                is_head=result['is_head'],
+                members=result['members']
             )
 
     log.info("Done. Time taken: {0}".format(datetime.now() - start))
