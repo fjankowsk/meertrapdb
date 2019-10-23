@@ -115,6 +115,7 @@ class SpsCandidate(db.Entity):
     pipeline_config = Set('PipelineConfig')
     #classifierconfig = Set('ClassifierConfig')
     sift_result = Set('SiftResult')
+    head_of = Set('SiftResult')
 
 
 class Node(db.Entity):
@@ -151,7 +152,7 @@ class SiftResult(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
     sps_candidate = Set('SpsCandidate')
     cluster_id = Required(int, size=32)
-    head = Set('SpsCandidate')
+    head = Set('SpsCandidate', reverse='head_of')
     is_head = Required(bool)
     members = Required(int, size=32)
     beams = Optional(int, size=16)
