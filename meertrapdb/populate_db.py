@@ -752,6 +752,12 @@ def main():
 
     db.generate_mapping(create_tables=True)
 
+    # check that there is a schedule block id given
+    if args.mode in ['production', 'sift']:
+        if not args.schedule_block:
+            log.error('Please specify a schedule block ID to use.')
+            sys.exit(1)
+
     if args.mode == 'fake':
         msg = "This operation mode will populate the database with random" + \
               " fake data. Make sure you want this."
