@@ -68,8 +68,7 @@ def match_candidates(t_candidates, num_decimals, dm_thresh):
     match_line = candidates[0]
     members = []
 
-    dtype = [('index',int), ('is_head',bool), ('members',int), ('beams',int),
-             ('max_separation',float)]
+    dtype = [('index',int), ('is_head',bool), ('members',int), ('beams',int)]
     info = np.zeros(len(candidates), dtype=dtype)
 
     while not cand_iter.finished:
@@ -88,36 +87,6 @@ def match_candidates(t_candidates, num_decimals, dm_thresh):
             info[cand_iter.index]['is_head'] = True
             info[cand_iter.index]['members'] = len(members)
             info[cand_iter.index]['beams'] = len(set([item['beam'] for item in members]))
-
-            # compute angular distance of the 'shower'
-            # if len(matches) >= 2:
-            #     ras = [item['ra'] for item in matches]
-            #     decs = [item['dec'] for item in matches]
-            #     max_separation = 0
-
-            #     c = SkyCoord(ra=ras, dec=decs,
-            #                  unit=(units.hourangle, units.deg),
-            #                  frame='icrs')
-
-            #     sep = c.separation(c)
-            #     print(sep)
-
-                # for i in range(len(matches)):
-                #     c1 = SkyCoord(ra=matches[i]['ra'], dec=matches[i]['dec'],
-                #                   unit=(units.hourangle, units.deg),
-                #                   frame='icrs')
-
-                #     for j in range(i, len(matches)):
-                #         c2 = SkyCoord(ra=matches[j]['ra'], dec=matches[j]['dec'],
-                #                   unit=(units.hourangle, units.deg),
-                #                   frame='icrs')
-
-                #         separation = c1.separation(c2).value
-
-                #         if separation > max_separation:
-                #             max_separation = separation
-
-                #info[cand_iter.index]['max_separation'] = max_separation
 
             # step to next candidate
             match_line = comp
