@@ -34,7 +34,7 @@ def parse_args():
     
     parser.add_argument(
         'mode',
-        choices=['timeline'],
+        choices=['sifting', 'timeline'],
         help='Mode of operation.'
     )
     
@@ -45,6 +45,88 @@ def parse_args():
     )
 
     return parser.parse_args()
+
+
+def plot_sift_overview(t_data):
+    """
+    Plot sifting overview.
+    """
+
+    data = np.copy(t_data)
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+
+    ax.scatter(data['sb'], data['candidates'],
+               marker='x',
+               color='black',
+               label='total')
+
+    ax.scatter(data['sb'], data['heads'],
+               marker='s',
+               color='darkgray',
+               label='cluster heads')
+
+    ax.grid(True)
+    ax.legend(loc='best', frameon=False)
+    ax.set_xlabel('Schedule block')
+    ax.set_ylabel('Candidates')
+
+    fig.tight_layout()
+
+    fig.savefig('siftoverview.pdf')
+    fig.savefig('siftoverview.png', dpi=300)
+    plt.close(fig)
+
+
+def run_sifting():
+    """
+    Run the processing for sifting mode.
+    """
+
+    with db_session:
+        temp = select(
+                    (c.id, c.mjd, c.dm, c.snr, beam.number, sb.sb_id,
+                    sr.is_head, sr.members, sr.beams)
+                    for c in schema.SpsCandidate
+                    for beam in c.beam
+                    for obs in c.observation
+                    for sb in obs.schedule_block
+                    for sr in c.sift_result
+                ).sort_by(2)[:]
+
+    print('Candidates loaded: {0}'.format(len(temp)))
+
+    # convert to pandas dataframe
+    temp2 = {
+            'id':       [item[0] for item in temp],
+            'mjd':      [item[1] for item in temp],
+            'dm':       [item[2] for item in temp],
+            'snr':      [item[3] for item in temp],
+            'beam':     [item[4] for item in temp],
+            'sb':       [item[5] for item in temp],
+            'is_head':  [item[6] for item in temp],
+            'members':  [item[7] for item in temp],
+            'beams':    [item[8] for item in temp],
+        }
+
+    data = DataFrame.from_dict(temp2)
+
+    sb_ids = np.unique(data['sb'])
+
+    dtype = [('sb',int), ('candidates',int), ('heads',int)]
+    info = np.zeros(len(sb_ids), dtype=dtype)
+
+    for i, sb_id in enumerate(sb_ids):
+        sel = data[data['sb'] == sb_id]
+
+        mask = (sel['is_head'] == True)
+
+        info[i]['sb'] = sb_id
+        info[i]['candidates'] = len(sel)
+        info[i]['heads'] = len(sel[mask])
+
+    plot_sift_overview(info)
 
 
 def plot_snr_timeline(data, prefix):
@@ -108,6 +190,7 @@ def run_timeline():
     # total timeline
     plot_snr_timeline(data, 'timeline_total')
 
+    # timeline by schedule block
     sb_ids = np.unique(data['sb'])
 
     for sb_id in sb_ids:
@@ -139,7 +222,10 @@ def main():
 
     db.generate_mapping(create_tables=False)
 
-    if args.mode == 'timeline':
+    if args.mode == 'sifting':
+        run_sifting()
+
+    elif args.mode == 'timeline':
         run_timeline()
 
     log.info("All done.")
