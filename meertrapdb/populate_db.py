@@ -657,7 +657,7 @@ def run_sift(schedule_block):
 
     log.info('Total candidates: {0}'.format(len(candidates)))
     log.info('Unique candidates: {0}'.format(len(candidates[mask])))
-    for field in ['matches', 'beams']:
+    for field in ['members', 'beams']:
         log.info('{0} (min, mean, median, max): {1}, {2}, {3}, {4}'.format(
             field.capitalize(),
             np.min(info[field]),
