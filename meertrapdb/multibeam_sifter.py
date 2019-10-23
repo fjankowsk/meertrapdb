@@ -66,9 +66,9 @@ def match_candidates(t_candidates, num_decimals, dm_thresh):
 
     cand_iter = np.nditer(candidates, flags=['f_index', 'refs_ok'], order='C')
     match_line = candidates[0]
-    matches = []
+    members = []
 
-    dtype = [('index',int), ('uniq',bool), ('matches',int), ('beams',int),
+    dtype = [('index',int), ('is_head',bool), ('members',int), ('beams',int),
              ('max_separation',float)]
     info = np.zeros(len(candidates), dtype=dtype)
 
@@ -80,39 +80,48 @@ def match_candidates(t_candidates, num_decimals, dm_thresh):
         # check for matches in mjd and dm space
         if (comp['mjd'] == match_line['mjd']) and \
            (abs(comp['dm'] - match_line['dm']) / comp['dm'] < dm_thresh):
-            matches.append(comp)
+            members.append(comp)
 
             if (comp['snr'] > match_line['snr']):
                 match_line = comp
         else:
-            info[cand_iter.index]['uniq'] = True
-            info[cand_iter.index]['matches'] = len(matches)
-            info[cand_iter.index]['beams'] = len(set([item['beam'] for item in matches]))
+            info[cand_iter.index]['is_head'] = True
+            info[cand_iter.index]['members'] = len(members)
+            info[cand_iter.index]['beams'] = len(set([item['beam'] for item in members]))
 
             # compute angular distance of the 'shower'
-            if len(matches) >= 2:
-                max_separation = 0
+            # if len(matches) >= 2:
+            #     ras = [item['ra'] for item in matches]
+            #     decs = [item['dec'] for item in matches]
+            #     max_separation = 0
 
-                for i in range(len(matches)):
-                    c1 = SkyCoord(ra=matches[i]['ra'], dec=matches[i]['dec'],
-                                  unit=(units.hourangle, units.deg),
-                                  frame='icrs')
+            #     c = SkyCoord(ra=ras, dec=decs,
+            #                  unit=(units.hourangle, units.deg),
+            #                  frame='icrs')
 
-                    for j in range(i, len(matches)):
-                        c2 = SkyCoord(ra=matches[j]['ra'], dec=matches[j]['dec'],
-                                  unit=(units.hourangle, units.deg),
-                                  frame='icrs')
+            #     sep = c.separation(c)
+            #     print(sep)
 
-                        separation = c1.separation(c2).value
+                # for i in range(len(matches)):
+                #     c1 = SkyCoord(ra=matches[i]['ra'], dec=matches[i]['dec'],
+                #                   unit=(units.hourangle, units.deg),
+                #                   frame='icrs')
 
-                        if separation > max_separation:
-                            max_separation = separation
+                #     for j in range(i, len(matches)):
+                #         c2 = SkyCoord(ra=matches[j]['ra'], dec=matches[j]['dec'],
+                #                   unit=(units.hourangle, units.deg),
+                #                   frame='icrs')
 
-                info[cand_iter.index]['max_separation'] = max_separation
+                #         separation = c1.separation(c2).value
+
+                #         if separation > max_separation:
+                #             max_separation = separation
+
+                #info[cand_iter.index]['max_separation'] = max_separation
 
             # step to next candidate
             match_line = comp
-            matches = []
+            members = []
 
         cand_iter.iternext()
     
