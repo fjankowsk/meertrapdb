@@ -73,7 +73,7 @@ def plot_sift_overview(t_data):
     ax2 = ax.twinx()
 
     ax2.scatter(data['sb'],
-                100 * (1.0 - data['heads'] / float(data['candidates'])),
+                100 * (1.0 - data['heads'] / data['candidates']),
                 marker='d',
                 color='darkred',
                 label='Reduction')
