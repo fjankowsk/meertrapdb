@@ -638,7 +638,7 @@ def run_sift(schedule_block):
             for sr in schema.SiftResult
             for c in sr.sps_candidate
             for obs in c.observation
-            for sb in sb.schedule_block
+            for sb in obs.schedule_block
             if (sb.sb_id == schedule_block)
         )
 
