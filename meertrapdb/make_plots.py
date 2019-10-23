@@ -47,7 +47,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def plot_snr_timeline(t_data, prefix):
+def plot_snr_timeline(data, prefix):
     """
     Plot S/N versus time.
 
@@ -57,14 +57,12 @@ def plot_snr_timeline(t_data, prefix):
         The prefix for the output file.
     """
 
-    data = np.copy(t_data)
-
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
     ax.scatter(data['mjd'], data['snr'] + 1,
-              marker='x',
-              color='black')
+               marker='x',
+               color='black')
 
     ax.grid(True)
     #ax.legend(loc='best', frameon=False)
