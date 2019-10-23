@@ -87,6 +87,7 @@ def match_candidates(t_candidates, num_decimals, dm_thresh):
             if (comp['snr'] > match_line['snr']):
                 match_line = comp
         else:
+            info[i]['head'] = match_line['index']
             info[i]['is_head'] = True
             info[i]['members'] = len(members)
             info[i]['beams'] = len(set([item['beam'] for item in members]))
@@ -96,9 +97,8 @@ def match_candidates(t_candidates, num_decimals, dm_thresh):
             members = []
             match_line = comp
     
-    # fill in head
-    mask = (info['is_head'] == False)
-    for i in range(len(info[mask])):
+    # fill in head for both heads and non-heads (just to be shure)
+    for i in range(len(info)):
         cluster_id = info[i]['cluster_id']
         head_mask = np.logical_and(info['is_head'] == True, info['cluster_id'] == cluster_id)
         head = info[head_mask]['index']
