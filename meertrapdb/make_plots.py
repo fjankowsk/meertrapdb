@@ -78,14 +78,15 @@ def run_timeline():
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
-    ax.scatter(data['mjd'], data['snr'],
+    ax.scatter(data['mjd'], data['snr'] + 1,
               marker='x',
               color='black')
 
     ax.grid(True)
     #ax.legend(loc='best', frameon=False)
+    ax.set_yscale('log', nonposy='clip')
     ax.set_xlabel('MJD')
-    ax.set_ylabel('S/N')
+    ax.set_ylabel('S/N + 1')
 
     fig.tight_layout()
 
