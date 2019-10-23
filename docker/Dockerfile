@@ -50,6 +50,7 @@ RUN pip3 install \
     matplotlib \
     mysqlclient \
     numpy \
+    pandas \
     pony \
     pyyaml \
     pytz
