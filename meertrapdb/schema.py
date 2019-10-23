@@ -150,6 +150,8 @@ class PipelineConfig(db.Entity):
 class SiftResult(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
     sps_candidate = Set('SpsCandidate')
+    cluster_id = Required(int, size=32)
+    head = Set('SpsCandidate')
     is_head = Required(bool)
     members = Required(int, size=32)
     beams = Optional(int, size=16)
