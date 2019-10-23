@@ -150,8 +150,9 @@ class PipelineConfig(db.Entity):
 class SiftResult(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
     sps_candidate = Set('SpsCandidate')
-    is_uniq = Required(bool)
-    matches = Required(int, size=32)
+    is_head = Required(bool)
+    members = Required(int, size=32)
+    beams = Optional(int, size=16)
 
 
 class Logs(db.Entity):
