@@ -87,6 +87,10 @@ def run_timeline():
     ax.set_xlabel('MJD')
     ax.set_ylabel('S/N')
 
+    fig.tight_layout()
+
+    fig.savefig('timeline.pdf')
+
 
 #
 # MAIN
