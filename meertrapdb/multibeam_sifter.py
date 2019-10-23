@@ -119,6 +119,25 @@ def match_candidates(t_candidates, num_decimals, dm_thresh):
 
     info = np.sort(info, order='index')
 
+    # output sifting statistics
+    mask = info['is_head']
+
+    log.info('Total candidates: {0}'.format(len(candidates)))
+    if len(candidates) > 0:
+        log.info('Cluster heads: {0} ({1:.2f})'.format(
+            len(candidates[mask]),
+            100 * len(candidates[mask]) / float(len(candidates))
+            ))
+
+        for field in ['members', 'beams']:
+            log.info('{0} (min, mean, median, max): {1}, {2}, {3}, {4}'.format(
+                field.capitalize(),
+                np.min(info[field]),
+                np.mean(info[field]),
+                np.median(info[field]),
+                np.max(info[field]))
+                )
+
     return info
 
 
@@ -134,18 +153,6 @@ def main():
     info = match_candidates(candidates, args.mjd, args.dm)
 
     mask = info['uniq']
-
-    print('Total candidates: {0}'.format(len(candidates)))
-    print('Unique candidates: {0}'.format(len(candidates[mask])))
-    for field in ['matches', 'beams']:
-        print('{0} (min, mean, median, max): {1}, {2}, {3}, {4}'.format(
-            field.capitalize(),
-            np.min(info[field]),
-            np.mean(info[field]),
-            np.median(info[field]),
-            np.max(info[field]))
-            )
-    
     unique_cands = candidates[mask]
     num_matches = info['matches'][mask]
 
