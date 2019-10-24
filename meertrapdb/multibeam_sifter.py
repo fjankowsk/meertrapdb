@@ -74,62 +74,53 @@ def match_candidates(t_candidates, time_thresh, dm_thresh):
 
     dtype = [('index',int), ('cluster_id',int),
              ('head',int), ('is_head',bool),
-             ('members',int), ('beams',int)]
+             ('members',int), ('beams',int),
+             ('processed',bool)]
     info = np.zeros(len(candidates), dtype=dtype)
 
-    head = candidates[0]
-    members = []
+    # fill in the candidate indices
+    info['index'] = candidates['index']
+
     cluster_id = 0
 
     for i in range(len(candidates)):
         cand = candidates[i]
 
-        # index is the *candidate* index
-        info[i]['index'] = cand['index']
         info[i]['cluster_id'] = cluster_id
 
-        # check for matches in mjd and dm space
-        if (abs(cand['mjd'] - head['mjd']) <= mjd_tol) and \
-           (abs(cand['dm'] - head['dm']) / cand['dm'] < dm_thresh):
-            members.append(cand)
+        mask_in_box = np.logical_and(
+            np.abs(candidates['mjd'] - cand['mjd']) <= mjd_tol,
+            np.abs(candidates['dm'] - cand['dm']) / cand['dm'] <= dm_thresh
+        )
 
-            if (cand['snr'] > head['snr']):
-                head = cand
-        else:
-            info[i]['head'] = head['index']
-            info[i]['is_head'] = True
-            info[i]['members'] = len(members)
-            info[i]['beams'] = len(set([item['beam'] for item in members]))
+        mask_not_processed = np.logical_not(info['processed'])
 
-            # step to next cluster
-            cluster_id += 1
-            members = []
-            head = cand
-    
-    # fill in head for both heads and non-heads (just to be sure)
-    for i in range(len(info)):
-        cluster_id = info[i]['cluster_id']
-        head_mask = np.logical_and(info['is_head'] == True, info['cluster_id'] == cluster_id)
-        head = info[head_mask]['index']
+        mask = np.logical_and(mask_in_box, mask_not_processed)
 
-        if len(head) != 1:
-            msg = 'Something is wrong with the head selection: {0}, {1}, {2}, {3}'.format(
-                len(head),
-                head,
-                cluster_id,
-                info[i]['index']
-                )
-            raise RuntimeError(msg)
-        else:
-            head = head[0]
-            info[i]['head'] = head
+        members = candidates[mask]
+        members = np.sort(members, order='snr')
+
+        # the cluster head is the one with the highest snr
+        head = members[-1]
+
+        # fill in all members
+        info[mask]['head'] = head['index']
+        info[mask]['members'] = len(members)
+        info[mask]['beams'] = len(np.unique(members['beam']))
+        info[mask]['processed'] = True
+
+        # specially mark head
+        mask_head = (info['index'] == head['index'])
+        info[mask_head]['is_head'] = True
+
+        cluster_id += 1
 
     # sanity checks
     # 1) candidate indices must be unique
     if not len(info['index']) == len(np.unique(info['index'])):
         raise RuntimeError('The candidate indices are not not unique.')
 
-    # 2) the number of cluster heads must be right
+    # 2) the number of cluster heads must be correct
     if not len(info[info['is_head']]) == len(np.unique(info['head'])):
         raise RuntimeError('The number of cluster heads is incorrect.')
 
