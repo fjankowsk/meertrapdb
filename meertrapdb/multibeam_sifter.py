@@ -125,7 +125,7 @@ def match_candidates(t_candidates, num_decimals, dm_thresh):
 
     # sanity checks
     # 1) candidate indices must be unique
-    if not np.all(info['index'] == np.unique(info['index'])):
+    if not len(info['index']) == len(np.unique(info['index'])):
         raise RuntimeError('The candidate indices are not not unique.')
 
     # 2) the number of cluster heads must be right
