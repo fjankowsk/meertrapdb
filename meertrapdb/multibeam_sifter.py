@@ -143,6 +143,12 @@ def match_candidates(t_candidates, num_decimals, dm_thresh):
                 np.max(info[field]))
                 )
 
+    # display some debug output
+    for item in info:
+        log.info('{0}, {1}, {2}, {3}, {4}'.format(item['index'],
+                 item['is_head'], item['members'], item['beams'],
+                 item['head']))
+
     return info
 
 
