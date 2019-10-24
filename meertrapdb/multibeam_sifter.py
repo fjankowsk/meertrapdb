@@ -76,26 +76,26 @@ def match_candidates(t_candidates, num_decimals, dm_thresh):
              ('members',int), ('beams',int)]
     info = np.zeros(len(candidates), dtype=dtype)
 
-    match_line = candidates[0]
+    head = candidates[0]
     members = []
     cluster_id = 0
 
     for i in range(len(candidates)):
-        comp = candidates[i]
+        cand = candidates[i]
 
         # index is the *candidate* index
-        info[i]['index'] = comp['index']
+        info[i]['index'] = cand['index']
         info[i]['cluster_id'] = cluster_id
 
         # check for matches in mjd and dm space
-        if (comp['mjd'] == match_line['mjd']) and \
-           (abs(comp['dm'] - match_line['dm']) / comp['dm'] < dm_thresh):
-            members.append(comp)
+        if (cand['mjd'] == head['mjd']) and \
+           (abs(cand['dm'] - head['dm']) / cand['dm'] < dm_thresh):
+            members.append(cand)
 
-            if (comp['snr'] > match_line['snr']):
-                match_line = comp
+            if (cand['snr'] > head['snr']):
+                head = cand
         else:
-            info[i]['head'] = match_line['index']
+            info[i]['head'] = head['index']
             info[i]['is_head'] = True
             info[i]['members'] = len(members)
             info[i]['beams'] = len(set([item['beam'] for item in members]))
@@ -103,7 +103,7 @@ def match_candidates(t_candidates, num_decimals, dm_thresh):
             # step to next cluster
             cluster_id += 1
             members = []
-            match_line = comp
+            head = cand
     
     # fill in head for both heads and non-heads (just to be sure)
     for i in range(len(info)):
