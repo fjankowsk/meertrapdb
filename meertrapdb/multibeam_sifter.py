@@ -65,7 +65,7 @@ def match_candidates(t_candidates, time_thresh, dm_thresh):
 
     log = logging.getLogger('meertrapdb.multibeam_sifter')
 
-    mjd_tol = 1E3 * time_thresh / (24 * 60 * 60.0)
+    mjd_tol = 1E-3 * time_thresh / (24 * 60 * 60.0)
     log.info('Time tolerance: {0:.2f} ms'.format(time_thresh))
     log.info('MJD tolerance: {0:.10f}'.format(mjd_tol))
     log.info('DM tolerance: {0:.2f} %'.format(100 * dm_thresh))
