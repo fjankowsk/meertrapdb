@@ -86,8 +86,6 @@ def match_candidates(t_candidates, time_thresh, dm_thresh):
     for i in range(len(candidates)):
         cand = candidates[i]
 
-        info[i]['cluster_id'] = cluster_id
-
         mask_in_box = np.logical_and(
             np.abs(candidates['mjd'] - cand['mjd']) <= mjd_tol,
             np.abs(candidates['dm'] - cand['dm']) / cand['dm'] <= dm_thresh
@@ -98,20 +96,26 @@ def match_candidates(t_candidates, time_thresh, dm_thresh):
         mask = np.logical_and(mask_in_box, mask_not_processed)
 
         members = candidates[mask]
+
+        # skip further in the candidates
+        if len(members) == 0:
+            continue
+
         members = np.sort(members, order='snr')
 
         # the cluster head is the one with the highest snr
         head = members[-1]
 
         # fill in all members
-        info[mask]['head'] = head['index']
-        info[mask]['members'] = len(members)
-        info[mask]['beams'] = len(np.unique(members['beam']))
-        info[mask]['processed'] = True
+        info['head'][mask] = head['index']
+        info['cluster_id'][mask] = cluster_id
+        info['members'][mask] = len(members)
+        info['beams'][mask] = len(np.unique(members['beam']))
+        info['processed'][mask] = True
 
         # specially mark head
         mask_head = (info['index'] == head['index'])
-        info[mask_head]['is_head'] = True
+        info['is_head'][mask_head] = True
 
         cluster_id += 1
 
@@ -120,9 +124,13 @@ def match_candidates(t_candidates, time_thresh, dm_thresh):
     if not len(info['index']) == len(np.unique(info['index'])):
         raise RuntimeError('The candidate indices are not not unique.')
 
-    # 2) the number of cluster heads must be correct
+    # 2) the number of cluster heads must match
     if not len(info[info['is_head']]) == len(np.unique(info['head'])):
         raise RuntimeError('The number of cluster heads is incorrect.')
+
+    # 3) check that all candidates have been processed
+    if not np.all(info['processed']):
+        raise RuntimeError('Not all candidates have been processed.')
 
     # output sifting statistics
     mask = info['is_head']
