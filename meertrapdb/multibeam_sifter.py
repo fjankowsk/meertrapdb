@@ -111,11 +111,16 @@ def match_candidates(t_candidates, num_decimals, dm_thresh):
         head = info[head_mask]['index']
 
         if len(head) != 1:
-            raise RuntimeError('Something is wrong with the head selection.')
+            msg = 'Something is wrong with the head selection: {0}, {1}, {2}, {3}'.format(
+                len(head),
+                head,
+                cluster_id,
+                info[i]['index']
+                )
+            raise RuntimeError(msg)
         else:
             head = head[0]
-
-        info[i]['head'] = head
+            info[i]['head'] = head
 
     info = np.sort(info, order='index')
 
