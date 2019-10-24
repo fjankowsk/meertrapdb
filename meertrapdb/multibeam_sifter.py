@@ -105,7 +105,7 @@ def match_candidates(t_candidates, num_decimals, dm_thresh):
             members = []
             match_line = comp
     
-    # fill in head for both heads and non-heads (just to be shure)
+    # fill in head for both heads and non-heads (just to be sure)
     for i in range(len(info)):
         cluster_id = info[i]['cluster_id']
         head_mask = np.logical_and(info['is_head'] == True, info['cluster_id'] == cluster_id)
