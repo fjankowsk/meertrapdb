@@ -1,2 +1,2 @@
 # version info
-__version__ = "$Revision$"
+__version__ = "0.3"

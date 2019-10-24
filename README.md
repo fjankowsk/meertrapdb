@@ -1,4 +1,4 @@
-# MeerTRAP database backend #
+# MeerTRAP Database Backend #
 
 This repository contains the database backend code for the MeerTRAP project at
 the MeerKAT telescope.
