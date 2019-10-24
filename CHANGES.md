@@ -2,11 +2,17 @@
 
 ## HEAD ##
 
+* Added option to make plot to evaluate the multibeam sifting performance.
+* Added option to make plot of S/N timeline by schedule block ID and in total.
+* Added script to make statistics plots from the database.
+* The results from the multibeam sifting operation are written into a separate database table. Subsequent sifting runs overwrite the previous results without touching the candidate data. This allows one to trial different sifting parameters.
+* Added multibeam sifting code and hooked it up to the database. It is run as part of the ingestion process, but can be invoked separately. A stand-alone script is available as well that works on SPCCL file input.
+
 ## 0.3 (2019-09-04) ##
 
 This version of the code has seen constant use and testing over the last two months.
 
-* The candidates are now grouped by absolute beam number
+* The candidates are now grouped by absolute beam number.
 * Added `test_run` command line option that is useful for testing the database ingest logic. It is only valid for `production` mode. Files are neither copied, nor moved when the option is specified.
 * Moved schedule block ID definition into the configuration file
 * We switched to a much improved directory structure for storing the candidate files on disk. The code was adjusted to reflect that. As a consequence, we now know the nodes on which the candidates were generated.
