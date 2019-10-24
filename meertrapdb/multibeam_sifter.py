@@ -28,19 +28,20 @@ def parse_args():
 
     parser.add_argument('filename', type=str)
 
-    parser.add_argument('--dm', type=float,
+    parser.add_argument('--dm',
+                        type=float,
                         default=0.02,
                         help='Fractional DM tolerance. Default: 0.02')
 
-    parser.add_argument('--mjd',
-                        type=int,
-                        default=7,
-                        help='MJD is rounded off after this many decimals. Default: 7')
+    parser.add_argument('--time',
+                        type=float,
+                        default=10.0,
+                        help='Time tolerance for matching in milliseconds. Default: 10.0')
 
     return parser.parse_args()
 
 
-def match_candidates(t_candidates, num_decimals, dm_thresh):
+def match_candidates(t_candidates, time_thresh, dm_thresh):
     """
     Match candidates based on MJD and DM.
 
@@ -50,8 +51,8 @@ def match_candidates(t_candidates, num_decimals, dm_thresh):
     ----------
     t_candidates: ~np.record
         The meta data of the single-pulse candidates.
-    num_decimals: int
-        The number of decimals the detection MJDs are rounded to.
+    time_thresh: float
+        The width of the matching box in ms.
     dm_thresh: float
         The fractional DM tolerance to use for matching.
 
@@ -64,11 +65,11 @@ def match_candidates(t_candidates, num_decimals, dm_thresh):
 
     log = logging.getLogger('meertrapdb.multibeam_sifter')
 
-    mjd_tol = 24 * 60 * 60 * 1E3 * pow(10, -1.0 * num_decimals)
-    log.info('MJD tolerance: {0:.2f} ms'.format(mjd_tol))
+    mjd_tol = 1E3 * time_thresh / (24 * 60 * 60.0)
+    log.info('Time tolerance: {0:.2f} ms'.format(time_thresh))
+    log.info('MJD tolerance: {0:.10f}'.format(mjd_tol))
     log.info('DM tolerance: {0:.2f} %'.format(100 * dm_thresh))
 
-    candidates['mjd'] = np.around(candidates['mjd'], decimals=num_decimals)
     candidates = np.sort(candidates, order=['mjd', 'dm', 'snr'])
 
     dtype = [('index',int), ('cluster_id',int),
@@ -88,7 +89,7 @@ def match_candidates(t_candidates, num_decimals, dm_thresh):
         info[i]['cluster_id'] = cluster_id
 
         # check for matches in mjd and dm space
-        if (cand['mjd'] == head['mjd']) and \
+        if (abs(cand['mjd'] - head['mjd']) <= mjd_tol) and \
            (abs(cand['dm'] - head['dm']) / cand['dm'] < dm_thresh):
             members.append(cand)
 
@@ -173,7 +174,7 @@ def main():
 
     candidates = parse_spccl_file(args.filename)
 
-    info = match_candidates(candidates, args.mjd, args.dm)
+    info = match_candidates(candidates, args.time, args.dm)
 
     mask = info['uniq']
     unique_cands = candidates[mask]

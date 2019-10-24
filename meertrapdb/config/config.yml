@@ -35,7 +35,7 @@ filesystem:
 
 # multibeam sifter related options
 sifter:
-  # MJD is rounded off after this many decimals
-  num_decimals: 7
+  # time threshold for matching in milliseconds
+  time_thresh: 10.0
   # fractional DM tolerance
   dm_thresh: 0.02

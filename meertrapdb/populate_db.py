@@ -711,7 +711,7 @@ def run_sift(schedule_block):
     dtype = [('index',int), ('mjd',float), ('dm',float), ('snr',float), ('beam',int)]
     candidates = np.array(candidates, dtype=dtype)
 
-    info = match_candidates(candidates, sconfig['num_decimals'], sconfig['dm_thresh'])
+    info = match_candidates(candidates, sconfig['time_thresh'], sconfig['dm_thresh'])
 
     # write results back to database
     log.info('Writing results into database.')
