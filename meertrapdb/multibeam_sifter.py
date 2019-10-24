@@ -123,8 +123,6 @@ def match_candidates(t_candidates, num_decimals, dm_thresh):
             head = head[0]
             info[i]['head'] = head
 
-    info = np.sort(info, order='index')
-
     # sanity checks
     # 1) candidate indices must be unique
     if not np.all(info['index'] == np.unique(info['index'])):
@@ -154,11 +152,14 @@ def match_candidates(t_candidates, num_decimals, dm_thresh):
                 )
 
     # display some debug output
-    for item in info:
-        log.debug('{0}, {1}, {2}, {3}, {4}, {5}'.format(
+    for item, cand in zip(info, candidates):
+        log.debug('{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}'.format(
             item['index'], item['cluster_id'], item['is_head'],
-            item['members'], item['beams'], item['head']
+            item['members'], item['beams'], item['head'],
+            cand['mjd'], cand['dm'], cand['snr']
             ))
+
+    info = np.sort(info, order='index')
 
     return info
 
