@@ -83,7 +83,8 @@ def match_candidates(t_candidates, num_decimals, dm_thresh):
     for i in range(len(candidates)):
         comp = candidates[i]
 
-        info[i]['index'] = match_line['index']
+        # index is the *candidate* index
+        info[i]['index'] = comp['index']
         info[i]['cluster_id'] = cluster_id
 
         # check for matches in mjd and dm space
@@ -145,9 +146,10 @@ def match_candidates(t_candidates, num_decimals, dm_thresh):
 
     # display some debug output
     for item in info:
-        log.info('{0}, {1}, {2}, {3}, {4}'.format(item['index'],
-                 item['is_head'], item['members'], item['beams'],
-                 item['head']))
+        log.info('{0}, {1}, {2}, {3}, {4}, {5}'.format(
+            item['index'], item['cluster_id'], item['is_head'],
+            item['members'], item['beams'], item['head']
+            ))
 
     return info
 
