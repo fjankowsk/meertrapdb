@@ -56,6 +56,12 @@ def parse_args():
         action='store_true',
         help='Do neither move, nor copy files. This flag works with "production" mode only.'
     )
+
+    parser.add_argument(
+        '-v', '--verbose',
+        action='store_true',
+        help='Get verbose program output. This switches on the display of debug messages.'
+    )
     
     parser.add_argument(
         "--version",
@@ -754,7 +760,11 @@ def main():
         sys.exit('The "test_run" flag is only valid for "production" mode.')
 
     log = logging.getLogger('meertrapdb.populate_db')
-    setup_logging()
+
+    if args.verbose:
+        setup_logging(logging.DEBUG)
+    else:
+        setup_logging(logging.INFO)
 
     config = get_config()
     dbconf = config['db']

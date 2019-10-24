@@ -7,7 +7,7 @@
 import logging
 
 
-def setup_logging():
+def setup_logging(level=logging.INFO):
     """
     Setup the logging configuration.
     """
@@ -19,7 +19,7 @@ def setup_logging():
 
     # log to console
     console = logging.StreamHandler()
-    console.setLevel(logging.INFO)
+    console.setLevel(level)
     fmt = "%(asctime)s, %(processName)s, %(name)s, %(module)s, %(levelname)s: %(message)s"
     console_formatter = logging.Formatter(fmt)
     console.setFormatter(console_formatter)
