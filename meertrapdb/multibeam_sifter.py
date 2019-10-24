@@ -155,7 +155,7 @@ def match_candidates(t_candidates, num_decimals, dm_thresh):
 
     # display some debug output
     for item in info:
-        log.info('{0}, {1}, {2}, {3}, {4}, {5}'.format(
+        log.debug('{0}, {1}, {2}, {3}, {4}, {5}'.format(
             item['index'], item['cluster_id'], item['is_head'],
             item['members'], item['beams'], item['head']
             ))
