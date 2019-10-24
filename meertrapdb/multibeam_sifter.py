@@ -77,10 +77,18 @@ def match_candidates(t_candidates, num_decimals, dm_thresh):
     info = np.zeros(len(candidates), dtype=dtype)
 
     head = candidates[0]
-    members = []
-    cluster_id = 0
 
-    for i in range(len(candidates)):
+    # set the first candidate always to a head
+    info[0]['index'] = head['index']
+    info[0]['cluster_id'] = 0
+    info[0]['is_head'] = True
+    info[0]['members'] = 0
+    info[0]['beams'] = 0
+    
+    members = []
+    cluster_id = 1
+
+    for i in range(1, len(candidates)):
         cand = candidates[i]
 
         # index is the *candidate* index
@@ -95,10 +103,10 @@ def match_candidates(t_candidates, num_decimals, dm_thresh):
             if (cand['snr'] > head['snr']):
                 head = cand
         else:
-            info[i]['head'] = head['index']
-            info[i]['is_head'] = True
-            info[i]['members'] = len(members)
-            info[i]['beams'] = len(set([item['beam'] for item in members]))
+            info[i-1]['head'] = head['index']
+            info[i-1]['is_head'] = True
+            info[i-1]['members'] = len(members)
+            info[i-1]['beams'] = len(set([item['beam'] for item in members]))
 
             # step to next cluster
             cluster_id += 1
