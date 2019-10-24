@@ -127,11 +127,11 @@ def match_candidates(t_candidates, num_decimals, dm_thresh):
 
     # sanity checks
     # 1) candidate indices must be unique
-    if not info['index'] == np.unique(info['index']):
+    if not np.all(info['index'] == np.unique(info['index'])):
         raise RuntimeError('The candidate indices are not not unique.')
 
     # 2) the number of cluster heads must be right
-    if not len(info[info['is_head']]) == np.unique(info['head']):
+    if not len(info[info['is_head']]) == len(np.unique(info['head'])):
         raise RuntimeError('The number of cluster heads is incorrect.')
 
     # output sifting statistics
