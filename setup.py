@@ -24,6 +24,7 @@ setup(name='meertrapdb',
             'astropy',
             'matplotlib',
             'numpy',
+            'pandas',
             'pony',
             'pytz',
             'pyyaml'
