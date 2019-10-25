@@ -16,6 +16,7 @@ from time import sleep
 from astropy.time import Time
 from matplotlib.colors import LogNorm
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FormatStrFormatter
 import numpy as np
 from pandas import DataFrame
 from pony.orm import (db_session, delete, select)
@@ -61,22 +62,32 @@ def plot_heimdall(data, prefix):
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
-    sc = ax.scatter(data['mjd'], data['dm'] + 1,
+    start_time = np.min(data['mjd'])
+    elapsed_time = 24 * 60 * (data['mjd'] - start_time)
+
+    sc = ax.scatter(elapsed_time, data['dm'] + 1,
             c=data['width'],
             norm=LogNorm(),
             s=60 * data['snr'] / np.max(data['snr']),
             marker='o',
             edgecolor='black',
             lw=0.6,
-            cmap='Reds'
+            cmap='Reds',
+            zorder=3
         )
 
-    plt.colorbar(sc, label='Width (ms)')
+    cb = plt.colorbar(sc, label='Width (ms)')
 
     ax.grid(True)
     ax.set_yscale('log', nonposy='clip')
-    ax.set_xlabel('MJD')
-    ax.set_ylabel('DM + 1 (pc/cm3)')
+    ax.set_xlabel('Time from MJD {0:.2f} (min)'.format(start_time))
+    ax.set_ylabel(r'DM + 1 $(\mathregular{pc} \: \mathregular{cm}^{-3})$')
+    ax.set_title('Schedule block {0}'.format(data['sb'].iloc[0]))
+
+    # set formatting of ticklabels
+    sfor = FormatStrFormatter('%g')
+    ax.yaxis.set_major_formatter(sfor)
+    cb.ax.yaxis.set_major_formatter(sfor)
 
     fig.tight_layout()
 
@@ -121,6 +132,7 @@ def run_heimdall():
     sb_ids = np.unique(data['sb'])
 
     for sb_id in sb_ids:
+        print('Processing schedule block: {0}'.format(sb_id))
         sel = data[data['sb'] == sb_id]
 
         prefix = 'heimdall_sb_{0}'.format(sb_id)
