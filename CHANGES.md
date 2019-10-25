@@ -2,6 +2,7 @@
 
 ## HEAD ##
 
+* Added heimdall-like plot of candidate dispersion measures versus time, including S/N and width.
 * Complete rewrite of the sifting logic that is now based on numpy array masking operations.
 * Added option to make plot to evaluate the multibeam sifting performance.
 * Added option to make plot of S/N timeline by schedule block ID and in total.
