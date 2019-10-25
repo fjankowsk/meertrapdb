@@ -2,6 +2,7 @@
 
 ## HEAD ##
 
+* Complete rewrite of the sifting logic that is now based on numpy array masking operations.
 * Added option to make plot to evaluate the multibeam sifting performance.
 * Added option to make plot of S/N timeline by schedule block ID and in total.
 * Added `make_plots` script to generate statistics plots from the database.
