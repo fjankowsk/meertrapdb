@@ -110,9 +110,10 @@ def run_heimdall():
             'mjd':      [item[1] for item in temp],
             'dm':       [item[2] for item in temp],
             'snr':      [item[3] for item in temp],
-            'beam':     [item[4] for item in temp],
-            'sb':       [item[5] for item in temp],
-            'is_head':  [item[6] for item in temp]
+            'width':    [item[4] for item in temp],
+            'beam':     [item[5] for item in temp],
+            'sb':       [item[6] for item in temp],
+            'is_head':  [item[7] for item in temp]
         }
 
     data = DataFrame.from_dict(temp2)
