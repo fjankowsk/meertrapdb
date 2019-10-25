@@ -2,6 +2,8 @@
 
 ## HEAD ##
 
+## 0.4 (2019-10-25) ##
+
 * Added heimdall-like plot of candidate dispersion measures versus time, including S/N and width.
 * Complete rewrite of the sifting logic that is now based on numpy array masking operations.
 * Added option to make plot to evaluate the multibeam sifting performance.
