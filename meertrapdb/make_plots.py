@@ -14,6 +14,7 @@ import sys
 from time import sleep
 
 from astropy.time import Time
+from matplotlib.colors import LogNorm
 import matplotlib.pyplot as plt
 import numpy as np
 from pandas import DataFrame
@@ -34,7 +35,7 @@ def parse_args():
     
     parser.add_argument(
         'mode',
-        choices=['sifting', 'timeline'],
+        choices=['sifting', 'timeline', 'heimdall'],
         help='Mode of operation.'
     )
     
@@ -45,6 +46,84 @@ def parse_args():
     )
 
     return parser.parse_args()
+
+
+def plot_heimdall(data, prefix):
+    """
+    Plot heimdall-like overview plot.
+
+    Parameters
+    ----------
+    filename: str
+        The prefix for the output file.
+    """
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+
+    sc = ax.scatter(data['mjd'], data['dm'] + 1,
+            c=data['width'],
+            norm=LogNorm(),
+            s=60 * data['snr'] / np.max(data['snr']),
+            marker='o',
+            edgecolor='black',
+            lw=0.6,
+            cmap='Reds'
+        )
+
+    plt.colorbar(sc, label='Width (ms)')
+
+    ax.grid(True)
+    ax.set_yscale('log', nonposy='clip')
+    ax.set_xlabel('MJD')
+    ax.set_ylabel('DM + 1 (pc/cm3)')
+
+    fig.tight_layout()
+
+    fig.savefig('{0}.pdf'.format(prefix))
+    fig.savefig('{0}.png'.format(prefix), dpi=300)
+    plt.close(fig)
+
+
+def run_heimdall():
+    """
+    Run the processing for 'heimdall' mode.
+    """
+
+    with db_session:
+        temp = select(
+                    (c.id, c.mjd, c.dm, c.snr, c.width,
+                    beam.number, sb.sb_id, sr.is_head)
+                    for c in schema.SpsCandidate
+                    for beam in c.beam
+                    for obs in c.observation
+                    for sb in obs.schedule_block
+                    for sr in c.sift_result
+                    if sr.is_head == True
+                ).sort_by(2)[:]
+
+    print('Candidates loaded: {0}'.format(len(temp)))
+
+    # convert to pandas dataframe
+    temp2 = {
+            'id':       [item[0] for item in temp],
+            'mjd':      [item[1] for item in temp],
+            'dm':       [item[2] for item in temp],
+            'snr':      [item[3] for item in temp],
+            'beam':     [item[4] for item in temp],
+            'sb':       [item[5] for item in temp],
+            'is_head':  [item[6] for item in temp]
+        }
+
+    data = DataFrame.from_dict(temp2)
+
+    sb_ids = np.unique(data['sb'])
+
+    for sb_id in sb_ids:
+        sel = data[data['sb'] == sb_id]
+
+        prefix = 'heimdall_sb_{0}'.format(sb_id)
+        plot_heimdall(sel, prefix)
 
 
 def plot_sift_overview(t_data):
@@ -105,7 +184,7 @@ def plot_sift_overview(t_data):
 
 def run_sifting():
     """
-    Run the processing for sifting mode.
+    Run the processing for 'sifting' mode.
     """
 
     with db_session:
@@ -185,7 +264,7 @@ def plot_snr_timeline(data, prefix):
 
 def run_timeline():
     """
-    Run the processing for timeline mode.
+    Run the processing for 'timeline' mode.
     """
 
     with db_session:
@@ -251,6 +330,9 @@ def main():
 
     elif args.mode == 'timeline':
         run_timeline()
+    
+    elif args.mode == 'heimdall':
+        run_heimdall()
 
     log.info("All done.")
 
