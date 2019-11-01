@@ -156,6 +156,11 @@ class SiftResult(db.Entity):
     is_head = Required(bool)
     members = Required(int, size=32)
     beams = Optional(int, size=16)
+    # angular spatial extent of the cluster
+    extent_ra = Optional(float)
+    extent_dec = Optional(float)
+    # area of the 'shower' in square degrees
+    extent_area = Optional(float)
 
 
 class Logs(db.Entity):
