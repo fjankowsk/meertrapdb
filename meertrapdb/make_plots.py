@@ -49,6 +49,53 @@ def parse_args():
     return parser.parse_args()
 
 
+def find_pulsars(t_data):
+    """
+    Identify pulsars by their clustering in DM.
+    """
+
+    data = np.copy(t_data)
+
+    step = 2
+
+    dms = np.arange(np.min(data['dm']), np.max(data['dm']), step)
+
+    dtype = [('dm',float), ('hits',int), ('snr_min',float), ('snr_med',float), ('snr_max',float)]
+    info = np.zeros(len(dms), dtype=dtype)
+
+    for dm, i in enumerate(dms):
+        mask = (np.abs(data['dm'] - dm) <= step)
+        sel = data[mask]
+
+        info['dm'][i] = dm
+        info['hits'][i] = len(sel)
+        info['snr_min'][i] = np.min(sel['snr'])
+        info['snr_med'][i] = np.median(sel['snr'])
+        info['snr_max'][i] = np.max(sel['snr'])
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+
+    ax.scatter(info['dm'] + 1, info['hits'])
+    ax.scatter(info['dm'] + 1, info['snr_min'])
+    ax.scatter(info['dm'] + 1, info['snr_med'])
+    ax.scatter(info['dm'] + 1, info['snr_max'])
+
+    ax.grid(True)
+    ax.set_xscale('log', nonposy='clip')
+    ax.set_yscale('log', nonposy='clip')
+    ax.set_ylabel(r'DM + 1 $(\mathregular{pc} \: \mathregular{cm}^{-3})$')
+
+    sb = data['sb'].iloc[0]
+    ax.set_title('Schedule block {0}'.format(sb))
+
+    fig.tight_layout()
+
+    fig.savefig('find_pulsars_sb_{0}.pdf'.format(sb))
+    fig.savefig('find_pulsars_sb_{0}.png'.format(sb), dpi=300)
+    plt.close(fig)
+
+
 def plot_heimdall(data, prefix):
     """
     Plot heimdall-like overview plot.
@@ -137,6 +184,8 @@ def run_heimdall():
 
         prefix = 'heimdall_sb_{0}'.format(sb_id)
         plot_heimdall(sel, prefix)
+
+        find_pulsars(sel)
 
 
 def plot_sift_overview(t_data):
