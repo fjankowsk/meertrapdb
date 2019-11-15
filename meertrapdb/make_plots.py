@@ -36,7 +36,7 @@ def parse_args():
     
     parser.add_argument(
         'mode',
-        choices=['sifting', 'timeline', 'heimdall'],
+        choices=['heimdall', 'sifting', 'timeline'],
         help='Mode of operation.'
     )
     
@@ -338,14 +338,14 @@ def main():
 
     db.generate_mapping(create_tables=False)
 
-    if args.mode == 'sifting':
+    if args.mode == 'heimdall':
+        run_heimdall()
+
+    elif args.mode == 'sifting':
         run_sifting()
 
     elif args.mode == 'timeline':
         run_timeline()
-    
-    elif args.mode == 'heimdall':
-        run_heimdall()
 
     log.info("All done.")
 
