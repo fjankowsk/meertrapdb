@@ -49,13 +49,12 @@ def parse_args():
     return parser.parse_args()
 
 
-def find_pulsars(t_data):
+def find_pulsars(data):
     """
     Identify pulsars by their clustering in DM.
     """
 
-    data = np.copy(t_data)
-
+    # step size in dm
     step = 2
 
     dms = np.arange(np.min(data['dm']), np.max(data['dm']), step)
@@ -63,28 +62,42 @@ def find_pulsars(t_data):
     dtype = [('dm',float), ('hits',int), ('snr_min',float), ('snr_med',float), ('snr_max',float)]
     info = np.zeros(len(dms), dtype=dtype)
 
-    for dm, i in enumerate(dms):
+    for i, dm in enumerate(dms):
         mask = (np.abs(data['dm'] - dm) <= step)
         sel = data[mask]
 
         info['dm'][i] = dm
-        info['hits'][i] = len(sel)
-        info['snr_min'][i] = np.min(sel['snr'])
-        info['snr_med'][i] = np.median(sel['snr'])
-        info['snr_max'][i] = np.max(sel['snr'])
+
+        if len(sel) > 0:
+            info['hits'][i] = len(sel)
+            info['snr_min'][i] = np.min(sel['snr'])
+            info['snr_med'][i] = np.median(sel['snr'])
+            info['snr_max'][i] = np.max(sel['snr'])
 
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
-    ax.scatter(info['dm'] + 1, info['hits'])
-    ax.scatter(info['dm'] + 1, info['snr_min'])
-    ax.scatter(info['dm'] + 1, info['snr_med'])
-    ax.scatter(info['dm'] + 1, info['snr_max'])
+    ax.scatter(info['dm'] + 1, info['hits'],
+               marker='x',
+               label='hits')
+
+    ax.scatter(info['dm'] + 1, info['snr_min'],
+               marker='+',
+               label='min S/N')
+
+    ax.scatter(info['dm'] + 1, info['snr_med'],
+               marker='s',
+               label='med S/N')
+
+    ax.scatter(info['dm'] + 1, info['snr_max'],
+               marker='d',
+               label='max S/N')
 
     ax.grid(True)
-    ax.set_xscale('log', nonposy='clip')
+    ax.legend(loc='best', frameon=False)
+    ax.set_xscale('log', nonposx='clip')
     ax.set_yscale('log', nonposy='clip')
-    ax.set_ylabel(r'DM + 1 $(\mathregular{pc} \: \mathregular{cm}^{-3})$')
+    ax.set_xlabel(r'DM + 1 $(\mathregular{pc} \: \mathregular{cm}^{-3})$')
 
     sb = data['sb'].iloc[0]
     ax.set_title('Schedule block {0}'.format(sb))
