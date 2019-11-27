@@ -102,6 +102,29 @@ def main():
 
         print(info_str)
 
+    # find matches
+    dist_thresh = 1.5
+    dm_thresh = 0.1
+
+    match = None
+
+    for d, i in zip(dist, idx):
+        if d < dist_thresh \
+        and abs(args.dm - psrcat[i]['dm']) / args.dm < dm_thresh:
+            match = psrcat[i]
+            print('Match found with distance: {0:.3f} deg'.format(d))
+            break
+
+    if match is None:
+        print('No match found.')
+    else:
+        print('Found match: {0}, {1}, {2}, {3}'.format(
+                match['psrj'],
+                match['ra'],
+                match['dec'],
+                match['dm'])
+            )
+
 
 
 if __name__ == "__main__":
