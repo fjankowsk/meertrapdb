@@ -23,6 +23,72 @@ from psrmatch.version import __version__
 # pylint: disable=E1101
 
 
+def create_search_tree(catalogue):
+    """
+    Create a k-d search tree from the catalogue.
+    """
+
+    tree = KDTree(zip(catalogue['ra'], catalogue['dec']))
+
+    return tree
+
+
+def query_search_tree(tree, source, catalogue):
+    """
+    Query the search tree.
+    """
+
+    result = tree.query(x=[source.ra.deg, source.dec.deg],
+                        p=2,
+                        k=5)
+
+    dist, idx  = result
+
+    print('Nearest neighbors:')
+    for d, i in zip(dist, idx):
+        info_str = '{0:.3f}: {1:10} {2:17} {3:17} {4:.3f}'.format(
+            d,
+            catalogue[i]['psrj'],
+            catalogue[i]['ra_str'],
+            catalogue[i]['dec_str'],
+            catalogue[i]['dm']
+        )
+
+        print(info_str)
+
+    return result
+
+
+def find_matches(result, catalogue, dm):
+    """
+    Find matches in spatial - DM space.
+    """
+
+    dist_thresh = 1.5
+    dm_thresh = 0.1
+
+    dist, idx  = result
+
+    match = None
+
+    for d, i in zip(dist, idx):
+        if d < dist_thresh \
+        and abs(dm - catalogue[i]['dm']) / dm < dm_thresh:
+            match = catalogue[i]
+            print('Match found with distance: {0:.3f} deg'.format(d))
+            break
+
+    if match is None:
+        print('No match found.')
+    else:
+        print('Found match: {0}, {1}, {2}, {3}'.format(
+                match['psrj'],
+                match['ra'],
+                match['dec'],
+                match['dm'])
+            )
+
+
 def parse_args():
     # treat negative arguments
     for i, arg in enumerate(sys.argv):
@@ -81,50 +147,13 @@ def main():
     )
 
     # create search tree
-    tree = KDTree(zip(psrcat['ra'], psrcat['dec']))
+    tree = create_search_tree(psrcat)
 
     # query
-    result = tree.query(x=[source.ra.deg, source.dec.deg],
-                        p=2,
-                        k=5)
-
-    dist, idx  = result
-
-    print('Nearest neighbors:')
-    for d, i in zip(dist, idx):
-        info_str = '{0:.3f}: {1:10} {2:17} {3:17} {4:.3f}'.format(
-            d,
-            psrcat[i]['psrj'],
-            psrcat[i]['ra_str'],
-            psrcat[i]['dec_str'],
-            psrcat[i]['dm']
-        )
-
-        print(info_str)
+    result = query_search_tree(tree, source, psrcat)
 
     # find matches
-    dist_thresh = 1.5
-    dm_thresh = 0.1
-
-    match = None
-
-    for d, i in zip(dist, idx):
-        if d < dist_thresh \
-        and abs(args.dm - psrcat[i]['dm']) / args.dm < dm_thresh:
-            match = psrcat[i]
-            print('Match found with distance: {0:.3f} deg'.format(d))
-            break
-
-    if match is None:
-        print('No match found.')
-    else:
-        print('Found match: {0}, {1}, {2}, {3}'.format(
-                match['psrj'],
-                match['ra'],
-                match['dec'],
-                match['dm'])
-            )
-
+    find_matches(result, psrcat, args.dm)
 
 
 if __name__ == "__main__":
