@@ -23,70 +23,127 @@ from psrmatch.version import __version__
 # pylint: disable=E1101
 
 
-def create_search_tree(catalogue):
+class Matcher(object):
     """
-    Create a k-d search tree from the catalogue.
-    """
-
-    tree = KDTree(zip(catalogue['ra'], catalogue['dec']))
-
-    return tree
-
-
-def query_search_tree(tree, source, catalogue):
-    """
-    Query the search tree.
+    Match sources to catalogues of known sources.
     """
 
-    result = tree.query(x=[source.ra.deg, source.dec.deg],
-                        p=2,
-                        k=5)
+    def __init__(self, dist_thresh=1.5, dm_thresh=10.0):
+        """
+        Match sources to catalogues of known sources.
 
-    dist, idx  = result
+        Parameters
+        ----------
+        dist_thresh: float
+            Distance threshold in degree.
+        dm_thresh: float
+            DM threshold in per cent.
+        """
 
-    print('Nearest neighbors:')
-    for d, i in zip(dist, idx):
-        info_str = '{0:.3f}: {1:10} {2:17} {3:17} {4:.3f}'.format(
-            d,
-            catalogue[i]['psrj'],
-            catalogue[i]['ra_str'],
-            catalogue[i]['dec_str'],
-            catalogue[i]['dm']
-        )
-
-        print(info_str)
-
-    return result
+        self.dist_thresh = dist_thresh
+        self.dm_thresh = dm_thresh / 100.0
+        self.catalogue = None
+        self.tree = None
+        self.log = logging.getLogger('meertrapdb.matcher')
 
 
-def find_matches(result, catalogue, dm):
-    """
-    Find matches in spatial - DM space.
-    """
+    def load_catalogue(self, catalogue):
+        """
+        Load a known-source catalogue.
 
-    dist_thresh = 1.5
-    dm_thresh = 0.1
+        Parameters
+        ----------
+        catalogue: ~np.record
+            The catalogue data.
+        """
 
-    dist, idx  = result
+        self.catalogue = catalogue
 
-    match = None
 
-    for d, i in zip(dist, idx):
-        if d < dist_thresh \
-        and abs(dm - catalogue[i]['dm']) / dm < dm_thresh:
-            match = catalogue[i]
-            print('Match found with distance: {0:.3f} deg'.format(d))
-            break
+    def create_search_tree(self):
+        """
+        Create a k-d search tree from the catalogue.
+        """
 
-    if match is None:
-        print('No match found.')
-    else:
-        print('Found match: {0}, {1}, {2}, {3}'.format(
-                match['psrj'],
-                match['ra'],
-                match['dec'],
-                match['dm'])
+        self.tree = KDTree(
+            zip(self.catalogue['ra'], self.catalogue['dec'])
             )
+
+
+    def query_search_tree(self, source):
+        """
+        Query the search tree.
+
+        Parameters
+        ----------
+        source: ~astropy.coordinates.SkyCoord
+            The source to check.
+
+        Returns
+        -------
+        result: [~np.array, ~np.array]
+            The distances and indices of the nearest neighbors.
+        """
+
+        result = self.tree.query(
+            x=[source.ra.deg, source.dec.deg],
+            p=2,
+            k=5)
+
+        dist, idx  = result
+
+        print('Nearest neighbors:')
+        for d, i in zip(dist, idx):
+            info_str = '{0:.3f}: {1:10} {2:17} {3:17} {4:.3f}'.format(
+                d,
+                self.catalogue[i]['psrj'],
+                self.catalogue[i]['ra_str'],
+                self.catalogue[i]['dec_str'],
+                self.catalogue[i]['dm']
+            )
+
+            print(info_str)
+
+        return result
+
+
+    def find_matches(self, source, dm):
+        """
+        Find matches in spatial - DM space.
+
+        Parameters
+        ----------
+        source: ~astropy.coordinates.SkyCoord
+            The source to check.
+        dm: float
+            The dispersion measure of the source.
+        """
+
+        dist, idx  = self.query_search_tree(source)
+
+        self.log.info('Using distance threshold: {0} deg'.format(self.dist_thresh))
+        self.log.info('Using DM threshold: {0}'.format(self.dm_thresh))
+
+        match = None
+
+        for d, i in zip(dist, idx):
+            if d < self.dist_thresh \
+            and abs(dm - self.catalogue[i]['dm']) / dm < self.dm_thresh:
+                match = self.catalogue[i]
+                print('Match found with distance: {0:.3f} deg'.format(d))
+                break
+
+        if match is None:
+            print('No match found.')
+        else:
+            print('Found match: {0}, {1}, {2}, {3}'.format(
+                    match['psrj'],
+                    match['ra'],
+                    match['dec'],
+                    match['dm'])
+                )
+
+        return match
 
 
 def parse_args():
@@ -146,14 +203,13 @@ def main():
         )
     )
 
-    # create search tree
-    tree = create_search_tree(psrcat)
+    m = Matcher()
 
-    # query
-    result = query_search_tree(tree, source, psrcat)
+    m.load_catalogue(psrcat)
 
-    # find matches
-    find_matches(result, psrcat, args.dm)
+    m.create_search_tree()
+
+    m.find_matches(source, args.dm)
 
 
 if __name__ == "__main__":
