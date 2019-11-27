@@ -45,4 +45,7 @@ def parse_psrcat(filename):
     data = append_fields(data, 'ra', coords.ra.deg)
     data = append_fields(data, 'dec', coords.dec.deg)
 
+    # remove non-radio pulsars
+    data = data[np.isfinite(data['dm'])]
+
     return data
