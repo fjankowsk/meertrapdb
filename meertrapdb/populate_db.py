@@ -818,8 +818,10 @@ def run_known_sources(schedule_block):
                     for c in schema.SpsCandidate
                     for beam in c.beam
                     for obs in c.observation
+                    for sr in c.sift_result
                     for sb in obs.schedule_block
-                    if (sb.sb_id == schedule_block)
+                    if (sb.sb_id == schedule_block
+                        and sr.is_head)
                 ).sort_by(1)[:]
 
     if len(candidates) == 0:
