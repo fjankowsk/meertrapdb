@@ -51,7 +51,7 @@ class Matcher(object):
         """
 
         self.tree = KDTree(
-            zip(self.catalogue['ra'], self.catalogue['dec'])
+            list(zip(self.catalogue['ra'], self.catalogue['dec']))
             )
 
 
