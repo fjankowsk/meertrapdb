@@ -842,9 +842,23 @@ def run_known_sources(schedule_block):
                       frame='icrs',
                       unit=(u.hourangle, u.deg))
 
-    for c, item in zip(coords, candidates):
-        match = m.find_matches(c, item['dm'])
-        print(match)
+    dtype = [('index',int), ('has_match',bool), ('source','|U32')]
+    info = np.zeros(len(candidates), dtype=dtype)
+
+    for i in range(len(candidates)):
+        cand = candidates[i]
+
+        match = m.find_matches(coords[i], cand['dm'])
+
+        info['index'][i] = cand['index']
+
+        if match is None:
+            info['has_match'][i] = False
+        else:
+            info['has_match'][i] = True
+            info['source'][i] = match['psrj']
+
+    print(info)
 
     log.info("Done. Time taken: {0}".format(datetime.now() - start))
 
