@@ -110,23 +110,25 @@ class Matcher(object):
         self.log.debug('Using distance threshold: {0} deg'.format(self.dist_thresh))
         self.log.debug('Using DM threshold: {0}'.format(self.dm_thresh))
 
+        self.log.info('Source: {0}'.format(source.to_string('hmsdms')))
+
         match = None
 
         for d, i in zip(dist, idx):
             if d < self.dist_thresh \
             and abs(dm - self.catalogue[i]['dm']) / dm < self.dm_thresh:
                 match = self.catalogue[i]
-                print('Match found with distance: {0:.3f} deg'.format(d))
+                self.log.info('Match found with distance: {0:.3f} deg'.format(d))
                 break
 
         if match is None:
-            print('No match found.')
+            self.log.info('No match found.')
         else:
-            print('Found match: {0}, {1}, {2}, {3}'.format(
-                    match['psrj'],
-                    match['ra'],
-                    match['dec'],
-                    match['dm'])
+            self.log.info('Found match: {0}, {1}, {2}, {3}'.format(
+                          match['psrj'],
+                          match['ra'],
+                          match['dec'],
+                          match['dm'])
                 )
 
         return match
