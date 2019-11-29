@@ -698,8 +698,6 @@ def run_sift(schedule_block):
             if (sb.sb_id == schedule_block)
         )
 
-        db.commit()
-
     # get the candidates
     log.info('Loading candidates from database.')
     with db_session:
