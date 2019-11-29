@@ -886,6 +886,8 @@ def run_known_sources(schedule_block):
                     catalogue=item['catalogue']
                 )
 
+                db.commit()
+
             elif len(ks_queried) == 1:
                 # link to known source
                 ks = ks_queried[0]
@@ -894,8 +896,6 @@ def run_known_sources(schedule_block):
             else:
                 raise RuntimeError('Duplicate known source names are present: {0}, {1}, {2}'.format(
                                    item['source'], len(ks_queried), ks_queried))
-
-            db.commit()
 
     log.info("Done. Time taken: {0}".format(datetime.now() - start))
 
