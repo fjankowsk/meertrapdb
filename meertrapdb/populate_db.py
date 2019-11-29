@@ -842,7 +842,7 @@ def run_known_sources(schedule_block):
                       frame='icrs',
                       unit=(u.hourangle, u.deg))
 
-    dtype = [('index',int), ('has_match',bool), ('source','|U32')]
+    dtype = [('index',int), ('has_match',bool), ('source','|U32'), ('catalogue','|U32')]
     info = np.zeros(len(candidates), dtype=dtype)
 
     for i in range(len(candidates)):
@@ -857,8 +857,29 @@ def run_known_sources(schedule_block):
         else:
             info['has_match'][i] = True
             info['source'][i] = match['psrj']
+            info['catalogue'][i] = 'psrcat'
 
-    print(info)
+    # consider only those cluster heads that have a match
+    matched = info[info['has_match'] == True]
+
+    # write results back to database
+    log.info('Writing results into database.')
+    with db_session:
+        for item in matched:
+            # find sps candidate
+            cand_queried = schema.SpsCandidate.select(lambda c: c.id == int(item['index']))[:]
+
+            if len(cand_queried) == 1:
+                cand = cand_queried[0]
+            else:
+                raise RuntimeError('Something is wrong with the candidate index mapping: {0}, {1}, {2}'.format(
+                                   item['index'], len(cand_queried), cand_queried))
+
+            schema.KnownSource(
+                sps_candidate=cand,
+                name=item['source'],
+                catalogue=item['catalogue']
+            )
 
     log.info("Done. Time taken: {0}".format(datetime.now() - start))
 

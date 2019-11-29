@@ -116,6 +116,7 @@ class SpsCandidate(db.Entity):
     #classifierconfig = Set('ClassifierConfig')
     sift_result = Set('SiftResult')
     head_of = Set('SiftResult')
+    known_source = Set('KnownSource')
 
 
 class Node(db.Entity):
@@ -156,6 +157,13 @@ class SiftResult(db.Entity):
     is_head = Required(bool)
     members = Required(int, size=32)
     beams = Optional(int, size=16)
+
+
+class KnownSource(db.Entity):
+    id = PrimaryKey(int, auto=True, size=64, unsigned=True)
+    sps_candidate = Set('SpsCandidate')
+    name = Required(str, max_len=32)
+    catalogue = Required(str, max_len=32)
 
 
 class Logs(db.Entity):
