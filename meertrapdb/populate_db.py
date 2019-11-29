@@ -875,11 +875,27 @@ def run_known_sources(schedule_block):
                 raise RuntimeError('Something is wrong with the candidate index mapping: {0}, {1}, {2}'.format(
                                    item['index'], len(cand_queried), cand_queried))
 
-            schema.KnownSource(
-                sps_candidate=cand,
-                name=item['source'],
-                catalogue=item['catalogue']
-            )
+            # find known source
+            ks_queried = schema.KnownSource.select(lambda c: c.name == item['source'])[:]
+
+            if len(ks_queried) == 0:
+                # insert known source
+                schema.KnownSource(
+                    sps_candidate=cand,
+                    name=item['source'],
+                    catalogue=item['catalogue']
+                )
+
+            elif len(ks_queried) == 1:
+                # link to known source
+                ks = ks_queried[0]
+                cand.known_source = ks
+
+            else:
+                raise RuntimeError('Duplicate known source names are present: {0}, {1}, {2}'.format(
+                                   item['source'], len(ks_queried), ks_queried))
+
+            db.commit()
 
     log.info("Done. Time taken: {0}".format(datetime.now() - start))
 

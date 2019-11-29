@@ -162,7 +162,7 @@ class SiftResult(db.Entity):
 class KnownSource(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
     sps_candidate = Set('SpsCandidate')
-    name = Required(str, max_len=32)
+    name = Required(str, max_len=32, unique=True)
     catalogue = Required(str, max_len=32)
 
 
