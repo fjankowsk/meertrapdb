@@ -21,7 +21,25 @@ from numpy.lib.recfunctions import append_fields
 def parse_psrcat(filename):
     """
     Parse psrcat output.
+
+    Parameters
+    ----------
+    filename: str
+        The filename of the pulsar catalogue output.
+
+    Returns
+    -------
+    data: ~np.record
+        The catalogue data as a numpy record.
+
+    Raises
+    ------
+    RuntimeError
+        If the catalogue data could not be parsed.
     """
+
+    if not os.path.isfile(filename):
+        raise RuntimeError('The file does not exist: {0}'.format(filename))
 
     dtype = [
         ('number',int),
@@ -47,5 +65,9 @@ def parse_psrcat(filename):
 
     # remove non-radio pulsars
     data = data[np.isfinite(data['dm'])]
+
+    # sanity check
+    if len(data) == 0:
+        raise RuntimeError('No catalogue data loaded.')
 
     return data
