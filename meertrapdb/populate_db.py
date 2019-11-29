@@ -831,7 +831,7 @@ def run_known_sources(schedule_block):
     log.info('Loading cluster heads from database.')
     with db_session:
         candidates = select(
-                    (c.id, c.mjd, c.dm, beam.number, beam.ra, beam.dec)
+                    (c.id, c.dm, beam.ra, beam.dec)
                     for c in schema.SpsCandidate
                     for beam in c.beam
                     for obs in c.observation
@@ -849,8 +849,7 @@ def run_known_sources(schedule_block):
     # convert to numpy record
     candidates = [item for item in candidates]
     dtype = [
-        ('index',int), ('mjd',float), ('dm',float), ('beam',int),
-        ('ra','|U32'), ('dec','|U32')
+        ('index',int), ('dm',float), ('ra','|U32'), ('dec','|U32')
     ]
     candidates = np.array(candidates, dtype=dtype)
 
