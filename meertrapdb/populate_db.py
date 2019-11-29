@@ -790,6 +790,23 @@ def run_known_sources(schedule_block):
             print('The schedule block is not in the database: {0}'.format(schedule_block))
             sys.exit(1)
 
+    # delete any previous known source matching for that schedule block
+    log.info('Deleting previous known source matching for schedule block: {0}'.format(schedule_block))
+    with db_session:
+        # just remove the links to the known source entries
+        candidates = select(
+                    c
+                    for c in schema.SpsCandidate
+                    for obs in c.observation
+                    for sr in c.sift_result
+                    for sb in obs.schedule_block
+                    if (sb.sb_id == schedule_block
+                        and sr.is_head)
+                )[:]
+
+        for cand in candidates:
+            cand.known_source.clear()
+
     # prepare known source matcher
     m = Matcher(dist_thresh=ksconfig['dist_thresh'], dm_thresh=ksconfig['dm_thresh'])
 
