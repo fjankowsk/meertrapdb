@@ -895,7 +895,7 @@ def run_known_sources(schedule_block):
             ks_queried = schema.KnownSource.select(lambda c: c.name == item['source'])[:]
 
             if len(ks_queried) == 0:
-                # insert known source
+                # insert known source and link
                 schema.KnownSource(
                     sps_candidate=cand,
                     name=item['source'],
@@ -905,9 +905,9 @@ def run_known_sources(schedule_block):
                 db.commit()
 
             elif len(ks_queried) == 1:
-                # link to known source
+                # link sps candidate and known source
                 ks = ks_queried[0]
-                cand.known_source = ks
+                cand.known_source.add(ks)
 
             else:
                 raise RuntimeError('Duplicate known source names are present: {0}, {1}, {2}'.format(
