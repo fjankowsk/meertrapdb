@@ -8,6 +8,7 @@ import logging
 
 from scipy.spatial import KDTree
 
+
 class Matcher(object):
     """
     Match sources to catalogues of known sources.
