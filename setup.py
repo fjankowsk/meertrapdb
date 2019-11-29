@@ -26,6 +26,7 @@ setup(name='meertrapdb',
             'numpy',
             'pony',
             'pytz',
-            'pyyaml'
+            'pyyaml',
+            'scipy'
       ],
       zip_safe=False)

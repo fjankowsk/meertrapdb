@@ -53,7 +53,8 @@ RUN pip3 install \
     pandas \
     pony \
     pyyaml \
-    pytz
+    pytz \
+    scipy
 
 # install our software in docker image
 ARG SOFT_PATH="/software/meertrapdb"
