@@ -78,7 +78,7 @@ class Matcher(object):
 
         dist, idx  = result
 
-        print('Nearest neighbors:')
+        self.log.info('Nearest neighbors:')
         for d, i in zip(dist, idx):
             info_str = '{0:.3f}: {1:10} {2:17} {3:17} {4:.3f}'.format(
                 d,
@@ -88,7 +88,7 @@ class Matcher(object):
                 self.catalogue[i]['dm']
             )
 
-            print(info_str)
+            self.log.info(info_str)
 
         return result
 
