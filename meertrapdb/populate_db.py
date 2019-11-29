@@ -17,7 +17,9 @@ import shutil
 import sys
 from time import sleep
 
+from astropy.coordinates import SkyCoord
 from astropy.time import Time
+import astropy.units as u
 import numpy as np
 from pony.orm import (db_session, delete, select)
 from pytz import timezone
@@ -31,6 +33,12 @@ from meertrapdb.parsing_helpers import parse_spccl_file
 from meertrapdb import schema
 from meertrapdb.schema import db
 from meertrapdb.version import __version__
+from psrmatch.catalogue_helpers import parse_psrcat
+from psrmatch.matcher import Matcher
+
+# astropy generates members dynamically, pylint therefore fails
+# disable the corresponding pylint test for now
+# pylint: disable=E1101
 
 
 def parse_args():
@@ -40,7 +48,10 @@ def parse_args():
     
     parser.add_argument(
         'mode',
-        choices=['fake', 'init_tables', 'production', 'sift'],
+        choices=[
+            'fake', 'init_tables', 'production', 'sift',
+            'known_sources'
+            ],
         help='Mode of operation.'
     )
 
@@ -747,6 +758,109 @@ def run_sift(schedule_block):
     log.info("Done. Time taken: {0}".format(datetime.now() - start))
 
 
+def run_known_sources(schedule_block):
+    """
+    Run the processing for 'known_sources' mode.
+
+    Parameters
+    ----------
+    schedule_block: int
+        The schedule block ID to process.
+    """
+
+    log = logging.getLogger('meertrapdb.populate_db')
+
+    config = get_config()
+    ksconfig = config['knownsources']
+
+    start = datetime.now()
+
+    # check if schedule block is in the database
+    with db_session:
+        sb_queried = schema.ScheduleBlock.select(lambda sb: sb.sb_id == schedule_block)[:]
+
+        if len(sb_queried) == 1:
+            pass
+
+        elif len(sb_queried) > 1:
+            msg = 'There are duplicate schedule blocks: {0}'.format(schedule_block)
+            raise RuntimeError(msg)
+
+        else:
+            print('The schedule block is not in the database: {0}'.format(schedule_block))
+            sys.exit(1)
+
+    # delete any previous known sources for that schedule block
+    log.info('Deleting previous known sources for schedule block: {0}'.format(schedule_block))
+    with db_session:
+        delete(
+            sr
+            for sr in schema.SiftResult
+            for c in sr.sps_candidate
+            for obs in c.observation
+            for sb in obs.schedule_block
+            if (sb.sb_id == schedule_block)
+        )
+
+        db.commit()
+
+    # prepare known source matcher
+    m = Matcher(dist_thresh=ksconfig['dist_thresh'], dm_thresh=ksconfig['dm_thresh'])
+
+    log.info('Loading pulsar catalogue.')
+
+    psrcat = parse_psrcat(
+        os.path.join(
+            os.path.dirname(__file__),
+            '..',
+            'psrmatch',
+            'catalogues',
+            'psrcat_v161.txt'
+        )
+    )
+
+    m.load_catalogue(psrcat)
+
+    log.info('Creating k-d search tree.')
+    m.create_search_tree()
+
+    # get the cluster heads
+    log.info('Loading cluster heads from database.')
+    with db_session:
+        candidates = select(
+                    (c.id, c.mjd, c.dm, beam.number, beam.ra, beam.dec)
+                    for c in schema.SpsCandidate
+                    for beam in c.beam
+                    for obs in c.observation
+                    for sb in obs.schedule_block
+                    if (sb.sb_id == schedule_block)
+                ).sort_by(1)[:]
+
+    if len(candidates) == 0:
+        raise RuntimeError('No cluster heads found.')
+
+    log.info('Cluster heads loaded: {0}'.format(len(candidates)))
+
+    # convert to numpy record
+    candidates = [item for item in candidates]
+    dtype = [
+        ('index',int), ('mjd',float), ('dm',float), ('beam',int),
+        ('ra','|U32'), ('dec','|U32')
+    ]
+    candidates = np.array(candidates, dtype=dtype)
+
+    coords = SkyCoord(ra=candidates['ra'],
+                      dec=candidates['dec'],
+                      frame='icrs',
+                      unit=(u.hourangle, u.deg))
+
+    for c, item in zip(coords, candidates):
+        match = m.find_matches(c, item['dm'])
+        print(match)
+
+    log.info("Done. Time taken: {0}".format(datetime.now() - start))
+
+
 #
 # MAIN
 #
@@ -800,6 +914,9 @@ def main():
 
     elif args.mode == "sift":
         run_sift(args.schedule_block)
+
+    elif args.mode == "known_sources":
+        run_known_sources(args.schedule_block)
     
     log.info("All done.")
 
