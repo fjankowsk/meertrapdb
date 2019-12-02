@@ -381,7 +381,7 @@ def run_knownsources():
     with db_session:
         temp = select(
                     (c.id, c.mjd, c.dm, c.snr, beam.number, sb.sb_id,
-                    sr.is_head, sr.members, sr.beams, c.known_source.len())
+                    sr.is_head, sr.members, sr.beams, len(c.known_source))
                     for c in schema.SpsCandidate
                     for beam in c.beam
                     for obs in c.observation
