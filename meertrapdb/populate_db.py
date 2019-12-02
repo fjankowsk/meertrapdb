@@ -856,7 +856,10 @@ def run_known_sources(schedule_block):
                       frame='icrs',
                       unit=(u.hourangle, u.deg))
 
-    dtype = [('index',int), ('has_match',bool), ('source','|U32'), ('catalogue','|U32')]
+    dtype = [
+        ('index',int), ('has_match',bool), ('source','|U32'), ('catalogue','|U32'),
+        ('dm',float), ('type','|U32')
+    ]
     info = np.zeros(len(candidates), dtype=dtype)
 
     for i in range(len(candidates)):
@@ -871,7 +874,9 @@ def run_known_sources(schedule_block):
         else:
             info['has_match'][i] = True
             info['source'][i] = match['psrj']
-            info['catalogue'][i] = 'psrcat'
+
+            for field in ['catalogue', 'dm', 'type']:
+                info[field][i] = match[field]
 
     # consider only those cluster heads that have a match
     matched = info[info['has_match'] == True]
@@ -897,7 +902,9 @@ def run_known_sources(schedule_block):
                 schema.KnownSource(
                     sps_candidate=cand,
                     name=item['source'],
-                    catalogue=item['catalogue']
+                    catalogue=item['catalogue'],
+                    dm=item['dm'],
+                    source_type=item['type']
                 )
 
                 db.commit()

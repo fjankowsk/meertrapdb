@@ -48,20 +48,30 @@ def parse_psrcat(filename):
         ('dec_str','|U64'), ('err_dec',float), ('ref_dec','|U32'),
         ('p0',float), ('err_p0',float), ('ref_p0','|U32'),
         ('dm',float), ('err_dm',float), ('ref_dm','|U32'),
+        ('type','|U32'), ('ref_type','|U32')
     ]
 
     temp = np.genfromtxt(filename,
                          delimiter=';',
                          dtype=dtype,
                          encoding='ascii')
-    
+
     coords = SkyCoord(ra=temp['ra_str'],
                       dec=temp['dec_str'],
                       frame='icrs', unit=(u.hourangle, u.deg))
 
+    # add equatorial degree fields
     data = np.copy(temp)
     data = append_fields(data, 'ra', coords.ra.deg)
     data = append_fields(data, 'dec', coords.dec.deg)
+
+    # add catalogue field
+    catalogue = np.array(len(data), dtype='|U32')
+    catalogue[:] = u'psrcat'
+    data = append_fields(data, 'catalogue', catalogue)
+
+    # fill default type
+    data['type'][data['type'] == '*'] = 'pulsar'
 
     # remove non-radio pulsars
     data = data[np.isfinite(data['dm'])]

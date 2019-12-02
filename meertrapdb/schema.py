@@ -164,6 +164,8 @@ class KnownSource(db.Entity):
     sps_candidate = Set('SpsCandidate')
     name = Required(str, max_len=32, unique=True)
     catalogue = Required(str, max_len=32)
+    dm = Optional(float)
+    source_type = Optional(str, max_len=32)
 
 
 class Logs(db.Entity):
