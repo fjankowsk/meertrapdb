@@ -418,7 +418,7 @@ def run_knownsources():
         mask_head = (sel['is_head'] == True)
         mask_ks = (sel['no_ks'] > 0)
 
-        mask_unique = logical_and(mask_head, (sel['no_ks'] == 0))
+        mask_unique = np.logical_and(mask_head, (sel['no_ks'] == 0))
 
         info[i]['sb'] = sb_id
         info[i]['candidates'] = len(sel)
