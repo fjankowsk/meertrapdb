@@ -321,21 +321,25 @@ def plot_ks_overview(t_data):
 
     ax.scatter(data['sb'], fact * data['candidates'],
                marker='x',
+               s=20,
                color='black',
                label='Total')
 
     ax.scatter(data['sb'], fact * data['heads'],
                marker='+',
+               s=20,
                color='dimgray',
                label='Cluster heads')
 
     ax.scatter(data['sb'], fact * data['ks'],
                marker='s',
+               s=20,
                color='C0',
                label='Known sources')
 
     ax.scatter(data['sb'], fact * data['unique'],
                marker='*',
+               s=20,
                color='C1',
                label='Unique')
 
@@ -346,6 +350,7 @@ def plot_ks_overview(t_data):
 
     ax2.scatter(data['sb'], reduction,
                 marker='o',
+                s=20,
                 color='indianred',
                 label='Total reduction')
 
