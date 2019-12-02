@@ -66,7 +66,7 @@ def parse_psrcat(filename):
     data = append_fields(data, 'dec', coords.dec.deg)
 
     # add catalogue field
-    catalogue = np.array(len(data), dtype='|U32')
+    catalogue = np.zeros(len(data), dtype='|U32')
     catalogue[:] = u'psrcat'
     data = append_fields(data, 'catalogue', catalogue)
 
