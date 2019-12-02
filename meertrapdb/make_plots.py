@@ -323,25 +323,29 @@ def plot_ks_overview(t_data):
                marker='x',
                s=20,
                color='black',
-               label='Total')
+               label='Total',
+               zorder=2)
 
     ax.scatter(data['sb'], fact * data['heads'],
                marker='+',
                s=20,
                color='dimgray',
-               label='Cluster heads')
+               label='Cluster heads',
+               zorder=3)
 
     ax.scatter(data['sb'], fact * data['ks'],
                marker='s',
                s=20,
                color='C0',
-               label='Known sources')
+               label='Known sources',
+               zorder=4)
 
     ax.scatter(data['sb'], fact * data['unique'],
                marker='*',
                s=20,
                color='C1',
-               label='Unique')
+               label='Unique',
+               zorder=5)
 
     # total reduction on second axis
     ax2 = ax.twinx()
@@ -352,7 +356,8 @@ def plot_ks_overview(t_data):
                 marker='o',
                 s=20,
                 color='indianred',
-                label='Total reduction')
+                label='Total reduction',
+                zorder=6)
 
     # median reduction
     med_red = np.median(reduction)
@@ -360,7 +365,8 @@ def plot_ks_overview(t_data):
                 color='indianred',
                 lw=2,
                 ls='dashed',
-                label='median: {0:.1f}'.format(med_red))
+                label='median: {0:.1f}'.format(med_red),
+                zorder=5)
 
     ax.grid(True)
     ax.legend(loc='upper left', frameon=False)
