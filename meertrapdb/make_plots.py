@@ -36,7 +36,7 @@ def parse_args():
     
     parser.add_argument(
         'mode',
-        choices=['heimdall', 'sifting', 'timeline'],
+        choices=['heimdall', 'knownsources', 'sifting', 'timeline'],
         help='Mode of operation.'
     )
     
@@ -307,6 +307,128 @@ def run_sifting():
     plot_sift_overview(info)
 
 
+def plot_ks_overview(t_data):
+    """
+    Plot known source overview.
+    """
+
+    data = np.copy(t_data)
+
+    fact = 1E-3
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+
+    ax.scatter(data['sb'], fact * data['candidates'],
+               marker='x',
+               color='black',
+               label='Total')
+
+    ax.scatter(data['sb'], fact * data['heads'],
+               marker='+',
+               color='dimgray',
+               label='Cluster heads')
+
+    ax.scatter(data['sb'], fact * data['ks'],
+               marker='s',
+               color='C0',
+               label='Known sources')
+
+    ax.scatter(data['sb'], fact * data['unique'],
+               marker='*',
+               color='C1',
+               label='Unique')
+
+    # total reduction on second axis
+    ax2 = ax.twinx()
+
+    reduction = 100 * (1.0 - data['unique'] / data['candidates'])
+
+    ax2.scatter(data['sb'], reduction,
+                marker='o',
+                color='indianred',
+                label='Total reduction')
+
+    # median reduction
+    med_red = np.median(reduction)
+    ax2.axhline(y=med_red,
+                color='indianred',
+                lw=2,
+                ls='dashed',
+                label='median: {0:.1f}'.format(med_red))
+
+    ax.grid(True)
+    ax.legend(loc='upper left', frameon=False)
+    ax.set_xlabel('Schedule block')
+    ax.set_ylabel('Candidates (k)')
+
+    ax2.legend(loc='upper right', frameon=False)
+    ax2.set_ylim(top=100)
+    ax2.set_ylabel('Reduction (per cent)')
+
+    fig.tight_layout()
+
+    fig.savefig('ks_overview.pdf')
+    fig.savefig('ks_overview.png', dpi=300)
+    plt.close(fig)
+
+
+def run_knownsources():
+    """
+    Run the processing for 'knownsources' mode.
+    """
+
+    with db_session:
+        temp = select(
+                    (c.id, c.mjd, c.dm, c.snr, beam.number, sb.sb_id,
+                    sr.is_head, sr.members, sr.beams, c.known_source.len())
+                    for c in schema.SpsCandidate
+                    for beam in c.beam
+                    for obs in c.observation
+                    for sb in obs.schedule_block
+                    for sr in c.sift_result
+                ).sort_by(2)[:]
+
+    print('Candidates loaded: {0}'.format(len(temp)))
+
+    # convert to pandas dataframe
+    temp2 = {
+            'id':           [item[0] for item in temp],
+            'mjd':          [item[1] for item in temp],
+            'dm':           [item[2] for item in temp],
+            'snr':          [item[3] for item in temp],
+            'beam':         [item[4] for item in temp],
+            'sb':           [item[5] for item in temp],
+            'is_head':      [item[6] for item in temp],
+            'members':      [item[7] for item in temp],
+            'beams':        [item[8] for item in temp],
+            'no_ks':        [item[9] for item in temp],
+        }
+
+    data = DataFrame.from_dict(temp2)
+
+    sb_ids = np.unique(data['sb'])
+
+    dtype = [('sb',int), ('candidates',int), ('heads',int), ('ks',int), ('unique',int)]
+    info = np.zeros(len(sb_ids), dtype=dtype)
+
+    for i, sb_id in enumerate(sb_ids):
+        sel = data[data['sb'] == sb_id]
+
+        mask_head = (sel['is_head'] == True)
+        mask_ks = (sel['no_ks'] > 0)
+
+        mask_unique = logical_and(mask_head, (sel['no_ks'] == 0))
+
+        info[i]['sb'] = sb_id
+        info[i]['candidates'] = len(sel)
+        info[i]['heads'] = len(sel[mask_head])
+        info[i]['ks'] = len(sel[mask_ks])
+        info[i]['unique'] = len(sel[mask_unique])
+
+    plot_ks_overview(info)
+
+
 def plot_snr_timeline(data, prefix):
     """
     Plot S/N versus time.
@@ -402,6 +524,9 @@ def main():
 
     if args.mode == 'heimdall':
         run_heimdall()
+
+    elif args.mode == 'knownsources':
+        run_knownsources()
 
     elif args.mode == 'sifting':
         run_sifting()
