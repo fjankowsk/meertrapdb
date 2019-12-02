@@ -1,0 +1,3 @@
+#!/bin/bash
+
+psrcat -c 'psrj raj decj p0 dm' -o long_error_csv -nohead | awk '{gsub(";$", ""); print $0}'
