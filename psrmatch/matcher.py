@@ -14,7 +14,7 @@ class Matcher(object):
     Match sources to catalogues of known sources.
     """
 
-    def __init__(self, dist_thresh=1.5, dm_thresh=10.0):
+    def __init__(self, dist_thresh=1.5, dm_thresh=5.0):
         """
         Match sources to catalogues of known sources.
 

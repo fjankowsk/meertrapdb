@@ -45,4 +45,4 @@ knownsources:
   # distance threshold in degress
   dist_thresh: 1.5
   # fractional dm threshold in percent
-  dm_thresh: 10.0
+  dm_thresh: 5.0
