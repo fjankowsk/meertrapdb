@@ -49,8 +49,7 @@ def parse_args():
     parser.add_argument(
         'mode',
         choices=[
-            'fake', 'init_tables', 'production', 'sift',
-            'known_sources'
+            'fake', 'init_tables', 'known_sources', 'production', 'sift'
             ],
         help='Mode of operation.'
     )
@@ -953,7 +952,7 @@ def main():
     db.generate_mapping(create_tables=True)
 
     # check that there is a schedule block id given
-    if args.mode in ['production', 'sift']:
+    if args.mode in ['known_sources', 'production', 'sift']:
         if not args.schedule_block:
             print('Please specify a schedule block ID to use.')
             sys.exit(1)
@@ -964,10 +963,13 @@ def main():
         log.warning(msg)
         sleep(20)
         run_fake()
-    
+
     elif args.mode == "init_tables":
         pass
-    
+
+    elif args.mode == "known_sources":
+        run_known_sources(args.schedule_block)
+
     elif args.mode == "production":
         run_production(args.schedule_block, args.test_run)
         run_sift(args.schedule_block)
@@ -976,9 +978,6 @@ def main():
     elif args.mode == "sift":
         run_sift(args.schedule_block)
 
-    elif args.mode == "known_sources":
-        run_known_sources(args.schedule_block)
-    
     log.info("All done.")
 
 
