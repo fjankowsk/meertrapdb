@@ -45,7 +45,7 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description="Populate the database."
     )
-    
+
     parser.add_argument(
         'mode',
         choices=[
@@ -73,7 +73,7 @@ def parse_args():
         action='store_true',
         help='Get verbose program output. This switches on the display of debug messages.'
     )
-    
+
     parser.add_argument(
         "--version",
         action="version",
@@ -971,6 +971,7 @@ def main():
     elif args.mode == "production":
         run_production(args.schedule_block, args.test_run)
         run_sift(args.schedule_block)
+        run_known_sources(args.schedule_block)
 
     elif args.mode == "sift":
         run_sift(args.schedule_block)
