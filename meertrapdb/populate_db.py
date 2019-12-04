@@ -82,6 +82,36 @@ def parse_args():
     return parser.parse_args()
 
 
+def check_if_schedule_block_exists(schedule_block):
+    """
+    Check if schedule block is already in the database.
+
+    Parameters
+    ----------
+    schedule_block: int
+        The schedule block ID of candidates in the database.
+
+    Raises
+    ------
+    RuntimeError
+        In case of duplicate schedule blocks.
+    """
+
+    with db_session:
+        sb_queried = schema.ScheduleBlock.select(lambda sb: sb.sb_id == schedule_block)[:]
+
+        if len(sb_queried) == 1:
+            pass
+
+        elif len(sb_queried) > 1:
+            msg = 'There are duplicate schedule blocks: {0}'.format(schedule_block)
+            raise RuntimeError(msg)
+
+        else:
+            print('The schedule block is not in the database: {0}'.format(schedule_block))
+            sys.exit(1)
+
+
 def run_fake():
     """
     Run the processing for 'fake' mode, i.e. insert fake data into the database.
@@ -671,19 +701,7 @@ def run_sift(schedule_block):
     start = datetime.now()
 
     # check if schedule block is in the database
-    with db_session:
-        sb_queried = schema.ScheduleBlock.select(lambda sb: sb.sb_id == schedule_block)[:]
-
-        if len(sb_queried) == 1:
-            pass
-
-        elif len(sb_queried) > 1:
-            msg = 'There are duplicate schedule blocks: {0}'.format(schedule_block)
-            raise RuntimeError(msg)
-
-        else:
-            print('The schedule block is not in the database: {0}'.format(schedule_block))
-            sys.exit(1)
+    check_if_schedule_block_exists(schedule_block)
 
     # delete any previous sift results for that schedule block
     log.info('Deleting previous sift results for schedule block: {0}'.format(schedule_block))
@@ -773,19 +791,7 @@ def run_known_sources(schedule_block):
     start = datetime.now()
 
     # check if schedule block is in the database
-    with db_session:
-        sb_queried = schema.ScheduleBlock.select(lambda sb: sb.sb_id == schedule_block)[:]
-
-        if len(sb_queried) == 1:
-            pass
-
-        elif len(sb_queried) > 1:
-            msg = 'There are duplicate schedule blocks: {0}'.format(schedule_block)
-            raise RuntimeError(msg)
-
-        else:
-            print('The schedule block is not in the database: {0}'.format(schedule_block))
-            sys.exit(1)
+    check_if_schedule_block_exists(schedule_block)
 
     # delete any previous known source matching for that schedule block
     log.info('Deleting previous known source matching for schedule block: {0}'.format(schedule_block))
