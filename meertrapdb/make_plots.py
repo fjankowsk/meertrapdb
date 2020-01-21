@@ -523,7 +523,7 @@ def run_skymap():
                     for c in schema.SpsCandidate
                     for b in c.beam
                     for obs in c.observation
-                ).sort_by(0)[:]
+                ).sort_by(7)[:]
 
     print('Beams loaded: {0}'.format(len(temp)))
 
@@ -541,7 +541,36 @@ def run_skymap():
 
     data = DataFrame.from_dict(temp2)
 
-    print(data)
+    plot_skymap(data)
+
+
+def plot_skymap(data):
+    """
+    Plot a sky map in equatorial coordinates.
+    """
+
+    coords = SkyCoord(ra=data['ra'], dec=data['dec'],
+                      unit=(units.hourangle, units.deg),
+                      frame='icrs')
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+
+    ax.scatter(coords.ra.hour, coords.dec.degree,
+               marker='.',
+               zorder=3)
+
+    ax.grid(True)
+    ax.set_xlabel("RA (h)")
+    ax.set_ylabel("Dec (deg)")
+    #ax.autoscale(tight=True)
+    #ax.set_xlim(xmin=0, xmax=24)
+
+    fig.tight_layout()
+
+    fig.savefig('skymap_equatorial.pdf', bbox_inches="tight")
+    fig.savefig('skymap_equatorial.png', dpi=300)
+    plt.close(fig)
 
 
 #
