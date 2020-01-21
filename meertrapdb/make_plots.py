@@ -570,7 +570,7 @@ def plot_skymap(data):
     ax.set_xlabel("RA (h)")
     ax.set_ylabel("Dec (deg)")
     #ax.autoscale(tight=True)
-    ax.set_xlim(xmin=0, xmax=24)
+    ax.set_xlim(left=0, right=24)
 
     fig.tight_layout()
 
