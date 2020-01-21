@@ -562,9 +562,8 @@ def plot_skymap(data):
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
-    ax.scatter(coords.ra.hour, coords.dec.degree,
-               marker='.',
-               zorder=3)
+    ax.hexbin(coords.ra.hour, coords.dec.degree,
+              gridsize=(25, 25))
 
     ax.grid(True)
     ax.set_xlabel("RA (h)")
