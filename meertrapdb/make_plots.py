@@ -518,7 +518,7 @@ def run_skymap():
 
     with db_session:
         temp = select(
-                (b.number, b.ra, b.dec, b.coherent,
+                (b.id, b.number, b.ra, b.dec, b.coherent,
                  obs.nant, obs.utc_start, obs.utc_end)
                     for c in schema.SpsCandidate
                     for b in c.beam
@@ -529,13 +529,14 @@ def run_skymap():
 
     # convert to pandas dataframe
     temp2 = {
-            'number':       [item[0] for item in temp],
-            'ra':           [item[1] for item in temp],
-            'dec':          [item[2] for item in temp],
-            'coherent':     [item[3] for item in temp],
-            'nant':         [item[4] for item in temp],
-            'utc_start':    [item[5] for item in temp],
-            'utc_end':      [item[5] for item in temp]
+            'id':           [item[0] for item in temp],
+            'number':       [item[1] for item in temp],
+            'ra':           [item[2] for item in temp],
+            'dec':          [item[3] for item in temp],
+            'coherent':     [item[4] for item in temp],
+            'nant':         [item[5] for item in temp],
+            'utc_start':    [item[6] for item in temp],
+            'utc_end':      [item[7] for item in temp]
         }
 
     data = DataFrame.from_dict(temp2)
