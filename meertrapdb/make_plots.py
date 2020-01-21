@@ -13,6 +13,8 @@ import os.path
 import sys
 from time import sleep
 
+from astropy import units
+from astropy.coordinates import SkyCoord
 from astropy.time import Time
 from matplotlib.colors import LogNorm
 import matplotlib.pyplot as plt
@@ -27,6 +29,10 @@ from meertrapdb.general_helpers import setup_logging
 from meertrapdb import schema
 from meertrapdb.schema import db
 from meertrapdb.version import __version__
+
+# astropy.units generates members dynamically, pylint therefore fails
+# disable the corresponding pylint test for now
+# pylint: disable=E1101
 
 
 def parse_args():
@@ -564,7 +570,7 @@ def plot_skymap(data):
     ax.set_xlabel("RA (h)")
     ax.set_ylabel("Dec (deg)")
     #ax.autoscale(tight=True)
-    #ax.set_xlim(xmin=0, xmax=24)
+    ax.set_xlim(xmin=0, xmax=24)
 
     fig.tight_layout()
 
