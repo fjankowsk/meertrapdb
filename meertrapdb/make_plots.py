@@ -547,10 +547,11 @@ def run_skymap():
 
     data = DataFrame.from_dict(temp2)
 
-    plot_skymap(data)
+    plot_skymap_equatorial(data)
+    plot_skymap_galactic(data)
 
 
-def plot_skymap(data):
+def plot_skymap_equatorial(data):
     """
     Plot a sky map in equatorial coordinates.
     """
@@ -562,8 +563,15 @@ def plot_skymap(data):
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
-    ax.hexbin(coords.ra.hour, coords.dec.degree,
-              gridsize=(25, 25))
+    hb = ax.hexbin(coords.ra.hour, coords.dec.degree,
+                   gridsize=200,
+                   bins='log',
+                   mincnt=1,
+                   cmap='Reds')
+
+    # add colour bar
+    cb = fig.colorbar(hb, ax=ax)
+    cb.set_label('Counts')
 
     ax.grid(True)
     ax.set_xlabel("RA (h)")
@@ -573,8 +581,47 @@ def plot_skymap(data):
 
     fig.tight_layout()
 
-    fig.savefig('skymap_equatorial.pdf', bbox_inches="tight")
-    fig.savefig('skymap_equatorial.png', dpi=300)
+    fig.savefig('skymap_equatorial.pdf', bbox_inches='tight')
+    fig.savefig('skymap_equatorial.png', bbox_inches='tight', dpi=300)
+    plt.close(fig)
+
+
+def plot_skymap_galactic(data):
+    """
+    Plot a sky map in Galactic coordinates.
+    """
+
+    coords = SkyCoord(ra=data['ra'], dec=data['dec'],
+                      unit=(units.hourangle, units.deg),
+                      frame='icrs')
+
+    fig = plt.figure(figsize=(8, 4.2))
+    ax = fig.add_subplot(111, projection='aitoff')
+
+    gl_rad = coords.galactic.l.wrap_at(180 * units.deg).radian
+    gb_rad = coords.galactic.b.radian
+
+    hb = ax.hexbin(-1 * gl_rad, gb_rad,
+                   gridsize=200,
+                   bins='log',
+                   mincnt=1,
+                   cmap='Reds')
+
+    # add colour bar
+    cb = fig.colorbar(hb, ax=ax)
+    cb.set_label('Counts')
+
+    ax.grid(True)
+    ax.set_xlabel("Galactic Longitude (deg)")
+    ax.set_ylabel("Galactic Latitude (deg)")
+
+    # flip gb axis labels
+    labels = ['{0:.0f}'.format(item) for item in np.linspace(150, -150, num=11)]
+    ax.set_xticklabels(labels)
+
+    fig.tight_layout()
+    fig.savefig('skymap_galactic.pdf', bbox_inches="tight")
+    fig.savefig('skymap_galactic.png', bbox_inches="tight", dpi=300)
     plt.close(fig)
 
 
