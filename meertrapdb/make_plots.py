@@ -36,7 +36,7 @@ def parse_args():
     
     parser.add_argument(
         'mode',
-        choices=['heimdall', 'knownsources', 'sifting', 'timeline'],
+        choices=['heimdall', 'knownsources', 'sifting', 'timeline', 'skymap'],
         help='Mode of operation.'
     )
     
@@ -511,6 +511,38 @@ def run_timeline():
         plot_snr_timeline(sel, prefix)
 
 
+def run_skymap():
+    """
+    Run the processing for 'skymap' mode.
+    """
+
+    with db_session:
+        temp = select(
+                (b.number, b.ra, b.dec, b.coherent,
+                 obs.nant, obs.utc_start, obs.utc_end)
+                    for c in schema.SpsCandidate
+                    for b in c.beam
+                    for obs in c.observation
+                ).sort_by(0)[:]
+
+    print('Beams loaded: {0}'.format(len(temp)))
+
+    # convert to pandas dataframe
+    temp2 = {
+            'number':       [item[0] for item in temp],
+            'ra':           [item[1] for item in temp],
+            'dec':          [item[2] for item in temp],
+            'coherent':     [item[3] for item in temp],
+            'nant':         [item[4] for item in temp],
+            'utc_start':    [item[5] for item in temp],
+            'utc_end':      [item[5] for item in temp]
+        }
+
+    data = DataFrame.from_dict(temp2)
+
+    print(data)
+
+
 #
 # MAIN
 #
@@ -544,6 +576,9 @@ def main():
 
     elif args.mode == 'timeline':
         run_timeline()
+
+    elif args.mode == 'skymap':
+        run_skymap()
 
     log.info("All done.")
 
