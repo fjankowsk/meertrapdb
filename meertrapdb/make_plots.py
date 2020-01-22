@@ -554,11 +554,11 @@ def run_skymap():
     # about 1.6 arcmin2, or 0.44 mdeg2
     data['area'] = np.pi * a * b
 
-    # # total exposure area (hr deg2)
-    # coverage = np.sum(data['tobs'] * data['area'])
-    # print('Total area: {0:.2f} deg2'.format(np.sum(data['area'])))
-    # print('Total time: {0:.2f} hr'.format(np.sum(data['tobs'])))
-    # print('Total coverage: {0:.2f} hr deg2'.format(coverage))
+    # total exposure area (hr deg2)
+    coverage = np.sum(data['tobs'] * data['area'])
+    print('Total area: {0:.2f} deg2'.format(np.sum(data['area'])))
+    print('Total time: {0:.2f} hr'.format(np.sum(data['tobs'])))
+    print('Total coverage: {0:.2f} hr deg2'.format(coverage))
 
     # determine total area covered
     get_total_area_covered(data)
@@ -572,13 +572,14 @@ def get_total_area_covered(data):
     Determine the total unique area covered.
     """
 
-    over = 10
+    #over = 10
+    over = 1
 
     ras = np.linspace(0, 360, over * 360)
     decs = np.linspace(-90, 90, over * 180)
 
     dtype = [('ra','float'), ('dec','float'), ('observed', bool)]
-    grid = np.zeros(len(ra) * len(dec), dtype=dtype)
+    grid = np.zeros(len(ras) * len(decs), dtype=dtype)
 
     # fill the grid
     i = 0
@@ -588,19 +589,28 @@ def get_total_area_covered(data):
             grid['dec'][i] = dec
             i += 1
 
+    # make sure that observed is set
+    grid['observed'] = False
+
     coords = SkyCoord(ra=data['ra'], dec=data['dec'],
                       unit=(units.hourangle, units.deg),
                       frame='icrs')
 
-    thresh = 0.02
+    # radius in degrees
+    thresh = 0.02**2
 
     for item in coords:
         # use a circle for now
-        dist = np.sqrt((grid['ra'] - item.ra.degree.value)**2 + (grid['dec'] - item.dec.degree.value)**2)
+        dist = (grid['ra'] - item.ra.degree)**2 + (grid['dec'] - item.dec.degree)**2
         mask = (dist <= thresh)
         grid[mask]['observed'] = True
 
-    print('Points observed: {}'.format(len(grid[grid['observed'] == True])))
+    npoints = len(grid[grid['observed'] == True])
+    area = data['area'].iloc[0]
+    coverage = npoints * area
+
+    print('Points observed: {}'.format(npoints))
+    print('Total area covered: {0:.2f} deg2'.format(coverage))
 
 
 def plot_skymap_equatorial(data):
