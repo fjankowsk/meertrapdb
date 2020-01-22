@@ -547,24 +547,45 @@ def run_skymap():
 
     data = DataFrame.from_dict(temp2)
 
-    # assume contant tobs (hr) and area (deg2) for now
+    # assume contant tobs (hr) for now
     data['tobs'] = 10.0 / 60.0
+
+    # 1) coherent search
+    print('Coherent search:')
+    coherent = data[data['number'] != 0]
+
+    # assume constant tied-array beam area (deg2) for now
     a = 28.8 / 3600
     b = 64.0 / 3600
     # about 1.6 arcmin2, or 0.44 mdeg2
-    data['area'] = np.pi * a * b
+    coherent['area'] = np.pi * a * b
+
+    print_summmary(coherent)
+    plot_skymap_equatorial(coherent, 'coherent')
+    plot_skymap_galactic(coherent, 'coherent')
+
+    # 2) incoherent search
+    print('Incoherent search:')
+    inco = data[data['number'] == 0]
+
+    # area of the primary beam (deg2)
+    inco['area'] = 0.86
+
+    print_summmary(inco)
+    plot_skymap_equatorial(inco, 'inco')
+    plot_skymap_galactic(inco, 'inco')
+
+
+def print_summary(data):
+    """
+    Print an exposure summary.
+    """
 
     # total exposure area (hr deg2)
     coverage = np.sum(data['tobs'] * data['area'])
     print('Total area: {0:.2f} deg2'.format(np.sum(data['area'])))
     print('Total time: {0:.2f} hr'.format(np.sum(data['tobs'])))
     print('Total coverage: {0:.2f} hr deg2'.format(coverage))
-
-    # determine total area covered
-    get_total_area_covered(data)
-
-    plot_skymap_equatorial(data)
-    plot_skymap_galactic(data)
 
 
 def get_total_area_covered(data):
@@ -613,7 +634,7 @@ def get_total_area_covered(data):
     print('Total area covered: {0:.2f} deg2'.format(coverage))
 
 
-def plot_skymap_equatorial(data):
+def plot_skymap_equatorial(data, suffix):
     """
     Plot a sky map in equatorial coordinates.
     """
@@ -645,12 +666,12 @@ def plot_skymap_equatorial(data):
 
     fig.tight_layout()
 
-    fig.savefig('skymap_equatorial.pdf', bbox_inches='tight')
-    fig.savefig('skymap_equatorial.png', bbox_inches='tight', dpi=300)
+    fig.savefig('skymap_equatorial_{0}.pdf'.format(suffix), bbox_inches='tight')
+    fig.savefig('skymap_equatorial_{0}.png'.format(suffix), bbox_inches='tight', dpi=300)
     plt.close(fig)
 
 
-def plot_skymap_galactic(data):
+def plot_skymap_galactic(data, suffix):
     """
     Plot a sky map in Galactic coordinates.
     """
@@ -686,8 +707,8 @@ def plot_skymap_galactic(data):
     ax.set_xticklabels(labels)
 
     fig.tight_layout()
-    fig.savefig('skymap_galactic.pdf', bbox_inches="tight")
-    fig.savefig('skymap_galactic.png', bbox_inches="tight", dpi=300)
+    fig.savefig('skymap_galactic_{0}.pdf'.format(suffix), bbox_inches="tight")
+    fig.savefig('skymap_galactic_{0}.png'.format(suffix), bbox_inches="tight", dpi=300)
     plt.close(fig)
 
 
