@@ -567,10 +567,15 @@ def plot_skymap_equatorial(data):
                       unit=(units.hourangle, units.deg),
                       frame='icrs')
 
+    # exposure time in hours
+    exposure = data['tobs'] / 60.0
+
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
     hb = ax.hexbin(coords.ra.hour, coords.dec.degree,
+                   C=exposure,
+                   reduce_C_function=np.sum,
                    gridsize=200,
                    bins='log',
                    mincnt=1,
@@ -578,7 +583,7 @@ def plot_skymap_equatorial(data):
 
     # add colour bar
     cb = fig.colorbar(hb, ax=ax)
-    cb.set_label('Counts')
+    cb.set_label('Exposure (hr)')
 
     ax.grid(True)
     ax.set_xlabel("RA (h)")
@@ -602,6 +607,9 @@ def plot_skymap_galactic(data):
                       unit=(units.hourangle, units.deg),
                       frame='icrs')
 
+    # exposure time in hours
+    exposure = data['tobs'] / 60.0
+
     fig = plt.figure(figsize=(8, 4.2))
     ax = fig.add_subplot(111, projection='aitoff')
 
@@ -609,6 +617,8 @@ def plot_skymap_galactic(data):
     gb_rad = coords.galactic.b.radian
 
     hb = ax.hexbin(-1 * gl_rad, gb_rad,
+                   C=exposure,
+                   reduce_C_function=np.sum,
                    gridsize=200,
                    bins='log',
                    mincnt=1,
@@ -616,7 +626,7 @@ def plot_skymap_galactic(data):
 
     # add colour bar
     cb = fig.colorbar(hb, ax=ax)
-    cb.set_label('Counts')
+    cb.set_label('Exposure (hr)')
 
     ax.grid(True)
     ax.set_xlabel("Galactic Longitude (deg)")
