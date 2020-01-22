@@ -652,6 +652,7 @@ def plot_skymap_equatorial(data, suffix):
                    gridsize=200,
                    bins='log',
                    mincnt=1,
+                   linewidths=0.1,
                    cmap='Reds')
 
     # add colour bar
@@ -692,6 +693,7 @@ def plot_skymap_galactic(data, suffix):
                    gridsize=200,
                    bins='log',
                    mincnt=1,
+                   linewidths=0.1,
                    cmap='Reds')
 
     # add colour bar
