@@ -547,12 +547,16 @@ def run_skymap():
 
     data = DataFrame.from_dict(temp2)
 
-    # assume contant tobs (min) and area (deg2) for now
-    data['tobs'] = 10.0
+    # assume contant tobs (hr) and area (deg2) for now
+    data['tobs'] = 10.0 / 60.0
     a = 28.8 / 3600
     b = 64.0 / 3600
     # about 1.6 arcmin2, or 0.44 mdeg2
     data['area'] = np.pi * a * b
+
+    # total exposure area (hr deg2)
+    coverage = np.sum(data['tobs'] * data['area'])
+    print('Total coverage: {0:.3f} hr deg2'.format(coverage))
 
     plot_skymap_equatorial(data)
     plot_skymap_galactic(data)
@@ -567,14 +571,11 @@ def plot_skymap_equatorial(data):
                       unit=(units.hourangle, units.deg),
                       frame='icrs')
 
-    # exposure time in hours
-    exposure = data['tobs'] / 60.0
-
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
     hb = ax.hexbin(coords.ra.hour, coords.dec.degree,
-                   C=exposure,
+                   C=data['tobs'],
                    reduce_C_function=np.sum,
                    gridsize=200,
                    bins='log',
@@ -607,9 +608,6 @@ def plot_skymap_galactic(data):
                       unit=(units.hourangle, units.deg),
                       frame='icrs')
 
-    # exposure time in hours
-    exposure = data['tobs'] / 60.0
-
     fig = plt.figure(figsize=(8, 4.2))
     ax = fig.add_subplot(111, projection='aitoff')
 
@@ -617,7 +615,7 @@ def plot_skymap_galactic(data):
     gb_rad = coords.galactic.b.radian
 
     hb = ax.hexbin(-1 * gl_rad, gb_rad,
-                   C=exposure,
+                   C=data['tobs'],
                    reduce_C_function=np.sum,
                    gridsize=200,
                    bins='log',
