@@ -547,6 +547,13 @@ def run_skymap():
 
     data = DataFrame.from_dict(temp2)
 
+    # assume contant tobs (min) and area (deg2) for now
+    data['tobs'] = 10.0
+    a = 28.8 / 3600
+    b = 64.0 / 3600
+    # about 1.6 arcmin2, or 0.44 mdeg2
+    data['area'] = np.pi * a * b
+
     plot_skymap_equatorial(data)
     plot_skymap_galactic(data)
 
