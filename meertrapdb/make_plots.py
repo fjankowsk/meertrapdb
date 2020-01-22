@@ -573,13 +573,20 @@ def get_total_area_covered(data):
     """
 
     over = 10
-    shape = (over * 360, over * 180)
+
+    ras = np.linspace(0, 360, over * 360)
+    decs = np.linspace(-90, 90, over * 180)
 
     dtype = [('ra','float'), ('dec','float'), ('observed', bool)]
-    grid = np.zeros(shape, dtype=dtype)
+    grid = np.zeros(len(ra) * len(dec), dtype=dtype)
 
-    grid['ra'] = np.linspace(0, 360, shape[0])
-    grid['dec'] = np.linspace(-90, 90, shape[1])
+    # fill the grid
+    i = 0
+    for ra in ras:
+        for dec in decs:
+            grid['ra'][i] = ra
+            grid['dec'][i] = dec
+            i += 1
 
     coords = SkyCoord(ra=data['ra'], dec=data['dec'],
                       unit=(units.hourangle, units.deg),
@@ -591,7 +598,7 @@ def get_total_area_covered(data):
         # use a circle for now
         dist = np.sqrt((grid['ra'] - item.ra.degree.value)**2 + (grid['dec'] - item.dec.degree.value)**2)
         mask = (dist <= thresh)
-        grid[mask][observed] = True
+        grid[mask]['observed'] = True
 
     print('Points observed: {}'.format(len(grid[grid['observed'] == True])))
 
