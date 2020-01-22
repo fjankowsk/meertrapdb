@@ -554,14 +554,46 @@ def run_skymap():
     # about 1.6 arcmin2, or 0.44 mdeg2
     data['area'] = np.pi * a * b
 
-    # total exposure area (hr deg2)
-    coverage = np.sum(data['tobs'] * data['area'])
-    print('Total area: {0:.2f} deg2'.format(np.sum(data['area'])))
-    print('Total time: {0:.2f} hr'.format(np.sum(data['tobs'])))
-    print('Total coverage: {0:.2f} hr deg2'.format(coverage))
+    # # total exposure area (hr deg2)
+    # coverage = np.sum(data['tobs'] * data['area'])
+    # print('Total area: {0:.2f} deg2'.format(np.sum(data['area'])))
+    # print('Total time: {0:.2f} hr'.format(np.sum(data['tobs'])))
+    # print('Total coverage: {0:.2f} hr deg2'.format(coverage))
+
+    # determine total area covered
+    get_total_area_covered(data)
 
     plot_skymap_equatorial(data)
     plot_skymap_galactic(data)
+
+
+def get_total_area_covered(data):
+    """
+    Determine the total unique area covered.
+    """
+
+    over = 10
+    shape = (over * 360, over * 180)
+
+    dtype = [('ra','float'), ('dec','float'), ('observed', bool)]
+    grid = np.zeros(shape, dtype=dtype)
+
+    grid['ra'] = np.linspace(0, 360, shape[0])
+    grid['dec'] = np.linspace(-90, 90, shape[1])
+
+    coords = SkyCoord(ra=data['ra'], dec=data['dec'],
+                      unit=(units.hourangle, units.deg),
+                      frame='icrs')
+
+    thresh = 0.02
+
+    for item in coords:
+        # use a circle for now
+        dist = np.sqrt((grid['ra'] - item.ra.degree.value)**2 + (grid['dec'] - item.dec.degree.value)**2)
+        mask = (dist <= thresh)
+        grid[mask][observed] = True
+
+    print('Points observed: {}'.format(len(grid[grid['observed'] == True])))
 
 
 def plot_skymap_equatorial(data):
