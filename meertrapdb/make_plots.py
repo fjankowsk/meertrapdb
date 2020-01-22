@@ -556,7 +556,9 @@ def run_skymap():
 
     # total exposure area (hr deg2)
     coverage = np.sum(data['tobs'] * data['area'])
-    print('Total coverage: {0:.3f} hr deg2'.format(coverage))
+    print('Total area: {0:.2f} deg2'.format(np.sum(data['area'])))
+    print('Total time: {0:.2f} hr'.format(np.sum(data['tobs'])))
+    print('Total coverage: {0:.2f} hr deg2'.format(coverage))
 
     plot_skymap_equatorial(data)
     plot_skymap_galactic(data)
