@@ -22,7 +22,6 @@ from matplotlib.ticker import FormatStrFormatter
 import numpy as np
 from pandas import DataFrame
 from pony.orm import (db_session, delete, select)
-import seaborn as sns
 
 from meertrapdb.config_helpers import get_config
 from meertrapdb.db_helpers import setup_db
@@ -635,7 +634,7 @@ def get_total_area_covered(data):
     print('Total area covered: {0:.2f} deg2'.format(coverage))
 
 
-def plot_skymap_equatorial(data, suffix, kde=False):
+def plot_skymap_equatorial(data, suffix):
     """
     Plot a sky map in equatorial coordinates.
     """
@@ -647,23 +646,17 @@ def plot_skymap_equatorial(data, suffix, kde=False):
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
-    if kde:
-        pl = sns.kdeplot(coords.ra.hour, coords.dec.degree,
-                         ax=ax,
-                         cmap='Reds',
-                         shade=True)
-    else:
-        pl = ax.hexbin(coords.ra.hour, coords.dec.degree,
-                       C=data['tobs'],
-                       reduce_C_function=np.sum,
-                       gridsize=200,
-                       bins='log',
-                       mincnt=1,
-                       linewidths=0.1,
-                       cmap='Reds')
+    hb = ax.hexbin(coords.ra.hour, coords.dec.degree,
+                   C=data['tobs'],
+                   reduce_C_function=np.sum,
+                   gridsize=200,
+                   bins='log',
+                   mincnt=1,
+                   linewidths=0.1,
+                   cmap='Reds')
 
     # add colour bar
-    cb = fig.colorbar(pl, ax=ax)
+    cb = fig.colorbar(hb, ax=ax)
     cb.set_label('Exposure (hr)')
 
     ax.grid(True)
