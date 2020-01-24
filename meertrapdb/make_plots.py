@@ -548,44 +548,43 @@ def run_skymap():
     data = DataFrame.from_dict(temp2)
 
     # assume contant tobs (hr) for now
-    data['tobs'] = 10.0 / 60.0
+    tobs = 10.0 / 60.0
+    data['tobs'] = tobs
+
+    # split
+    coherent = data[data['number'] != 0].copy()
+    inco = data[data['number'] == 0].copy()
 
     # 1) coherent search
     print('Coherent search:')
-    coherent = data[data['number'] != 0].copy()
 
     # assume constant tied-array beam area (deg2) for now
     a = 28.8 / 3600
     b = 64.0 / 3600
     # about 1.6 arcmin2, or 0.44 mdeg2
-    coherent['area'] = np.pi * a * b
+    area_co = np.pi * a * b
 
-    print_summary(coherent)
     plot_skymap_equatorial(coherent, 'coherent', 300)
     plot_skymap_galactic(coherent, 'coherent', 300)
 
+    nbeams = len(coherent) + 0.5 * len(inco)
+    print('Total area: {0:.2f} deg2'.format(nbeams * area_co))
+    print('Total time: {0:.2f} beam hr'.format(nbeams * tobs))
+    print('Total coverage: {0:.2f} hr deg2'.format(nbeams * area_co * tobs))
+
     # 2) incoherent search
     print('Incoherent search:')
-    inco = data[data['number'] == 0].copy()
 
     # area of the primary beam (deg2)
-    inco['area'] = 0.86
+    area_inco = 0.86
 
-    print_summary(inco)
     plot_skymap_equatorial(inco, 'inco', 150)
     plot_skymap_galactic(inco, 'inco', 150)
 
-
-def print_summary(data):
-    """
-    Print an exposure summary.
-    """
-
-    # total exposure area (hr deg2)
-    coverage = np.sum(data['tobs'] * data['area'])
-    print('Total area: {0:.2f} deg2'.format(np.sum(data['area'])))
-    print('Total time: {0:.2f} beam hr'.format(np.sum(data['tobs'])))
-    print('Total coverage: {0:.2f} hr deg2'.format(coverage))
+    nbeams = 0.5 * len(inco)
+    print('Total area: {0:.2f} deg2'.format(nbeams * area_inco))
+    print('Total time: {0:.2f} beam hr'.format(nbeams * tobs))
+    print('Total coverage: {0:.2f} hr deg2'.format(nbeams * area_inco * tobs))
 
 
 def plot_skymap_equatorial(data, suffix, gridsize):
