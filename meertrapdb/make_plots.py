@@ -561,8 +561,8 @@ def run_skymap():
     coherent['area'] = np.pi * a * b
 
     print_summary(coherent)
-    plot_skymap_equatorial(coherent, 'coherent')
-    plot_skymap_galactic(coherent, 'coherent')
+    plot_skymap_equatorial(coherent, 'coherent', 300)
+    plot_skymap_galactic(coherent, 'coherent', 300)
 
     # 2) incoherent search
     print('Incoherent search:')
@@ -572,8 +572,8 @@ def run_skymap():
     inco['area'] = 0.86
 
     print_summary(inco)
-    plot_skymap_equatorial(inco, 'inco')
-    plot_skymap_galactic(inco, 'inco')
+    plot_skymap_equatorial(inco, 'inco', 150)
+    plot_skymap_galactic(inco, 'inco', 150)
 
 
 def print_summary(data):
@@ -634,9 +634,18 @@ def get_total_area_covered(data):
     print('Total area covered: {0:.2f} deg2'.format(coverage))
 
 
-def plot_skymap_equatorial(data, suffix):
+def plot_skymap_equatorial(data, suffix, gridsize):
     """
     Plot a sky map in equatorial coordinates.
+
+    Parameters
+    ----------
+    data: ~pandas.Dataframe
+        The data to be plotted.
+    suffix: str
+        The suffix to append to the filename of the output plot.
+    gridsize: int
+        The number of hexagons in the horizontal direction.
     """
 
     coords = SkyCoord(ra=data['ra'], dec=data['dec'],
@@ -649,7 +658,7 @@ def plot_skymap_equatorial(data, suffix):
     hb = ax.hexbin(coords.ra.hour, coords.dec.degree,
                    C=data['tobs'],
                    reduce_C_function=np.sum,
-                   gridsize=200,
+                   gridsize=gridsize,
                    bins='log',
                    mincnt=1,
                    linewidths=0.1,
@@ -672,9 +681,18 @@ def plot_skymap_equatorial(data, suffix):
     plt.close(fig)
 
 
-def plot_skymap_galactic(data, suffix):
+def plot_skymap_galactic(data, suffix, gridsize):
     """
     Plot a sky map in Galactic coordinates.
+
+    Parameters
+    ----------
+    data: ~pandas.Dataframe
+        The data to be plotted.
+    suffix: str
+        The suffix to append to the filename of the output plot.
+    gridsize: int
+        The number of hexagons in the horizontal direction.
     """
 
     coords = SkyCoord(ra=data['ra'], dec=data['dec'],
@@ -690,10 +708,10 @@ def plot_skymap_galactic(data, suffix):
     hb = ax.hexbin(-1 * gl_rad, gb_rad,
                    C=data['tobs'],
                    reduce_C_function=np.sum,
-                   gridsize=200,
+                   gridsize=gridsize,
                    bins='log',
                    mincnt=1,
-                   linewidths=0.1,
+                   linewidths=0.3,
                    cmap='Reds')
 
     # add colour bar
