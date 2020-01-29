@@ -13,6 +13,8 @@ import os.path
 import sys
 from time import sleep
 
+from astropy import units
+from astropy.coordinates import SkyCoord
 from astropy.time import Time
 from matplotlib.colors import LogNorm
 import matplotlib.pyplot as plt
@@ -28,6 +30,10 @@ from meertrapdb import schema
 from meertrapdb.schema import db
 from meertrapdb.version import __version__
 
+# astropy.units generates members dynamically, pylint therefore fails
+# disable the corresponding pylint test for now
+# pylint: disable=E1101
+
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -36,7 +42,7 @@ def parse_args():
     
     parser.add_argument(
         'mode',
-        choices=['heimdall', 'knownsources', 'sifting', 'timeline'],
+        choices=['heimdall', 'knownsources', 'sifting', 'timeline', 'skymap'],
         help='Mode of operation.'
     )
     
@@ -511,6 +517,174 @@ def run_timeline():
         plot_snr_timeline(sel, prefix)
 
 
+def run_skymap():
+    """
+    Run the processing for 'skymap' mode.
+    """
+
+    with db_session:
+        temp = select(
+                (b.id, b.number, b.ra, b.dec, b.coherent,
+                 obs.nant, obs.utc_start, obs.utc_end)
+                    for c in schema.SpsCandidate
+                    for b in c.beam
+                    for obs in c.observation
+                ).sort_by(7)[:]
+
+    print('Beams loaded: {0}'.format(len(temp)))
+
+    # convert to pandas dataframe
+    temp2 = {
+            'id':           [item[0] for item in temp],
+            'number':       [item[1] for item in temp],
+            'ra':           [item[2] for item in temp],
+            'dec':          [item[3] for item in temp],
+            'coherent':     [item[4] for item in temp],
+            'nant':         [item[5] for item in temp],
+            'utc_start':    [item[6] for item in temp],
+            'utc_end':      [item[7] for item in temp]
+        }
+
+    data = DataFrame.from_dict(temp2)
+
+    # assume contant tobs (hr) for now
+    tobs = 10.0 / 60.0
+    data['tobs'] = tobs
+
+    # split
+    coherent = data[data['number'] != 0].copy()
+    inco = data[data['number'] == 0].copy()
+
+    # 1) coherent search
+    print('Coherent search:')
+
+    # assume constant tied-array beam area (deg2) for now
+    a = 28.8 / 3600
+    b = 64.0 / 3600
+    # about 1.6 arcmin2, or 0.44 mdeg2
+    area_co = np.pi * a * b
+
+    plot_skymap_equatorial(coherent, 'coherent', 300)
+    plot_skymap_galactic(coherent, 'coherent', 300)
+
+    nbeams = len(coherent) + 0.5 * len(inco)
+    print('Total area: {0:.2f} deg2'.format(nbeams * area_co))
+    print('Total time: {0:.2f} beam hr'.format(nbeams * tobs))
+    print('Total coverage: {0:.2f} hr deg2'.format(nbeams * area_co * tobs))
+
+    # 2) incoherent search
+    print('Incoherent search:')
+
+    # area of the primary beam (deg2)
+    area_inco = 0.86
+
+    plot_skymap_equatorial(inco, 'inco', 150)
+    plot_skymap_galactic(inco, 'inco', 150)
+
+    nbeams = 0.5 * len(inco)
+    print('Total area: {0:.2f} deg2'.format(nbeams * area_inco))
+    print('Total time: {0:.2f} beam hr'.format(nbeams * tobs))
+    print('Total coverage: {0:.2f} hr deg2'.format(nbeams * area_inco * tobs))
+
+
+def plot_skymap_equatorial(data, suffix, gridsize):
+    """
+    Plot a sky map in equatorial coordinates.
+
+    Parameters
+    ----------
+    data: ~pandas.Dataframe
+        The data to be plotted.
+    suffix: str
+        The suffix to append to the filename of the output plot.
+    gridsize: int
+        The number of hexagons in the horizontal direction.
+    """
+
+    coords = SkyCoord(ra=data['ra'], dec=data['dec'],
+                      unit=(units.hourangle, units.deg),
+                      frame='icrs')
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+
+    hb = ax.hexbin(coords.ra.hour, coords.dec.degree,
+                   C=data['tobs'],
+                   reduce_C_function=np.sum,
+                   gridsize=gridsize,
+                   bins='log',
+                   mincnt=1,
+                   linewidths=0.1,
+                   cmap='Reds')
+
+    # add colour bar
+    cb = fig.colorbar(hb, ax=ax)
+    cb.set_label('Exposure (hr)')
+
+    ax.grid(True)
+    ax.set_xlabel("RA (h)")
+    ax.set_ylabel("Dec (deg)")
+    #ax.autoscale(tight=True)
+    ax.set_xlim(left=0, right=24)
+
+    fig.tight_layout()
+
+    fig.savefig('skymap_equatorial_{0}.pdf'.format(suffix), bbox_inches='tight')
+    fig.savefig('skymap_equatorial_{0}.png'.format(suffix), bbox_inches='tight', dpi=300)
+    plt.close(fig)
+
+
+def plot_skymap_galactic(data, suffix, gridsize):
+    """
+    Plot a sky map in Galactic coordinates.
+
+    Parameters
+    ----------
+    data: ~pandas.Dataframe
+        The data to be plotted.
+    suffix: str
+        The suffix to append to the filename of the output plot.
+    gridsize: int
+        The number of hexagons in the horizontal direction.
+    """
+
+    coords = SkyCoord(ra=data['ra'], dec=data['dec'],
+                      unit=(units.hourangle, units.deg),
+                      frame='icrs')
+
+    fig = plt.figure(figsize=(8, 4.2))
+    ax = fig.add_subplot(111, projection='aitoff')
+
+    gl_rad = coords.galactic.l.wrap_at(180 * units.deg).radian
+    gb_rad = coords.galactic.b.radian
+
+    hb = ax.hexbin(-1 * gl_rad, gb_rad,
+                   C=data['tobs'],
+                   reduce_C_function=np.sum,
+                   gridsize=gridsize,
+                   bins='log',
+                   mincnt=1,
+                   linewidths=0.3,
+                   cmap='Reds')
+
+    # add colour bar
+    cb = fig.colorbar(hb, ax=ax)
+    cb.set_label('Exposure (hr)')
+
+    ax.grid(True)
+    ax.set_xlabel("Galactic Longitude (deg)")
+    ax.set_ylabel("Galactic Latitude (deg)")
+
+    # flip gb axis labels
+    labels = ['{0:.0f}'.format(item) for item in np.linspace(150, -150, num=11)]
+    ax.set_xticklabels(labels)
+
+    fig.tight_layout()
+    fig.savefig('skymap_galactic_{0}.pdf'.format(suffix), bbox_inches="tight")
+    fig.savefig('skymap_galactic_{0}.png'.format(suffix), bbox_inches="tight", dpi=300)
+    plt.close(fig)
+
+
 #
 # MAIN
 #
@@ -544,6 +718,9 @@ def main():
 
     elif args.mode == 'timeline':
         run_timeline()
+
+    elif args.mode == 'skymap':
+        run_skymap()
 
     log.info("All done.")
 
