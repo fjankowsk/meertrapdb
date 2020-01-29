@@ -5,7 +5,7 @@
 ## 0.4 (2020-01-29) ##
 
 * In the multi-beam clustering code, check if a candidate was already assigned to a cluster. Do not process it if that is the case. This speeds up the clustering and, more importantly, should avoid singular candidates at the cluster ends in MJD. The previous implementation was treating cluster members at the trailing edge of the cluster incorrectly.
-* Convert `psrmatch` into a separate class.
+* Convert `psrmatch` into a separate class and module, so that it can be used in other code. Use separate versioning for it (version 0.1).
 * Added `psrmatch`, a simple known-source matching algorithm in spatial - DM space based on a k-d search tree for performance. It uses the ATNF pulsar catalogue for now. The code identifies candidates from known pulsars based on thresholding in both dimensions.
 * Added simplistic code to find periodic sources in the DM - time plane using heuristical (statistical) methods. This was later backed out again, in favour of a simpler threshold-based spatial matching code.
 * Added heimdall-like plot of candidate dispersion measures versus time, including S/N and width.
