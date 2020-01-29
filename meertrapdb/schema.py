@@ -116,6 +116,7 @@ class SpsCandidate(db.Entity):
     #classifierconfig = Set('ClassifierConfig')
     sift_result = Set('SiftResult')
     head_of = Set('SiftResult')
+    known_source = Set('KnownSource')
 
 
 class Node(db.Entity):
@@ -161,6 +162,15 @@ class SiftResult(db.Entity):
     extent_dec = Optional(float)
     # area of the 'shower' in square degrees
     extent_area = Optional(float)
+
+
+class KnownSource(db.Entity):
+    id = PrimaryKey(int, auto=True, size=64, unsigned=True)
+    sps_candidate = Set('SpsCandidate')
+    name = Required(str, max_len=32, unique=True)
+    catalogue = Required(str, max_len=32)
+    dm = Optional(float)
+    source_type = Optional(str, max_len=32)
 
 
 class Logs(db.Entity):

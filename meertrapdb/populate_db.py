@@ -17,7 +17,9 @@ import shutil
 import sys
 from time import sleep
 
+from astropy.coordinates import SkyCoord
 from astropy.time import Time
+import astropy.units as u
 import numpy as np
 from pony.orm import (db_session, delete, select)
 from pytz import timezone
@@ -31,16 +33,24 @@ from meertrapdb.parsing_helpers import parse_spccl_file
 from meertrapdb import schema
 from meertrapdb.schema import db
 from meertrapdb.version import __version__
+from psrmatch.catalogue_helpers import parse_psrcat
+from psrmatch.matcher import Matcher
+
+# astropy generates members dynamically, pylint therefore fails
+# disable the corresponding pylint test for now
+# pylint: disable=E1101
 
 
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Populate the database."
     )
-    
+
     parser.add_argument(
         'mode',
-        choices=['fake', 'init_tables', 'production', 'sift'],
+        choices=[
+            'fake', 'init_tables', 'known_sources', 'production', 'sift'
+            ],
         help='Mode of operation.'
     )
 
@@ -62,7 +72,7 @@ def parse_args():
         action='store_true',
         help='Get verbose program output. This switches on the display of debug messages.'
     )
-    
+
     parser.add_argument(
         "--version",
         action="version",
@@ -70,6 +80,36 @@ def parse_args():
     )
 
     return parser.parse_args()
+
+
+def check_if_schedule_block_exists(schedule_block):
+    """
+    Check if schedule block is already in the database.
+
+    Parameters
+    ----------
+    schedule_block: int
+        The schedule block ID of candidates in the database.
+
+    Raises
+    ------
+    RuntimeError
+        In case of duplicate schedule blocks.
+    """
+
+    with db_session:
+        sb_queried = schema.ScheduleBlock.select(lambda sb: sb.sb_id == schedule_block)[:]
+
+        if len(sb_queried) == 1:
+            pass
+
+        elif len(sb_queried) > 1:
+            msg = 'There are duplicate schedule blocks: {0}'.format(schedule_block)
+            raise RuntimeError(msg)
+
+        else:
+            print('The schedule block is not in the database: {0}'.format(schedule_block))
+            sys.exit(1)
 
 
 def run_fake():
@@ -661,19 +701,7 @@ def run_sift(schedule_block):
     start = datetime.now()
 
     # check if schedule block is in the database
-    with db_session:
-        sb_queried = schema.ScheduleBlock.select(lambda sb: sb.sb_id == schedule_block)[:]
-
-        if len(sb_queried) == 1:
-            pass
-
-        elif len(sb_queried) > 1:
-            msg = 'There are duplicate schedule blocks: {0}'.format(schedule_block)
-            raise RuntimeError(msg)
-
-        else:
-            print('The schedule block is not in the database: {0}'.format(schedule_block))
-            sys.exit(1)
+    check_if_schedule_block_exists(schedule_block)
 
     # delete any previous sift results for that schedule block
     log.info('Deleting previous sift results for schedule block: {0}'.format(schedule_block))
@@ -686,8 +714,6 @@ def run_sift(schedule_block):
             for sb in obs.schedule_block
             if (sb.sb_id == schedule_block)
         )
-
-        db.commit()
 
     # get the candidates
     log.info('Loading candidates from database.')
@@ -747,6 +773,159 @@ def run_sift(schedule_block):
     log.info("Done. Time taken: {0}".format(datetime.now() - start))
 
 
+def run_known_sources(schedule_block):
+    """
+    Run the processing for 'known_sources' mode.
+
+    Parameters
+    ----------
+    schedule_block: int
+        The schedule block ID to process.
+    """
+
+    log = logging.getLogger('meertrapdb.populate_db')
+
+    config = get_config()
+    ksconfig = config['knownsources']
+
+    start = datetime.now()
+
+    # check if schedule block is in the database
+    check_if_schedule_block_exists(schedule_block)
+
+    # delete any previous known source matching for that schedule block
+    log.info('Deleting previous known source matching for schedule block: {0}'.format(schedule_block))
+    with db_session:
+        # just remove the links to the known source entries
+        candidates = select(
+                    c
+                    for c in schema.SpsCandidate
+                    for obs in c.observation
+                    for sr in c.sift_result
+                    for sb in obs.schedule_block
+                    if (sb.sb_id == schedule_block
+                        and sr.is_head)
+                )[:]
+
+        for cand in candidates:
+            cand.known_source.clear()
+
+    # prepare known source matcher
+    m = Matcher(dist_thresh=ksconfig['dist_thresh'], dm_thresh=ksconfig['dm_thresh'])
+
+    log.info('Loading pulsar catalogue.')
+
+    psrcat = parse_psrcat(
+        os.path.join(
+            os.path.dirname(__file__),
+            '..',
+            'psrmatch',
+            'catalogues',
+            'psrcat_v161.txt'
+        )
+    )
+
+    m.load_catalogue(psrcat)
+
+    log.info('Creating k-d search tree.')
+    m.create_search_tree()
+
+    # get the cluster heads
+    log.info('Loading cluster heads from database.')
+    with db_session:
+        candidates = select(
+                    (c.id, c.dm, beam.ra, beam.dec)
+                    for c in schema.SpsCandidate
+                    for beam in c.beam
+                    for obs in c.observation
+                    for sr in c.sift_result
+                    for sb in obs.schedule_block
+                    if (sb.sb_id == schedule_block
+                        and sr.is_head)
+                ).sort_by(1)[:]
+
+    if len(candidates) == 0:
+        raise RuntimeError('No cluster heads found.')
+
+    log.info('Cluster heads loaded: {0}'.format(len(candidates)))
+
+    # convert to numpy record
+    candidates = [item for item in candidates]
+    dtype = [
+        ('index',int), ('dm',float), ('ra','|U32'), ('dec','|U32')
+    ]
+    candidates = np.array(candidates, dtype=dtype)
+
+    coords = SkyCoord(ra=candidates['ra'],
+                      dec=candidates['dec'],
+                      frame='icrs',
+                      unit=(u.hourangle, u.deg))
+
+    dtype = [
+        ('index',int), ('has_match',bool), ('source','|U32'), ('catalogue','|U32'),
+        ('dm',float), ('type','|U32')
+    ]
+    info = np.zeros(len(candidates), dtype=dtype)
+
+    for i in range(len(candidates)):
+        cand = candidates[i]
+
+        match = m.find_matches(coords[i], cand['dm'])
+
+        info['index'][i] = cand['index']
+
+        if match is None:
+            info['has_match'][i] = False
+        else:
+            info['has_match'][i] = True
+            info['source'][i] = match['psrj']
+
+            for field in ['catalogue', 'dm', 'type']:
+                info[field][i] = match[field]
+
+    # consider only those cluster heads that have a match
+    matched = info[info['has_match'] == True]
+
+    # write results back to database
+    log.info('Writing results into database.')
+    with db_session:
+        for item in matched:
+            # find sps candidate
+            cand_queried = schema.SpsCandidate.select(lambda c: c.id == int(item['index']))[:]
+
+            if len(cand_queried) == 1:
+                cand = cand_queried[0]
+            else:
+                raise RuntimeError('Something is wrong with the candidate index mapping: {0}, {1}, {2}'.format(
+                                   item['index'], len(cand_queried), cand_queried))
+
+            # find known source
+            ks_queried = schema.KnownSource.select(lambda c: c.name == item['source'])[:]
+
+            if len(ks_queried) == 0:
+                # insert known source and link
+                schema.KnownSource(
+                    sps_candidate=cand,
+                    name=item['source'],
+                    catalogue=item['catalogue'],
+                    dm=item['dm'],
+                    source_type=item['type']
+                )
+
+                db.commit()
+
+            elif len(ks_queried) == 1:
+                # link sps candidate and known source
+                ks = ks_queried[0]
+                cand.known_source.add(ks)
+
+            else:
+                raise RuntimeError('Duplicate known source names are present: {0}, {1}, {2}'.format(
+                                   item['source'], len(ks_queried), ks_queried))
+
+    log.info("Done. Time taken: {0}".format(datetime.now() - start))
+
+
 #
 # MAIN
 #
@@ -779,7 +958,7 @@ def main():
     db.generate_mapping(create_tables=True)
 
     # check that there is a schedule block id given
-    if args.mode in ['production', 'sift']:
+    if args.mode in ['known_sources', 'production', 'sift']:
         if not args.schedule_block:
             print('Please specify a schedule block ID to use.')
             sys.exit(1)
@@ -790,17 +969,21 @@ def main():
         log.warning(msg)
         sleep(20)
         run_fake()
-    
+
     elif args.mode == "init_tables":
         pass
-    
+
+    elif args.mode == "known_sources":
+        run_known_sources(args.schedule_block)
+
     elif args.mode == "production":
         run_production(args.schedule_block, args.test_run)
         run_sift(args.schedule_block)
+        run_known_sources(args.schedule_block)
 
     elif args.mode == "sift":
         run_sift(args.schedule_block)
-    
+
     log.info("All done.")
 
 

@@ -72,10 +72,12 @@ def match_candidates(t_candidates, time_thresh, dm_thresh):
 
     candidates = np.sort(candidates, order=['mjd', 'dm', 'snr'])
 
-    dtype = [('index',int), ('cluster_id',int),
-             ('head',int), ('is_head',bool),
-             ('members',int), ('beams',int),
-             ('processed',bool)]
+    dtype = [
+        ('index',int), ('cluster_id',int),
+        ('head',int), ('is_head',bool),
+        ('members',int), ('beams',int),
+        ('processed',bool)
+        ]
     info = np.zeros(len(candidates), dtype=dtype)
 
     # fill in the candidate indices
@@ -85,6 +87,12 @@ def match_candidates(t_candidates, time_thresh, dm_thresh):
 
     for i in range(len(candidates)):
         cand = candidates[i]
+
+        # check if the candidate was already processed
+        mask_cand = (info['index'] == cand['index'])
+        if info['processed'][mask_cand]:
+            log.debug('Candidate was already assigned a cluster, skipping it: {0}'.format(cand['index']))
+            continue
 
         mask_in_box = np.logical_and(
             np.abs(candidates['mjd'] - cand['mjd']) <= mjd_tol,
@@ -99,6 +107,7 @@ def match_candidates(t_candidates, time_thresh, dm_thresh):
 
         # skip further in the candidates
         if len(members) == 0:
+            log.info('No members found.')
             continue
 
         members = np.sort(members, order='snr')
@@ -141,6 +150,8 @@ def match_candidates(t_candidates, time_thresh, dm_thresh):
             len(candidates[mask]),
             100 * len(candidates[mask]) / float(len(candidates))
             ))
+
+        log.info('Clusters: {0}'.format(np.max(info['cluster_id']) + 1))
 
         for field in ['members', 'beams']:
             log.info('{0} (min, mean, median, max): {1}, {2}, {3}, {4}'.format(

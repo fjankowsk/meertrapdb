@@ -2,18 +2,24 @@
 
 ## HEAD ##
 
-## 0.4 (2019-10-25) ##
+## 0.4 (2020-01-29) ##
 
+This version of the software was extensively tested over the last five months and in particular using the candidates from the extensive runs over the Christmas/New Year holiday break.
+
+* In the multi-beam clustering code, check if a candidate was already assigned to a cluster. Do not process it if that is the case. This speeds up the clustering and, more importantly, should avoid singular candidates at the cluster ends in MJD. The previous implementation was treating cluster members at the trailing edge of the cluster incorrectly.
+* Convert `psrmatch` into a separate class and module, so that it can be used in other code. Use separate versioning for it (version 0.1).
+* Added `psrmatch`, a simple known-source matching algorithm in spatial - DM space based on a k-d search tree for performance. It uses the ATNF pulsar catalogue for now. The code identifies candidates from known pulsars based on thresholding in both dimensions.
+* Added simplistic code to find periodic sources in the DM - time plane using heuristical (statistical) methods. This was later backed out again, in favour of a simpler threshold-based spatial matching code.
 * Added heimdall-like plot of candidate dispersion measures versus time, including S/N and width.
-* Complete rewrite of the sifting logic that is now based on numpy array masking operations.
+* Complete rewrite of the multi-beam clustering (`sift`) logic that is now based on numpy array masking operations.
 * Added option to make plot to evaluate the multibeam sifting performance.
 * Added option to make plot of S/N timeline by schedule block ID and in total.
 * Added `make_plots` script to generate statistics plots from the database.
 * Added check to `sift` mode to test whether the requested schedule block is present in the database.
 * Added check to `production` mode that tests whether the requested schedule block is already in the database. This should prevent the user from ingesting candidates from multiple runs into the same schedule block.
 * The schedule block ID is now specified as a commandline option, rather than in the configuration file, to simplify the ingestion process for the user.
-* The results from the multibeam sifting operation are written into a separate database table. Subsequent sifting runs overwrite the previous results without modifying the candidate data. This allows one to trial different sifting parameters.
-* Added multibeam sifting code and hooked it up to the database. It is run as part of the ingestion process, but can be invoked separately. A stand-alone script is available as well that works on SPCCL file input.
+* The results from the multi-beam sifting operation are written into a separate database table. Subsequent sifting runs overwrite the previous results without modifying the candidate data. This allows one to trial different sifting parameters.
+* Added multi-beam clustering (`sift`) code and hooked it up to the database. It is run as part of the ingestion process, but can be invoked separately. A stand-alone script is available as well that works on SPCCL file input.
 
 ## 0.3 (2019-09-04) ##
 

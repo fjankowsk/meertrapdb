@@ -39,3 +39,10 @@ sifter:
   time_thresh: 10.0
   # fractional DM tolerance
   dm_thresh: 0.02
+
+# known source matching related options
+knownsources:
+  # distance threshold in degress
+  dist_thresh: 1.5
+  # fractional dm threshold in percent
+  dm_thresh: 5.0
