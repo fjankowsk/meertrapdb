@@ -684,13 +684,8 @@ def plot_skymap_equatorial(coords, data, suffix, gridsize):
     corners = hb.get_paths()
 
     # get the area of one hexagon
-    segs = corners[0].iter_segments()
-    for item in segs:
-        print(item)
-        print(item[0])
-
-    xv = np.array([item[0][0] for item in segs])
-    yv = np.array([item[0][1] for item in segs])
+    xv = np.array([item[0][0] for item in corners[0].iter_segments()])
+    yv = np.array([item[0][1] for item in corners[0].iter_segments()])
     print(xv)
     print(yv)
     area_hexagon = get_area_polygon(xv, yv)
