@@ -587,6 +587,25 @@ def run_skymap():
     print('Total coverage: {0:.2f} hr deg2'.format(nbeams * area_inco * tobs))
 
 
+def get_area_polygon(x, y):
+    """
+    Compute the area of a polygon using the shoelace formula.
+
+    Parameters
+    ----------
+    x: ~np.array
+        The horizontal Euclidian coordinates of the polygon corners.
+    y: ~np.array
+        The vertical Euclidian coordinates of the polygon corners.
+    """
+
+    area = 0.5 * np.abs(
+        np.dot(x, np.roll(y,1)) - np.dot(y, np.roll(x,1))
+    )
+
+    return area
+
+
 def plot_skymap_equatorial(data, suffix, gridsize):
     """
     Plot a sky map in equatorial coordinates.
@@ -617,9 +636,22 @@ def plot_skymap_equatorial(data, suffix, gridsize):
                    linewidths=0.1,
                    cmap='Reds')
 
-    # print number of filled hexagons
-    print(hb.get_array())
-    print(hb.get_sizes())
+    # get unique area from the number of filled hexagons
+    counts = hb.get_array()
+    corners = hb.get_paths()
+
+    print(counts)
+    print(counts.shape)
+    print(corners)
+    print(corners.shape)
+
+    # get the area for one hexagon
+    area_hexagon = get_area_polygon(corners[:, 0], corners[:, 1])
+
+    filled = counts[counts > 1]
+    print('Number of hexagons: {0}'.format(len(counts)))
+    print('Number of filled hexagons: {0}'.format(len(filled)))
+    print('Unique area: {0:.2f} deg2'.format(len(filled) * area_hexagon * 15.0))
 
     # add colour bar
     cb = fig.colorbar(hb, ax=ax)
