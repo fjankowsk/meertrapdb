@@ -554,23 +554,10 @@ def run_skymap():
     # galactic latitude thresholds
     lat_thresh = [5, 10, 15, 45, 90]
 
-    # split
+    # split into coherent and incoherent beams
     coherent = data[data['number'] != 0].copy()
     inco = data[data['number'] == 0].copy()
 
-    # 1) coherent search
-    print('Coherent search:')
-
-    # assume constant tied-array beam area (deg2) for now
-    a = 28.8 / 3600
-    b = 64.0 / 3600
-    # about 1.6 arcmin2, or 0.44 mdeg2
-    area_co = np.pi * a * b
-
-    plot_skymap_equatorial(coherent, 'coherent', 300)
-    plot_skymap_galactic(coherent, 'coherent', 300)
-
-    # do analysis by galactic latitude bins
     coords_co = SkyCoord(
         ra=coherent['ra'],
         dec=coherent['dec'],
@@ -585,6 +572,19 @@ def run_skymap():
         frame='icrs'
     )
 
+    # 1) coherent search
+    print('Coherent search:')
+
+    # assume constant tied-array beam area (deg2) for now
+    a = 28.8 / 3600
+    b = 64.0 / 3600
+    # about 1.6 arcmin2, or 0.44 mdeg2
+    area_co = np.pi * a * b
+
+    plot_skymap_equatorial(coords_co, coherent, 'coherent', 300)
+    plot_skymap_galactic(coords_co, coherent, 'coherent', 300)
+
+    # do analysis by galactic latitude bins
     for thresh in lat_thresh:
         print('Latitude threshold: +- {0} deg'.format(thresh))
         mask_co = (np.abs(coords_co.galactic.b.deg) <= thresh)
@@ -601,8 +601,8 @@ def run_skymap():
     # area of the primary beam (deg2) at 1284 MHz
     area_inco = 0.97
 
-    plot_skymap_equatorial(inco, 'inco', 150)
-    plot_skymap_galactic(inco, 'inco', 150)
+    plot_skymap_equatorial(coords_in, inco, 'inco', 150)
+    plot_skymap_galactic(coords_in, inco, 'inco', 150)
 
     # do analysis by galactic latitude bins
     for thresh in lat_thresh:
@@ -634,12 +634,14 @@ def get_area_polygon(x, y):
     return area
 
 
-def plot_skymap_equatorial(data, suffix, gridsize):
+def plot_skymap_equatorial(coords, data, suffix, gridsize):
     """
     Plot a sky map in equatorial coordinates.
 
     Parameters
     ----------
+    coords: astropy.SkyCoord
+        The coordinates of the beam pointings.
     data: ~pandas.Dataframe
         The data to be plotted.
     suffix: str
@@ -647,10 +649,6 @@ def plot_skymap_equatorial(data, suffix, gridsize):
     gridsize: int
         The number of hexagons in the horizontal direction.
     """
-
-    coords = SkyCoord(ra=data['ra'], dec=data['dec'],
-                      unit=(units.hourangle, units.deg),
-                      frame='icrs')
 
     fig = plt.figure()
     ax = fig.add_subplot(111)
@@ -701,7 +699,7 @@ def plot_skymap_equatorial(data, suffix, gridsize):
     plt.close(fig)
 
 
-def plot_skymap_galactic(data, suffix, gridsize):
+def plot_skymap_galactic(coords, data, suffix, gridsize):
     """
     Plot a sky map in Galactic coordinates.
 
@@ -714,10 +712,6 @@ def plot_skymap_galactic(data, suffix, gridsize):
     gridsize: int
         The number of hexagons in the horizontal direction.
     """
-
-    coords = SkyCoord(ra=data['ra'], dec=data['dec'],
-                      unit=(units.hourangle, units.deg),
-                      frame='icrs')
 
     fig = plt.figure(figsize=(8, 4.2))
     ax = fig.add_subplot(111, projection='aitoff')
