@@ -551,6 +551,9 @@ def run_skymap():
     tobs = 10.0 / 60.0
     data['tobs'] = tobs
 
+    # galactic latitude thresholds
+    lat_thresh = [5, 10, 15, 45, 90]
+
     # split
     coherent = data[data['number'] != 0].copy()
     inco = data[data['number'] == 0].copy()
@@ -567,10 +570,30 @@ def run_skymap():
     plot_skymap_equatorial(coherent, 'coherent', 300)
     plot_skymap_galactic(coherent, 'coherent', 300)
 
-    nbeams = len(coherent) + 0.5 * len(inco)
-    print('Total area: {0:.2f} deg2'.format(nbeams * area_co))
-    print('Total time: {0:.2f} beam hr'.format(nbeams * tobs))
-    print('Total coverage: {0:.2f} hr deg2'.format(nbeams * area_co * tobs))
+    # do analysis by galactic latitude bins
+    coords_co = SkyCoord(
+        ra=coherent['ra'],
+        dec=coherent['dec'],
+        unit=(units.hourangle, units.deg),
+        frame='icrs'
+    )
+
+    coords_in = SkyCoord(
+        ra=inco['ra'],
+        dec=inco['dec'],
+        unit=(units.hourangle, units.deg),
+        frame='icrs'
+    )
+
+    for thresh in lat_thresh:
+        print('Latitude threshold: +- {0} deg'.format(thresh))
+        mask_co = (np.abs(coords_co.galactic.b.deg) <= thresh)
+        mask_in = (np.abs(coords_in.galactic.b.deg) <= thresh)
+
+        nbeams = len(coherent[mask_co]) + 0.5 * len(inco[mask_in])
+        print('Total area: {0:.2f} deg2'.format(nbeams * area_co))
+        print('Total time: {0:.2f} beam hr'.format(nbeams * tobs))
+        print('Total coverage: {0:.2f} hr deg2'.format(nbeams * area_co * tobs))
 
     # 2) incoherent search
     print('Incoherent search:')
@@ -581,10 +604,15 @@ def run_skymap():
     plot_skymap_equatorial(inco, 'inco', 150)
     plot_skymap_galactic(inco, 'inco', 150)
 
-    nbeams = 0.5 * len(inco)
-    print('Total area: {0:.2f} deg2'.format(nbeams * area_inco))
-    print('Total time: {0:.2f} beam hr'.format(nbeams * tobs))
-    print('Total coverage: {0:.2f} hr deg2'.format(nbeams * area_inco * tobs))
+    # do analysis by galactic latitude bins
+    for thresh in lat_thresh:
+        print('Latitude threshold: +- {0} deg'.format(thresh))
+        mask_in = (np.abs(coords_in.galactic.b.deg) <= thresh)
+        nbeams = 0.5 * len(inco[mask_in])
+
+        print('Total area: {0:.2f} deg2'.format(nbeams * area_inco))
+        print('Total time: {0:.2f} beam hr'.format(nbeams * tobs))
+        print('Total coverage: {0:.2f} hr deg2'.format(nbeams * area_inco * tobs))
 
 
 def get_area_polygon(x, y):
@@ -643,10 +671,13 @@ def plot_skymap_equatorial(data, suffix, gridsize):
     print(counts)
     print(counts.shape)
     print(corners)
-    print(corners.shape)
+    xv = np.array([item[0] for item in corners[0]])
+    yv = np.array([item[1] for item in corners[0]])
+    print(xv)
+    print(yv)
 
     # get the area for one hexagon
-    area_hexagon = get_area_polygon(corners[:, 0], corners[:, 1])
+    area_hexagon = get_area_polygon(xv, yv)
 
     filled = counts[counts > 1]
     print('Number of hexagons: {0}'.format(len(counts)))
