@@ -640,7 +640,7 @@ def plot_skymap_equatorial(coords, data, suffix, gridsize):
 
     Parameters
     ----------
-    coords: astropy.SkyCoord
+    coords: ~astropy.SkyCoord
         The coordinates of the beam pointings.
     data: ~pandas.Dataframe
         The data to be plotted.
@@ -666,18 +666,19 @@ def plot_skymap_equatorial(coords, data, suffix, gridsize):
     counts = hb.get_array()
     corners = hb.get_paths()
 
-    print(counts)
-    print(counts.shape)
-    print(corners)
-    xv = np.array([item[0] for item in corners[0]])
-    yv = np.array([item[1] for item in corners[0]])
+    # get the area of one hexagon
+    segs = corners[0].iter_segments()
+    for item in segs:
+        print(item)
+        print(item[0])
+
+    xv = np.array([item[0][0] for item in segs])
+    yv = np.array([item[0][1] for item in segs])
     print(xv)
     print(yv)
-
-    # get the area for one hexagon
     area_hexagon = get_area_polygon(xv, yv)
 
-    filled = counts[counts > 1]
+    filled = counts[counts > 0]
     print('Number of hexagons: {0}'.format(len(counts)))
     print('Number of filled hexagons: {0}'.format(len(filled)))
     print('Unique area: {0:.2f} deg2'.format(len(filled) * area_hexagon * 15.0))
@@ -705,6 +706,8 @@ def plot_skymap_galactic(coords, data, suffix, gridsize):
 
     Parameters
     ----------
+    coords: ~astropy.SkyCoord
+        The coordinates of the beam pointings.
     data: ~pandas.Dataframe
         The data to be plotted.
     suffix: str
