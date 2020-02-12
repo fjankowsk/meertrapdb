@@ -575,8 +575,8 @@ def run_skymap():
     # 2) incoherent search
     print('Incoherent search:')
 
-    # area of the primary beam (deg2)
-    area_inco = 0.86
+    # area of the primary beam (deg2) at 1284 MHz
+    area_inco = 0.97
 
     plot_skymap_equatorial(inco, 'inco', 150)
     plot_skymap_galactic(inco, 'inco', 150)
