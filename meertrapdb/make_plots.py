@@ -617,6 +617,10 @@ def plot_skymap_equatorial(data, suffix, gridsize):
                    linewidths=0.1,
                    cmap='Reds')
 
+    # print number of filled hexagons
+    print(hb.get_array())
+    print(hb.get_sizes())
+
     # add colour bar
     cb = fig.colorbar(hb, ax=ax)
     cb.set_label('Exposure (hr)')
