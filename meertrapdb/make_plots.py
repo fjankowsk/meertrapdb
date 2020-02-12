@@ -585,10 +585,12 @@ def run_skymap():
     plot_skymap_galactic(coords_co, coherent, 'coherent', 300)
 
     # do analysis by galactic latitude bins
-    for thresh in lat_thresh:
-        print('Latitude threshold: +- {0} deg'.format(thresh))
-        mask_co = (np.abs(coords_co.galactic.b.deg) <= thresh)
-        mask_in = (np.abs(coords_in.galactic.b.deg) <= thresh)
+    for i in range(len(lat_thresh) - 1):
+        start = lat_thresh[i]
+        stop = lat_thresh[i] + 1
+        print('Latitude range: +- [{0}, {1}[ deg'.format(start, stop))
+        mask_co = (start <= np.abs(coords_co.galactic.b.deg) < stop)
+        mask_in = (start <= np.abs(coords_in.galactic.b.deg) < stop)
 
         nbeams = len(coherent[mask_co]) + 0.5 * len(inco[mask_in])
         print('Total area: {0:.2f} deg2'.format(nbeams * area_co))
@@ -605,9 +607,13 @@ def run_skymap():
     plot_skymap_galactic(coords_in, inco, 'inco', 150)
 
     # do analysis by galactic latitude bins
-    for thresh in lat_thresh:
-        print('Latitude threshold: +- {0} deg'.format(thresh))
-        mask_in = (np.abs(coords_in.galactic.b.deg) <= thresh)
+    for i in range(len(lat_thresh) - 1):
+        start = lat_thresh[i]
+        stop = lat_thresh[i] + 1
+        print('Latitude range: +- [{0}, {1}[ deg'.format(start, stop))
+        mask_co = (start <= np.abs(coords_co.galactic.b.deg) < stop)
+        mask_in = (start <= np.abs(coords_in.galactic.b.deg) < stop)
+
         nbeams = 0.5 * len(inco[mask_in])
 
         print('Total area: {0:.2f} deg2'.format(nbeams * area_inco))
