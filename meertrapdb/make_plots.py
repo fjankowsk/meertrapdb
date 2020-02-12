@@ -589,8 +589,16 @@ def run_skymap():
         start = lat_thresh[i]
         stop = lat_thresh[i] + 1
         print('Latitude range: +- [{0}, {1}[ deg'.format(start, stop))
-        mask_co = (start <= np.abs(coords_co.galactic.b.deg) < stop)
-        mask_in = (start <= np.abs(coords_in.galactic.b.deg) < stop)
+
+        mask_co = np.logical_and(
+            start <= np.abs(coords_co.galactic.b.deg),
+            np.abs(coords_co.galactic.b.deg) < stop
+        )
+
+        mask_in = np.logical_and(
+            start <= np.abs(coords_in.galactic.b.deg),
+            np.abs(coords_in.galactic.b.deg) < stop
+        )
 
         nbeams = len(coherent[mask_co]) + 0.5 * len(inco[mask_in])
         print('Total area: {0:.2f} deg2'.format(nbeams * area_co))
@@ -611,8 +619,11 @@ def run_skymap():
         start = lat_thresh[i]
         stop = lat_thresh[i] + 1
         print('Latitude range: +- [{0}, {1}[ deg'.format(start, stop))
-        mask_co = (start <= np.abs(coords_co.galactic.b.deg) < stop)
-        mask_in = (start <= np.abs(coords_in.galactic.b.deg) < stop)
+
+        mask_in = np.logical_and(
+            start <= np.abs(coords_in.galactic.b.deg),
+            np.abs(coords_in.galactic.b.deg) < stop
+        )
 
         nbeams = 0.5 * len(inco[mask_in])
 
