@@ -581,8 +581,13 @@ def run_skymap():
     # about 1.6 arcmin2, or 0.44 mdeg2
     area_co = np.pi * a * b
 
-    plot_skymap_equatorial(coords_co, coherent, 'coherent', 2880)
+    plot_skymap_equatorial(coords_co, coherent, 'coherent', 8640)
     plot_skymap_galactic(coords_co, coherent, 'coherent', 300)
+
+    # output total stats
+    nbeams = len(coherent) + 0.5 * len(inco)
+    print('{0:16} {1:10.2f} deg2'.format('Total area', nbeams * area_co))
+    print('{0:16} {1:10.2f} hr deg2'.format('Total coverage', nbeams * area_co * tobs))
 
     # do analysis by galactic latitude bins
     for i in range(len(lat_thresh) - 1):
@@ -601,8 +606,8 @@ def run_skymap():
         )
 
         nbeams = len(coherent[mask_co]) + 0.5 * len(inco[mask_in])
+
         print('{0:10} {1:10.2f} deg2'.format('Area', nbeams * area_co))
-        print('{0:10} {1:10.2f} beam hr'.format('Time', nbeams * tobs))
         print('{0:10} {1:10.2f} hr deg2'.format('Coverage', nbeams * area_co * tobs))
 
     # 2) incoherent search
@@ -611,8 +616,13 @@ def run_skymap():
     # area of the primary beam (deg2) at 1284 MHz
     area_inco = 0.97
 
-    plot_skymap_equatorial(coords_in, inco, 'inco', 180)
+    plot_skymap_equatorial(coords_in, inco, 'inco', 190)
     plot_skymap_galactic(coords_in, inco, 'inco', 150)
+
+    # output total stats
+    nbeams = 0.5 * len(inco)
+    print('{0:16} {1:10.2f} deg2'.format('Total area', nbeams * area_inco))
+    print('{0:16} {1:10.2f} hr deg2'.format('Total coverage', nbeams * area_inco * tobs))
 
     # do analysis by galactic latitude bins
     for i in range(len(lat_thresh) - 1):
@@ -628,7 +638,6 @@ def run_skymap():
         nbeams = 0.5 * len(inco[mask_in])
 
         print('{0:10} {1:10.2f} deg2'.format('Area', nbeams * area_inco))
-        print('{0:10} {1:10.2f} beam hr'.format('Time', nbeams * tobs))
         print('{0:10} {1:10.2f} hr deg2'.format('Coverage', nbeams * area_inco * tobs))
 
 
