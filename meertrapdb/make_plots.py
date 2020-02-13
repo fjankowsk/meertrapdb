@@ -601,9 +601,9 @@ def run_skymap():
         )
 
         nbeams = len(coherent[mask_co]) + 0.5 * len(inco[mask_in])
-        print('Total area: {0:.2f} deg2'.format(nbeams * area_co))
-        print('Total time: {0:.2f} beam hr'.format(nbeams * tobs))
-        print('Total coverage: {0:.2f} hr deg2'.format(nbeams * area_co * tobs))
+        print('Total area: {0:10.2f} deg2'.format(nbeams * area_co))
+        print('Total time: {0:10.2f} beam hr'.format(nbeams * tobs))
+        print('Total coverage: {0:10.2f} hr deg2'.format(nbeams * area_co * tobs))
 
     # 2) incoherent search
     print('Incoherent search:')
@@ -627,9 +627,9 @@ def run_skymap():
 
         nbeams = 0.5 * len(inco[mask_in])
 
-        print('Total area: {0:.2f} deg2'.format(nbeams * area_inco))
-        print('Total time: {0:.2f} beam hr'.format(nbeams * tobs))
-        print('Total coverage: {0:.2f} hr deg2'.format(nbeams * area_inco * tobs))
+        print('Total area: {0:10.2f} deg2'.format(nbeams * area_inco))
+        print('Total time: {0:10.2f} beam hr'.format(nbeams * tobs))
+        print('Total coverage: {0:10.2f} hr deg2'.format(nbeams * area_inco * tobs))
 
 
 def get_area_polygon(x, y):
