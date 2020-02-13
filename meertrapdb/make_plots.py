@@ -573,7 +573,8 @@ def run_skymap():
     )
 
     # 1) coherent search
-    print('Coherent search:')
+    print('Coherent search')
+    print('---------------')
 
     # assume constant tied-array beam area (deg2) for now
     a = 28.8 / 3600
@@ -581,13 +582,13 @@ def run_skymap():
     # about 1.6 arcmin2, or 0.44 mdeg2
     area_co = np.pi * a * b
 
-    plot_skymap_equatorial(coords_co, coherent, 'coherent', 8640)
-    plot_skymap_galactic(coords_co, coherent, 'coherent', 300)
-
     # output total stats
     nbeams = len(coherent) + 0.5 * len(inco)
     print('{0:16} {1:10.2f} deg2'.format('Total area', nbeams * area_co))
     print('{0:16} {1:10.2f} hr deg2'.format('Total coverage', nbeams * area_co * tobs))
+
+    plot_skymap_equatorial(coords_co, coherent, 'coherent', 8640)
+    plot_skymap_galactic(coords_co, coherent, 'coherent', 300)
 
     # do analysis by galactic latitude bins
     for i in range(len(lat_thresh) - 1):
@@ -609,20 +610,23 @@ def run_skymap():
 
         print('{0:10} {1:10.2f} deg2'.format('Area', nbeams * area_co))
         print('{0:10} {1:10.2f} hr deg2'.format('Coverage', nbeams * area_co * tobs))
+        print('')
 
     # 2) incoherent search
-    print('Incoherent search:')
+    print('')
+    print('Incoherent search')
+    print('-----------------')
 
     # area of the primary beam (deg2) at 1284 MHz
     area_inco = 0.97
-
-    plot_skymap_equatorial(coords_in, inco, 'inco', 190)
-    plot_skymap_galactic(coords_in, inco, 'inco', 150)
 
     # output total stats
     nbeams = 0.5 * len(inco)
     print('{0:16} {1:10.2f} deg2'.format('Total area', nbeams * area_inco))
     print('{0:16} {1:10.2f} hr deg2'.format('Total coverage', nbeams * area_inco * tobs))
+
+    plot_skymap_equatorial(coords_in, inco, 'inco', 190)
+    plot_skymap_galactic(coords_in, inco, 'inco', 150)
 
     # do analysis by galactic latitude bins
     for i in range(len(lat_thresh) - 1):
@@ -639,6 +643,7 @@ def run_skymap():
 
         print('{0:10} {1:10.2f} deg2'.format('Area', nbeams * area_inco))
         print('{0:10} {1:10.2f} hr deg2'.format('Coverage', nbeams * area_inco * tobs))
+        print('')
 
 
 def get_area_polygon(x, y):
@@ -701,7 +706,7 @@ def plot_skymap_equatorial(coords, data, suffix, gridsize):
     filled = counts[counts > 0]
     print('Number of hexagons: {0}'.format(len(counts)))
     print('Number of filled hexagons: {0}'.format(len(filled)))
-    print('Unique area: {0:.2f} deg2'.format(len(filled) * area_hexagon))
+    print('{0:16} {1:10.2f} deg2'.format('Unique area', len(filled) * area_hexagon))
 
     # add colour bar
     cb = fig.colorbar(hb, ax=ax)
