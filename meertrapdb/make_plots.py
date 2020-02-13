@@ -587,7 +587,7 @@ def run_skymap():
     # do analysis by galactic latitude bins
     for i in range(len(lat_thresh) - 1):
         start = lat_thresh[i]
-        stop = lat_thresh[i] + 1
+        stop = lat_thresh[i + 1]
         print('Latitude range: +- [{0}, {1}[ deg'.format(start, stop))
 
         mask_co = np.logical_and(
@@ -617,7 +617,7 @@ def run_skymap():
     # do analysis by galactic latitude bins
     for i in range(len(lat_thresh) - 1):
         start = lat_thresh[i]
-        stop = lat_thresh[i] + 1
+        stop = lat_thresh[i + 1]
         print('Latitude range: +- [{0}, {1}[ deg'.format(start, stop))
 
         mask_in = np.logical_and(
@@ -686,9 +686,8 @@ def plot_skymap_equatorial(coords, data, suffix, gridsize):
     # get the area of one hexagon
     xv = np.array([item[0][0] for item in corners[0].iter_segments()])
     yv = np.array([item[0][1] for item in corners[0].iter_segments()])
-    print(xv)
-    print(yv)
     area_hexagon = get_area_polygon(xv, yv)
+    print('Area hexagon: {0:.5f}'.format(area_hexagon))
 
     filled = counts[counts > 0]
     print('Number of hexagons: {0}'.format(len(counts)))
