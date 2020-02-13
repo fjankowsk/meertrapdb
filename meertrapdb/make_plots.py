@@ -588,7 +588,7 @@ def run_skymap():
     for i in range(len(lat_thresh) - 1):
         start = lat_thresh[i]
         stop = lat_thresh[i + 1]
-        print('Latitude range: +- [{0}, {1}[ deg'.format(start, stop))
+        print('Latitude bin: {0} <= abs(gb) < {1} deg'.format(start, stop))
 
         mask_co = np.logical_and(
             start <= np.abs(coords_co.galactic.b.deg),
@@ -601,9 +601,9 @@ def run_skymap():
         )
 
         nbeams = len(coherent[mask_co]) + 0.5 * len(inco[mask_in])
-        print('Total area: {0:10.2f} deg2'.format(nbeams * area_co))
-        print('Total time: {0:10.2f} beam hr'.format(nbeams * tobs))
-        print('Total coverage: {0:10.2f} hr deg2'.format(nbeams * area_co * tobs))
+        print('{0:10} {1:10.2f} deg2'.format('Area', nbeams * area_co))
+        print('{0:10} {1:10.2f} beam hr'.format('Time', nbeams * tobs))
+        print('{0:10} {1:10.2f} hr deg2'.format('Coverage', nbeams * area_co * tobs))
 
     # 2) incoherent search
     print('Incoherent search:')
@@ -618,7 +618,7 @@ def run_skymap():
     for i in range(len(lat_thresh) - 1):
         start = lat_thresh[i]
         stop = lat_thresh[i + 1]
-        print('Latitude range: +- [{0}, {1}[ deg'.format(start, stop))
+        print('Latitude bin: {0} <= abs(gb) < {1} deg'.format(start, stop))
 
         mask_in = np.logical_and(
             start <= np.abs(coords_in.galactic.b.deg),
@@ -627,9 +627,9 @@ def run_skymap():
 
         nbeams = 0.5 * len(inco[mask_in])
 
-        print('Total area: {0:10.2f} deg2'.format(nbeams * area_inco))
-        print('Total time: {0:10.2f} beam hr'.format(nbeams * tobs))
-        print('Total coverage: {0:10.2f} hr deg2'.format(nbeams * area_inco * tobs))
+        print('{0:10} {1:10.2f} deg2'.format('Area', nbeams * area_inco))
+        print('{0:10} {1:10.2f} beam hr'.format('Time', nbeams * tobs))
+        print('{0:10} {1:10.2f} hr deg2'.format('Coverage', nbeams * area_inco * tobs))
 
 
 def get_area_polygon(x, y):
