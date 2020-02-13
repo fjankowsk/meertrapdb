@@ -552,7 +552,7 @@ def run_skymap():
     data['tobs'] = tobs
 
     # galactic latitude thresholds
-    lat_thresh = [5, 19.5, 42, 90]
+    lat_thresh = [0, 5, 19.5, 42, 90]
 
     # split into coherent and incoherent beams
     coherent = data[data['number'] != 0].copy()
@@ -581,7 +581,7 @@ def run_skymap():
     # about 1.6 arcmin2, or 0.44 mdeg2
     area_co = np.pi * a * b
 
-    plot_skymap_equatorial(coords_co, coherent, 'coherent', 300)
+    plot_skymap_equatorial(coords_co, coherent, 'coherent', 720)
     plot_skymap_galactic(coords_co, coherent, 'coherent', 300)
 
     # do analysis by galactic latitude bins
@@ -611,7 +611,7 @@ def run_skymap():
     # area of the primary beam (deg2) at 1284 MHz
     area_inco = 0.97
 
-    plot_skymap_equatorial(coords_in, inco, 'inco', 150)
+    plot_skymap_equatorial(coords_in, inco, 'inco', 360)
     plot_skymap_galactic(coords_in, inco, 'inco', 150)
 
     # do analysis by galactic latitude bins
@@ -686,13 +686,13 @@ def plot_skymap_equatorial(coords, data, suffix, gridsize):
     # get the area of one hexagon
     xv = np.array([item[0][0] for item in corners[0].iter_segments()])
     yv = np.array([item[0][1] for item in corners[0].iter_segments()])
-    area_hexagon = get_area_polygon(xv, yv)
-    print('Area hexagon: {0:.5f}'.format(area_hexagon))
+    area_hexagon = 15.0 * get_area_polygon(xv, yv)
+    print('Area hexagon: {0:.5f} deg2'.format(area_hexagon))
 
     filled = counts[counts > 0]
     print('Number of hexagons: {0}'.format(len(counts)))
     print('Number of filled hexagons: {0}'.format(len(filled)))
-    print('Unique area: {0:.2f} deg2'.format(len(filled) * area_hexagon * 15.0))
+    print('Unique area: {0:.2f} deg2'.format(len(filled) * area_hexagon))
 
     # add colour bar
     cb = fig.colorbar(hb, ax=ax)
