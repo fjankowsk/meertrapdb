@@ -581,7 +581,7 @@ def run_skymap():
     # about 1.6 arcmin2, or 0.44 mdeg2
     area_co = np.pi * a * b
 
-    plot_skymap_equatorial(coords_co, coherent, 'coherent', 720)
+    plot_skymap_equatorial(coords_co, coherent, 'coherent', 2880)
     plot_skymap_galactic(coords_co, coherent, 'coherent', 300)
 
     # do analysis by galactic latitude bins
@@ -611,7 +611,7 @@ def run_skymap():
     # area of the primary beam (deg2) at 1284 MHz
     area_inco = 0.97
 
-    plot_skymap_equatorial(coords_in, inco, 'inco', 360)
+    plot_skymap_equatorial(coords_in, inco, 'inco', 180)
     plot_skymap_galactic(coords_in, inco, 'inco', 150)
 
     # do analysis by galactic latitude bins
