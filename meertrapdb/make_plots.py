@@ -552,7 +552,7 @@ def run_skymap():
     data['tobs'] = tobs
 
     # galactic latitude thresholds
-    lat_thresh = [5, 10, 15, 45, 90]
+    lat_thresh = [5, 19.5, 42, 90]
 
     # split into coherent and incoherent beams
     coherent = data[data['number'] != 0].copy()
