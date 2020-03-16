@@ -2,6 +2,8 @@
 
 ## HEAD ##
 
+* Added Slack notification implemented by Mat Malenta. A short summary gets sent to a certain Slack channel upon successful ingest of candidates.
+
 ## 0.5 (2020-01-29) ##
 
 This version of the software was extensively tested over the last three months and in particular using the candidates from the extensive runs over the Christmas/New Year holiday break.
