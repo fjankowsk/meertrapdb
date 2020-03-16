@@ -13,8 +13,10 @@ import json
 import logging
 import os.path
 import random
+import requests as req
 import shutil
 import sys
+import time
 from time import sleep
 
 from astropy.coordinates import SkyCoord
@@ -615,6 +617,7 @@ def run_production(schedule_block, test_run):
 
     # 1) load schedule block information
     sb_info = get_sb_info()
+    start_time = sb_info['actual_start_time'][:-2]
 
     # 2) check for new directory
     staging_dir = fsconf['ingest']['staging_dir']
@@ -681,7 +684,7 @@ def run_production(schedule_block, test_run):
             shutil.move(filename, outfile)
 
     log.info("Done. Time taken: {0}".format(datetime.now() - start))
-
+    return start_time
 
 def run_sift(schedule_block):
     """
@@ -730,6 +733,8 @@ def run_sift(schedule_block):
     if len(candidates) == 0:
         raise RuntimeError('No single-pulse candidates found.')
 
+    raw_cands = len(candidates)
+
     log.info('Candidates loaded: {0}'.format(len(candidates)))
 
     # convert to numpy record
@@ -771,7 +776,7 @@ def run_sift(schedule_block):
             )
 
     log.info("Done. Time taken: {0}".format(datetime.now() - start))
-
+    return raw_cands
 
 def run_known_sources(schedule_block):
     """
@@ -847,6 +852,7 @@ def run_known_sources(schedule_block):
     if len(candidates) == 0:
         raise RuntimeError('No cluster heads found.')
 
+    unique_heads = len(candidates)
     log.info('Cluster heads loaded: {0}'.format(len(candidates)))
 
     # convert to numpy record
@@ -886,6 +892,8 @@ def run_known_sources(schedule_block):
     # consider only those cluster heads that have a match
     matched = info[info['has_match'] == True]
 
+    known_matched = len(matched)
+
     # write results back to database
     log.info('Writing results into database.')
     with db_session:
@@ -924,7 +932,7 @@ def run_known_sources(schedule_block):
                                    item['source'], len(ks_queried), ks_queried))
 
     log.info("Done. Time taken: {0}".format(datetime.now() - start))
-
+    return unique_heads, known_matched
 
 #
 # MAIN
@@ -977,9 +985,30 @@ def main():
         run_known_sources(args.schedule_block)
 
     elif args.mode == "production":
-        run_production(args.schedule_block, args.test_run)
-        run_sift(args.schedule_block)
-        run_known_sources(args.schedule_block)
+        start_time = run_production(args.schedule_block, args.test_run)
+        raw_cands = run_sift(args.schedule_block)
+        unique_heads, known_matched = run_known_sources(args.schedule_block)
+        known_unmatched = unique_heads - known_matched
+
+        notify_link = "XXX"
+        current_time = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
+        message = {
+            "pretext": "*" + current_time + " NEW SB injected:* \n",
+            "color": "#37961d",
+            "text": "SB: " + str(args.schedule_block) + ", start date: " + start_time + ", raw candidates: " + str(raw_cands) + ", unique heads: " + str(unique_heads) + ", unmatched unique heads: " + str(known_unmatched)
+        }
+
+        cand_message = {
+            "attachments": [message]
+        }
+        message_json = json.dumps(cand_message)
+
+        try:
+            req.post(notify_link, data=message_json, timeout=2)
+        except:
+            print("Something happened when trying to send the data to Slack!")
+            print(sys.exc_info()[0])
+            pass
 
     elif args.mode == "sift":
         run_sift(args.schedule_block)
