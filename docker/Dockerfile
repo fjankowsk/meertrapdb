@@ -54,6 +54,7 @@ RUN pip3 install \
     pony \
     pyyaml \
     pytz \
+    requests \
     scipy
 
 # install our software in docker image
