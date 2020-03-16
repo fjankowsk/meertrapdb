@@ -592,6 +592,11 @@ def run_production(schedule_block, test_run):
         The schedule block ID to use to reference the candidates in the database.
     test_run: bool
         Determines whether to run in test mode, where no files are moved, nor copied.
+
+    Returns
+    -------
+    start_time: str
+        The start time of the schedule block.
     """
 
     log = logging.getLogger('meertrapdb.populate_db')
@@ -684,7 +689,9 @@ def run_production(schedule_block, test_run):
             shutil.move(filename, outfile)
 
     log.info("Done. Time taken: {0}".format(datetime.now() - start))
+
     return start_time
+
 
 def run_sift(schedule_block):
     """
@@ -694,6 +701,11 @@ def run_sift(schedule_block):
     ----------
     schedule_block: int
         The schedule block ID to process.
+
+    Returns
+    -------
+    ncands: int
+        The total number of candidates loaded.
     """
 
     log = logging.getLogger('meertrapdb.populate_db')
@@ -732,8 +744,6 @@ def run_sift(schedule_block):
 
     if len(candidates) == 0:
         raise RuntimeError('No single-pulse candidates found.')
-
-    raw_cands = len(candidates)
 
     log.info('Candidates loaded: {0}'.format(len(candidates)))
 
@@ -776,7 +786,9 @@ def run_sift(schedule_block):
             )
 
     log.info("Done. Time taken: {0}".format(datetime.now() - start))
-    return raw_cands
+
+    return len(candidates)
+
 
 def run_known_sources(schedule_block):
     """
@@ -786,6 +798,13 @@ def run_known_sources(schedule_block):
     ----------
     schedule_block: int
         The schedule block ID to process.
+
+    Returns
+    -------
+    nheads: int
+        The number of cluster heads loaded.
+    nmatched: int
+        The number of cluster heads that have known matching sources.
     """
 
     log = logging.getLogger('meertrapdb.populate_db')
@@ -852,7 +871,6 @@ def run_known_sources(schedule_block):
     if len(candidates) == 0:
         raise RuntimeError('No cluster heads found.')
 
-    unique_heads = len(candidates)
     log.info('Cluster heads loaded: {0}'.format(len(candidates)))
 
     # convert to numpy record
@@ -892,8 +910,6 @@ def run_known_sources(schedule_block):
     # consider only those cluster heads that have a match
     matched = info[info['has_match'] == True]
 
-    known_matched = len(matched)
-
     # write results back to database
     log.info('Writing results into database.')
     with db_session:
@@ -932,7 +948,9 @@ def run_known_sources(schedule_block):
                                    item['source'], len(ks_queried), ks_queried))
 
     log.info("Done. Time taken: {0}".format(datetime.now() - start))
-    return unique_heads, known_matched
+
+    return len(candidates), len(matched)
+
 
 #
 # MAIN
@@ -956,12 +974,14 @@ def main():
     config = get_config()
     dbconf = config['db']
 
-    db.bind(provider=dbconf['provider'],
-            host=dbconf['host'],
-            port=dbconf['port'],
-            user=dbconf['user']['name'],
-            passwd=dbconf['user']['password'],
-            db=dbconf['database'])
+    db.bind(
+        provider=dbconf['provider'],
+        host=dbconf['host'],
+        port=dbconf['port'],
+        user=dbconf['user']['name'],
+        passwd=dbconf['user']['password'],
+        db=dbconf['database']
+    )
 
     db.generate_mapping(create_tables=True)
 
@@ -988,27 +1008,32 @@ def main():
         start_time = run_production(args.schedule_block, args.test_run)
         raw_cands = run_sift(args.schedule_block)
         unique_heads, known_matched = run_known_sources(args.schedule_block)
-        known_unmatched = unique_heads - known_matched
 
-        notify_link = "XXX"
         current_time = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
+        text = 'SB: {0}, start date: {1}, raw candidates: {2}, unique heads: {3}, unmatched unique heads: {4}'.format(
+            args.schedule_block,
+            start_time,
+            raw_cands,
+            unique_heads,
+            unique_heads - known_matched
+        )
+
         message = {
-            "pretext": "*" + current_time + " NEW SB injected:* \n",
-            "color": "#37961d",
-            "text": "SB: " + str(args.schedule_block) + ", start date: " + start_time + ", raw candidates: " + str(raw_cands) + ", unique heads: " + str(unique_heads) + ", unmatched unique heads: " + str(known_unmatched)
+            'pretext': '* {0} NEW SB injected:* \n'.format(current_time),
+            'color': config['notifier']['colour'],
+            'text': text
         }
 
         cand_message = {
-            "attachments": [message]
+            'attachments': [message]
         }
         message_json = json.dumps(cand_message)
 
         try:
-            req.post(notify_link, data=message_json, timeout=2)
-        except:
-            print("Something happened when trying to send the data to Slack!")
-            print(sys.exc_info()[0])
-            pass
+            req.post(config['notifier']['http_link'], data=message_json, timeout=2)
+        except Exception:
+            log.error('Something happened when trying to send the data to Slack.')
+            log.error(sys.exc_info()[0])
 
     elif args.mode == "sift":
         run_sift(args.schedule_block)

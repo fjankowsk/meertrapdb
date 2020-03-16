@@ -46,3 +46,8 @@ knownsources:
   dist_thresh: 1.5
   # fractional dm threshold in percent
   dm_thresh: 5.0
+
+# slack notifier related options
+notifier:
+  http_link: XXX
+  colour: "#37961d"
