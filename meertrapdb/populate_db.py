@@ -391,7 +391,7 @@ def insert_candidates(data, sb_id, sb_info, obs_utc_start, node_name):
         # this assumes that there is one candidate file per beam, i.e no
         # mixing of beams within a candidate file
         beam_nr = int(data['beam'][0])
-        beam_coherent = data['coherent']
+        beam_coherent = bool(data['coherent'][0])
         beam_source = "Test source"
         ra = data['ra'][0]
         dec = data['dec'][0]
