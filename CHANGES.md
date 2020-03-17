@@ -2,13 +2,13 @@
 
 ## HEAD ##
 
-* Switched to SPCCL version 2 candidates by default.
+* Switched to SPCCL version 2 candidate files by default.
 * Added Slack notification implemented by Mat Malenta. A short summary gets sent to a certain Slack channel upon successful ingest of candidates.
 * Implemented parsing of SPCCL version 2 candidate files. These have the beam mode (coherent or incoherent) specified.
 * Added the total sky area covered by the surveys to the output.
 * Match Galactic latitude bins with the SUPERB limits.
 * Bin the survey pointing data in Galactic latitude.
-* Compute the total unique area covered by the pointings base on filled polygons/hexagons.
+* Compute the total unique area covered by the survey pointings based on filled polygons/hexagons.
 * Added functionality to produce various plots of the survey pointings so far, both in equatorial and Galactic coordinates.
 
 ## 0.5 (2020-01-29) ##
