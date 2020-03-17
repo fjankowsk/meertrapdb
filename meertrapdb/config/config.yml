@@ -33,6 +33,10 @@ filesystem:
   webserver:
     candidate_dir: /webserver
 
+# candidate file related options
+candidates:
+  version: 1
+
 # multibeam sifter related options
 sifter:
   # time threshold for matching in milliseconds

@@ -13,6 +13,8 @@ import os.path
 import sys
 from time import sleep
 
+from astropy import units
+from astropy.coordinates import SkyCoord
 from astropy.time import Time
 from matplotlib.colors import LogNorm
 import matplotlib.pyplot as plt
@@ -28,6 +30,10 @@ from meertrapdb import schema
 from meertrapdb.schema import db
 from meertrapdb.version import __version__
 
+# astropy.units generates members dynamically, pylint therefore fails
+# disable the corresponding pylint test for now
+# pylint: disable=E1101
+
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -36,7 +42,7 @@ def parse_args():
     
     parser.add_argument(
         'mode',
-        choices=['heimdall', 'knownsources', 'sifting', 'timeline'],
+        choices=['heimdall', 'knownsources', 'sifting', 'timeline', 'skymap'],
         help='Mode of operation.'
     )
     
@@ -511,6 +517,263 @@ def run_timeline():
         plot_snr_timeline(sel, prefix)
 
 
+def run_skymap():
+    """
+    Run the processing for 'skymap' mode.
+    """
+
+    with db_session:
+        temp = select(
+                (b.id, b.number, b.ra, b.dec, b.coherent,
+                 obs.nant, obs.utc_start, obs.utc_end)
+                    for c in schema.SpsCandidate
+                    for b in c.beam
+                    for obs in c.observation
+                ).sort_by(7)[:]
+
+    print('Beams loaded: {0}'.format(len(temp)))
+
+    # convert to pandas dataframe
+    temp2 = {
+            'id':           [item[0] for item in temp],
+            'number':       [item[1] for item in temp],
+            'ra':           [item[2] for item in temp],
+            'dec':          [item[3] for item in temp],
+            'coherent':     [item[4] for item in temp],
+            'nant':         [item[5] for item in temp],
+            'utc_start':    [item[6] for item in temp],
+            'utc_end':      [item[7] for item in temp]
+        }
+
+    data = DataFrame.from_dict(temp2)
+
+    # assume contant tobs (hr) for now
+    tobs = 10.0 / 60.0
+    data['tobs'] = tobs
+
+    # galactic latitude thresholds
+    lat_thresh = [0, 5, 19.5, 42, 90]
+
+    # split into coherent and incoherent beams
+    coherent = data[data['number'] != 0].copy()
+    inco = data[data['number'] == 0].copy()
+
+    coords_co = SkyCoord(
+        ra=coherent['ra'],
+        dec=coherent['dec'],
+        unit=(units.hourangle, units.deg),
+        frame='icrs'
+    )
+
+    coords_in = SkyCoord(
+        ra=inco['ra'],
+        dec=inco['dec'],
+        unit=(units.hourangle, units.deg),
+        frame='icrs'
+    )
+
+    # 1) coherent search
+    print('Coherent search')
+    print('---------------')
+
+    # assume constant tied-array beam area (deg2) for now
+    a = 28.8 / 3600
+    b = 64.0 / 3600
+    # about 1.6 arcmin2, or 0.44 mdeg2
+    area_co = np.pi * a * b
+
+    # output total stats
+    nbeams = len(coherent) + 0.5 * len(inco)
+    print('{0:16} {1:10.2f} deg2'.format('Total area', nbeams * area_co))
+    print('{0:16} {1:10.2f} hr deg2'.format('Total coverage', nbeams * area_co * tobs))
+
+    plot_skymap_equatorial(coords_co, coherent, 'coherent', 8640)
+    plot_skymap_galactic(coords_co, coherent, 'coherent', 300)
+
+    # do analysis by galactic latitude bins
+    for i in range(len(lat_thresh) - 1):
+        start = lat_thresh[i]
+        stop = lat_thresh[i + 1]
+        print('Latitude bin: {0} <= abs(gb) < {1} deg'.format(start, stop))
+
+        mask_co = np.logical_and(
+            start <= np.abs(coords_co.galactic.b.deg),
+            np.abs(coords_co.galactic.b.deg) < stop
+        )
+
+        mask_in = np.logical_and(
+            start <= np.abs(coords_in.galactic.b.deg),
+            np.abs(coords_in.galactic.b.deg) < stop
+        )
+
+        nbeams = len(coherent[mask_co]) + 0.5 * len(inco[mask_in])
+
+        print('{0:10} {1:10.2f} deg2'.format('Area', nbeams * area_co))
+        print('{0:10} {1:10.2f} hr deg2'.format('Coverage', nbeams * area_co * tobs))
+        print('')
+
+    # 2) incoherent search
+    print('')
+    print('Incoherent search')
+    print('-----------------')
+
+    # area of the primary beam (deg2) at 1284 MHz
+    area_inco = 0.97
+
+    # output total stats
+    nbeams = 0.5 * len(inco)
+    print('{0:16} {1:10.2f} deg2'.format('Total area', nbeams * area_inco))
+    print('{0:16} {1:10.2f} hr deg2'.format('Total coverage', nbeams * area_inco * tobs))
+
+    plot_skymap_equatorial(coords_in, inco, 'inco', 190)
+    plot_skymap_galactic(coords_in, inco, 'inco', 150)
+
+    # do analysis by galactic latitude bins
+    for i in range(len(lat_thresh) - 1):
+        start = lat_thresh[i]
+        stop = lat_thresh[i + 1]
+        print('Latitude bin: {0} <= abs(gb) < {1} deg'.format(start, stop))
+
+        mask_in = np.logical_and(
+            start <= np.abs(coords_in.galactic.b.deg),
+            np.abs(coords_in.galactic.b.deg) < stop
+        )
+
+        nbeams = 0.5 * len(inco[mask_in])
+
+        print('{0:10} {1:10.2f} deg2'.format('Area', nbeams * area_inco))
+        print('{0:10} {1:10.2f} hr deg2'.format('Coverage', nbeams * area_inco * tobs))
+        print('')
+
+
+def get_area_polygon(x, y):
+    """
+    Compute the area of a polygon using the shoelace formula.
+
+    Parameters
+    ----------
+    x: ~np.array
+        The horizontal Euclidian coordinates of the polygon corners.
+    y: ~np.array
+        The vertical Euclidian coordinates of the polygon corners.
+    """
+
+    area = 0.5 * np.abs(
+        np.dot(x, np.roll(y,1)) - np.dot(y, np.roll(x,1))
+    )
+
+    return area
+
+
+def plot_skymap_equatorial(coords, data, suffix, gridsize):
+    """
+    Plot a sky map in equatorial coordinates.
+
+    Parameters
+    ----------
+    coords: ~astropy.SkyCoord
+        The coordinates of the beam pointings.
+    data: ~pandas.Dataframe
+        The data to be plotted.
+    suffix: str
+        The suffix to append to the filename of the output plot.
+    gridsize: int
+        The number of hexagons in the horizontal direction.
+    """
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+
+    hb = ax.hexbin(coords.ra.hour, coords.dec.degree,
+                   C=data['tobs'],
+                   reduce_C_function=np.sum,
+                   gridsize=gridsize,
+                   bins='log',
+                   mincnt=1,
+                   linewidths=0.1,
+                   cmap='Reds')
+
+    # get unique area from the number of filled hexagons
+    counts = hb.get_array()
+    corners = hb.get_paths()
+
+    # get the area of one hexagon
+    xv = np.array([item[0][0] for item in corners[0].iter_segments()])
+    yv = np.array([item[0][1] for item in corners[0].iter_segments()])
+    area_hexagon = 15.0 * get_area_polygon(xv, yv)
+    print('Area hexagon: {0:.5f} deg2'.format(area_hexagon))
+
+    filled = counts[counts > 0]
+    print('Number of hexagons: {0}'.format(len(counts)))
+    print('Number of filled hexagons: {0}'.format(len(filled)))
+    print('{0:16} {1:10.2f} deg2'.format('Unique area', len(filled) * area_hexagon))
+
+    # add colour bar
+    cb = fig.colorbar(hb, ax=ax)
+    cb.set_label('Exposure (hr)')
+
+    ax.grid(True)
+    ax.set_xlabel("RA (h)")
+    ax.set_ylabel("Dec (deg)")
+    #ax.autoscale(tight=True)
+    ax.set_xlim(left=0, right=24)
+
+    fig.tight_layout()
+
+    fig.savefig('skymap_equatorial_{0}.pdf'.format(suffix), bbox_inches='tight')
+    fig.savefig('skymap_equatorial_{0}.png'.format(suffix), bbox_inches='tight', dpi=300)
+    plt.close(fig)
+
+
+def plot_skymap_galactic(coords, data, suffix, gridsize):
+    """
+    Plot a sky map in Galactic coordinates.
+
+    Parameters
+    ----------
+    coords: ~astropy.SkyCoord
+        The coordinates of the beam pointings.
+    data: ~pandas.Dataframe
+        The data to be plotted.
+    suffix: str
+        The suffix to append to the filename of the output plot.
+    gridsize: int
+        The number of hexagons in the horizontal direction.
+    """
+
+    fig = plt.figure(figsize=(8, 4.2))
+    ax = fig.add_subplot(111, projection='aitoff')
+
+    gl_rad = coords.galactic.l.wrap_at(180 * units.deg).radian
+    gb_rad = coords.galactic.b.radian
+
+    hb = ax.hexbin(-1 * gl_rad, gb_rad,
+                   C=data['tobs'],
+                   reduce_C_function=np.sum,
+                   gridsize=gridsize,
+                   bins='log',
+                   mincnt=1,
+                   linewidths=0.3,
+                   cmap='Reds')
+
+    # add colour bar
+    cb = fig.colorbar(hb, ax=ax)
+    cb.set_label('Exposure (hr)')
+
+    ax.grid(True)
+    ax.set_xlabel("Galactic Longitude (deg)")
+    ax.set_ylabel("Galactic Latitude (deg)")
+
+    # flip gb axis labels
+    labels = ['{0:.0f}'.format(item) for item in np.linspace(150, -150, num=11)]
+    ax.set_xticklabels(labels)
+
+    fig.tight_layout()
+    fig.savefig('skymap_galactic_{0}.pdf'.format(suffix), bbox_inches="tight")
+    fig.savefig('skymap_galactic_{0}.png'.format(suffix), bbox_inches="tight", dpi=300)
+    plt.close(fig)
+
+
 #
 # MAIN
 #
@@ -544,6 +807,9 @@ def main():
 
     elif args.mode == 'timeline':
         run_timeline()
+
+    elif args.mode == 'skymap':
+        run_skymap()
 
     log.info("All done.")
 

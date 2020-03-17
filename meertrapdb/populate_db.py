@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-#   2019 Fabian Jankowski
+#   2019 - 2020 Fabian Jankowski
 #   Populate the database.
 #
 
@@ -391,7 +391,7 @@ def insert_candidates(data, sb_id, sb_info, obs_utc_start, node_name):
         # this assumes that there is one candidate file per beam, i.e no
         # mixing of beams within a candidate file
         beam_nr = int(data['beam'][0])
-        beam_coherent = True
+        beam_coherent = data['coherent']
         beam_source = "Test source"
         ra = data['ra'][0]
         dec = data['dec'][0]
@@ -654,7 +654,7 @@ def run_production(schedule_block, test_run):
         log.info("Node: {0}".format(node_name))
 
         # 3) parse candidate data
-        spccl_data = parse_spccl_file(filename)
+        spccl_data = parse_spccl_file(filename, config['candidates']['version'])
 
         # check if we have candidates
         if len(spccl_data) > 0:
