@@ -69,6 +69,7 @@ class Beam(db.Entity):
     dec = Required(str, max_len=32)
     gl = Optional(float)
     gb = Optional(float)
+    mw_dm = Optional(float)
     sps_candidate = Set('SpsCandidate')
 
 
@@ -110,6 +111,8 @@ class SpsCandidate(db.Entity):
     dynamic_spectrum = Optional(str, max_len=2048)
     profile = Optional(str, max_len=2048)
     heimdall_plot = Optional(str, max_len=2048)
+    mtc_plot = Optional(str, max_len=2048)
+    fetch_plot = Optional(str, max_len=2048)
     #score = Required(float)
     viewed = Optional(int, size=16, unsigned=True, default=0)
     pipeline_config = Set('PipelineConfig')
