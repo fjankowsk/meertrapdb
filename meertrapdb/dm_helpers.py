@@ -26,7 +26,8 @@ def get_mw_dm(gl, gb):
         The mean Milky Way DM.
     """
 
-    dist = 3000
+    # 30 kpc
+    dist = 30 * 1000
 
     dm_ne2001, _ = pygedm.dist_to_dm(gl, gb, dist, mode='gal', method='ne2001')
     dm_ymw16, _ = pygedm.dist_to_dm(gl, gb, dist, mode='gal', method='ymw16')
