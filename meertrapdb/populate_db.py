@@ -1086,7 +1086,7 @@ def main():
     db.generate_mapping(create_tables=True)
 
     # check that there is a schedule block id given
-    if args.mode in ['known_sources', 'production', 'sift']:
+    if args.mode in ['known_sources', 'production', 'sift', 'parameters']:
         if not args.schedule_block:
             print('Please specify a schedule block ID to use.')
             sys.exit(1)
