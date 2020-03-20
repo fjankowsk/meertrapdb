@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y \
     curl \
     default-libmysqlclient-dev \
     gcc \
+    gfortran \
     git \
     make \
     mariadb-server \
