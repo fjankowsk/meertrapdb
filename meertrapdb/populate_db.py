@@ -1046,8 +1046,20 @@ def run_parameters(schedule_block):
     beams = recfunctions.append_fields(beams, 'gl', coords.galactic.l)
     beams = recfunctions.append_fields(beams, 'gb', coords.galactic.b)
 
-    for item in beams:
-        print(item)
+    # write result back into database
+    log.info('Writing results into database.')
+    with db_session:
+        for item in beams:
+            # find beam
+            beam_queried = schema.Beam.select(lambda b: b.id == int(item['id']))[:]
+
+            if len(beam_queried) == 1:
+                beam = beam_queried[0]
+            else:
+                raise RuntimeError('Could not find beam: {0}'.format(item['id']))
+
+            beam.gl = item['gl']
+            beam.gb = item['gb']
 
     log.info("Done. Time taken: {0}".format(datetime.now() - start))
 
