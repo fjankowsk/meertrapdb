@@ -995,6 +995,29 @@ def send_notification(info):
         log.error(sys.exc_info()[0])
 
 
+def get_mw_dm(gl, gb):
+    """
+    Determine the Galactic Milky Way contribution to the dispersion measure
+    for a given sightline.
+
+    Parameters
+    ----------
+    gl: float
+        Galactic longitude in degrees.
+    gb: float
+        Galactic latitude in degrees.
+
+    Returns
+    -------
+    mw_dm: float
+        The Milky Way DM.
+    """
+
+    mw_dm = 200.0
+
+    return mw_dm
+
+
 def run_parameters(schedule_block):
     """
     Run the processing for 'parameters' mode.
@@ -1036,6 +1059,7 @@ def run_parameters(schedule_block):
     ]
     beams = np.array(beams, dtype=dtype)
 
+    # add galactic coordinates
     coords = SkyCoord(
         ra=beams['ra'],
         dec=beams['dec'],
@@ -1045,6 +1069,14 @@ def run_parameters(schedule_block):
 
     beams = recfunctions.append_fields(beams, 'gl', coords.galactic.l)
     beams = recfunctions.append_fields(beams, 'gb', coords.galactic.b)
+
+    # add milky way dm
+    mw_dm = np.zeros(len(beams), dtype='float')
+
+    for i, item in enumerate(beams):
+        mw_dm[i] = get_mw_dm(item['gl'], item['gb'])
+
+    beams = recfunctions.append_fields(beams, 'mw_dm', mw_dm)
 
     # write result back into database
     log.info('Writing results into database.')
@@ -1060,6 +1092,7 @@ def run_parameters(schedule_block):
 
             beam.gl = item['gl']
             beam.gb = item['gb']
+            beam.mw_dm = item['mw_dm']
 
     log.info("Done. Time taken: {0}".format(datetime.now() - start))
 
