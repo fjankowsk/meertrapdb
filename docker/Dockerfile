@@ -53,11 +53,13 @@ RUN pip3 install \
     numpy \
     pandas \
     pony \
-    pygedm \
     pytz \
     pyyaml \
     requests \
     scipy
+
+# install pygedm later, as it requires numpy's f2py
+RUN pip3 install pygedm
 
 # install our software in docker image
 ARG SOFT_PATH="/software/meertrapdb"
