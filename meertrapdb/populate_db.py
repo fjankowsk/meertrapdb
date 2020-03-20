@@ -1045,8 +1045,8 @@ def run_parameters(schedule_block):
         unit=(u.hourangle, u.deg)
     )
 
-    beams = recfunctions.append_fields(beams, 'gl', coords.galactic.l)
-    beams = recfunctions.append_fields(beams, 'gb', coords.galactic.b)
+    beams = recfunctions.append_fields(beams, 'gl', np.array(coords.galactic.l))
+    beams = recfunctions.append_fields(beams, 'gb', np.array(coords.galactic.b))
 
     # add milky way dm
     mw_dm = np.zeros(len(beams), dtype='float')
