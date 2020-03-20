@@ -53,6 +53,7 @@ RUN pip3 install \
     numpy \
     pandas \
     pony \
+    pybind11 \
     pytz \
     pyyaml \
     requests \
