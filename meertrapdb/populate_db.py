@@ -953,6 +953,46 @@ def run_known_sources(schedule_block):
     return len(candidates), len(matched)
 
 
+def send_notification(info):
+    """
+    Send notification to Slack.
+
+    Parameters
+    ----------
+    info: dict
+        All parameters for the Slack message.
+    """
+
+    log = logging.getLogger('meertrapdb.populate_db')
+    config = get_config()
+    current_time = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
+
+    text = 'SB: {0}, start date: {1}, raw candidates: {2}, unique heads: {3}, unmatched unique heads: {4}'.format(
+        info['schedule_block'],
+        info['start_time'],
+        info['raw_cands'],
+        info['unique_heads'],
+        info['unique_heads'] - info['known_matched']
+    )
+
+    message = {
+        'pretext': '* {0} NEW SB injected:* \n'.format(current_time),
+        'color': config['notifier']['colour'],
+        'text': text
+    }
+
+    cand_message = {
+        'attachments': [message]
+    }
+    message_json = json.dumps(cand_message)
+
+    try:
+        req.post(config['notifier']['http_link'], data=message_json, timeout=2)
+    except Exception:
+        log.error('Something happened when trying to send the data to Slack.')
+        log.error(sys.exc_info()[0])
+
+
 #
 # MAIN
 #
@@ -1009,32 +1049,14 @@ def main():
         start_time = run_production(args.schedule_block, args.test_run)
         raw_cands = run_sift(args.schedule_block)
         unique_heads, known_matched = run_known_sources(args.schedule_block)
-
-        current_time = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
-        text = 'SB: {0}, start date: {1}, raw candidates: {2}, unique heads: {3}, unmatched unique heads: {4}'.format(
-            args.schedule_block,
-            start_time,
-            raw_cands,
-            unique_heads,
-            unique_heads - known_matched
-        )
-
-        message = {
-            'pretext': '* {0} NEW SB injected:* \n'.format(current_time),
-            'color': config['notifier']['colour'],
-            'text': text
+        info = {
+            'schedule_block': args.schedule_block,
+            'start_time': start_time,
+            'raw_cands': raw_cands,
+            'unique_heads': unique_heads,
+            'known_matched': known_matched
         }
-
-        cand_message = {
-            'attachments': [message]
-        }
-        message_json = json.dumps(cand_message)
-
-        try:
-            req.post(config['notifier']['http_link'], data=message_json, timeout=2)
-        except Exception:
-            log.error('Something happened when trying to send the data to Slack.')
-            log.error(sys.exc_info()[0])
+        send_notification(info)
 
     elif args.mode == "sift":
         run_sift(args.schedule_block)
