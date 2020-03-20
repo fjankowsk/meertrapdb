@@ -23,6 +23,7 @@ from astropy.coordinates import SkyCoord
 from astropy.time import Time
 import astropy.units as u
 import numpy as np
+from numpy.lib import recfunctions
 from pony.orm import (db_session, delete, select)
 from pytz import timezone
 
@@ -51,7 +52,8 @@ def parse_args():
     parser.add_argument(
         'mode',
         choices=[
-            'fake', 'init_tables', 'known_sources', 'production', 'sift'
+            'fake', 'init_tables', 'known_sources', 'production', 'sift',
+            'parameters'
             ],
         help='Mode of operation.'
     )
@@ -993,6 +995,63 @@ def send_notification(info):
         log.error(sys.exc_info()[0])
 
 
+def run_parameters(schedule_block):
+    """
+    Run the processing for 'parameters' mode.
+
+    Parameters
+    ----------
+    schedule_block: int
+        The schedule block ID to process.
+    """
+
+    log = logging.getLogger('meertrapdb.populate_db')
+
+    start = datetime.now()
+
+    # check if schedule block is in the database
+    check_if_schedule_block_exists(schedule_block)
+
+    # get the beams
+    log.info('Loading beams from database.')
+    with db_session:
+        beams = select(
+                    (beam.id, beam.number, beam.coherent, beam.ra, beam.dec)
+                    for beam in schema.Beam
+                    for c in beam.sps_candidate
+                    for obs in c.observation
+                    for sb in obs.schedule_block
+                    if (sb.sb_id == schedule_block)
+                ).sort_by(1)[:]
+
+    if len(beams) == 0:
+        raise RuntimeError('No beams found.')
+
+    log.info('Beams loaded: {0}'.format(len(beams)))
+
+    # convert to numpy record
+    beams = [item for item in beams]
+    dtype = [
+        ('id',int), ('number',int), ('coherent',bool), ('ra','|U32'), ('dec','|U32')
+    ]
+    beams = np.array(beams, dtype=dtype)
+
+    coords = SkyCoord(
+        ra=beams['ra'],
+        dec=beams['dec'],
+        frame='icrs',
+        unit=(u.hourangle, u.deg)
+    )
+
+    beams = recfunctions.append_fields(beams, 'gl', coords.galactic.l)
+    beams = recfunctions.append_fields(beams, 'gb', coords.galactic.b)
+
+    for item in beams:
+        print(item)
+
+    log.info("Done. Time taken: {0}".format(datetime.now() - start))
+
+
 #
 # MAIN
 #
@@ -1060,6 +1119,9 @@ def main():
 
     elif args.mode == "sift":
         run_sift(args.schedule_block)
+
+    elif args.mode == "parameters":
+        run_parameters(args.schedule_block)
 
     log.info("All done.")
 
