@@ -30,6 +30,7 @@ from pytz import timezone
 from meertrapdb.config_helpers import get_config
 from meertrapdb.db_helpers import setup_db
 from meertrapdb.db_logger import DBHandler
+from meertrapdb.dm_helpers import get_mw_dm
 from meertrapdb.general_helpers import setup_logging
 from meertrapdb.multibeam_sifter import match_candidates
 from meertrapdb.parsing_helpers import parse_spccl_file
@@ -993,29 +994,6 @@ def send_notification(info):
     except Exception:
         log.error('Something happened when trying to send the data to Slack.')
         log.error(sys.exc_info()[0])
-
-
-def get_mw_dm(gl, gb):
-    """
-    Determine the Galactic Milky Way contribution to the dispersion measure
-    for a given sightline.
-
-    Parameters
-    ----------
-    gl: float
-        Galactic longitude in degrees.
-    gb: float
-        Galactic latitude in degrees.
-
-    Returns
-    -------
-    mw_dm: float
-        The Milky Way DM.
-    """
-
-    mw_dm = 200.0
-
-    return mw_dm
 
 
 def run_parameters(schedule_block):
