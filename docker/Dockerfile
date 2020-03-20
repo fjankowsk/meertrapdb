@@ -52,8 +52,9 @@ RUN pip3 install \
     numpy \
     pandas \
     pony \
-    pyyaml \
+    pygedm \
     pytz \
+    pyyaml \
     requests \
     scipy
 
