@@ -29,7 +29,7 @@ def get_mw_dm(gl, gb):
     dist = 3000
 
     dm_ne2001, _ = pygedm.dist_to_dm(gl, gb, dist, mode='gal', method='ne2001')
-    dm_ymw16 = pygedm.dist_to_dm(gl, dist, 3000, mode='gal', method='ymw16')
+    dm_ymw16, _ = pygedm.dist_to_dm(gl, gb, dist, mode='gal', method='ymw16')
 
     mean_dm = 0.5 * (dm_ne2001 + dm_ymw16)
 
