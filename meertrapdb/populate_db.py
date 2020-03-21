@@ -1129,6 +1129,7 @@ def main():
 
     elif args.mode == "production":
         start_time = run_production(args.schedule_block, args.test_run)
+        run_parameters(args.schedule_block)
         raw_cands = run_sift(args.schedule_block)
         unique_heads, known_matched = run_known_sources(args.schedule_block)
         info = {
