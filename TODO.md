@@ -4,7 +4,7 @@
 * how to determine current boresight?
 * parse 'pipeline_logs.txt' file
 
-# General #
+## General ##
 
 * hook up logging functionality in TUSEMCS to database.
 * how should we partition the data for fast lookup?
