@@ -2,6 +2,7 @@
 
 ## HEAD ##
 
+* Code formatting improvement to increase readability.
 * Switched to SPCCL version 2 candidate files by default.
 * Added Slack notification implemented by Mat Malenta. A short summary gets sent to a certain Slack channel upon successful ingest of candidates.
 * Implemented parsing of SPCCL version 2 candidate files. These have the beam mode (coherent or incoherent) specified.
