@@ -53,7 +53,7 @@ class Matcher(object):
 
         self.tree = KDTree(
             list(zip(self.catalogue['ra'], self.catalogue['dec']))
-            )
+        )
 
 
     def query_search_tree(self, source):
@@ -74,7 +74,8 @@ class Matcher(object):
         result = self.tree.query(
             x=[source.ra.deg, source.dec.deg],
             p=2,
-            k=5)
+            k=5
+        )
 
         dist, idx  = result
 
@@ -125,10 +126,11 @@ class Matcher(object):
             self.log.info('No match found.')
         else:
             self.log.info('Found match: {0}, {1}, {2}, {3}'.format(
-                          match['psrj'],
-                          match['ra'],
-                          match['dec'],
-                          match['dm'])
+                match['psrj'],
+                match['ra'],
+                match['dec'],
+                match['dm']
                 )
+            )
 
         return match

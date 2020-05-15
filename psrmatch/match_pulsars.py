@@ -86,9 +86,12 @@ def main():
     args = parse_args()
     setup_logging()
 
-    source = SkyCoord(ra=args.ra, dec=args.dec,
-                     frame='icrs',
-                     unit=(u.hourangle, u.deg))
+    source = SkyCoord(
+        ra=args.ra,
+        dec=args.dec,
+        frame='icrs',
+        unit=(u.hourangle, u.deg)
+    )
 
     print('Source: {0}'.format(source.to_string('hmsdms')))
     print('DM: {0}'.format(args.dm))

@@ -51,14 +51,18 @@ def parse_psrcat(filename):
         ('type','|U32'), ('ref_type','|U32')
     ]
 
-    temp = np.genfromtxt(filename,
-                         delimiter=';',
-                         dtype=dtype,
-                         encoding='ascii')
+    temp = np.genfromtxt(
+        filename,
+        delimiter=';',
+        dtype=dtype,
+        encoding='ascii'
+    )
 
-    coords = SkyCoord(ra=temp['ra_str'],
-                      dec=temp['dec_str'],
-                      frame='icrs', unit=(u.hourangle, u.deg))
+    coords = SkyCoord(
+        ra=temp['ra_str'],
+        dec=temp['dec_str'],
+        frame='icrs', unit=(u.hourangle, u.deg)
+    )
 
     # add equatorial degree fields
     data = np.copy(temp)
