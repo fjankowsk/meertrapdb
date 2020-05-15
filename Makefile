@@ -41,7 +41,7 @@ clean:
 	rm -rf ${BASEDIR}/meertrapdb.egg-info
 
 interactive:
-	${DCK} run -it --rm --network=host \
+	${DCK} run -it --network=host \
 	--mount "type=bind,source=${DATAPATH},target=/data" \
 	--mount "type=bind,source=${WEBPATH},target=/webserver" \
 	--user ${USERID} \
