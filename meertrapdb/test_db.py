@@ -175,7 +175,12 @@ def run_benchmark(nproc):
             dperiod = (tperiod - nperiod)/dt
 
             log.info("Dt, dObs, dSps, dPeriod [1/s]: {0:.1f} s, {1:.1f}, {2:.1f}, {3:.1f}".format(
-                dt, dobs, dsps, dperiod))
+                dt,
+                dobs,
+                dsps,
+                dperiod
+                )
+            )
             
             with db_session:
                 Benchmark(
@@ -203,7 +208,9 @@ def run_benchmark_analysis():
     Analyse the data from `run_benchmark`.
     """
 
-    dtype = [('nproc','int'), ('dobs','float'), ('dsps','float'), ('dperiod','float')]
+    dtype = [
+        ('nproc',int), ('dobs',float), ('dsps',float), ('dperiod',float)
+    ]
     data = np.zeros(1, dtype=dtype)
 
     total = None
@@ -215,8 +222,10 @@ def run_benchmark_analysis():
         nprocs = pn.select(o.nproc for o in Benchmark)[:]
 
         for nproc in nprocs:
-            raw = pn.select((o.nproc, o.dobs, o.dsps, o.dperiod)
-                             for o in Benchmark).where(lambda o: o.nproc == nproc)[:]
+            raw = pn.select(
+                (o.nproc, o.dobs, o.dsps, o.dperiod)
+                for o in Benchmark
+            ).where(lambda o: o.nproc == nproc)[:]
             
             temp = [item for item in raw]
             temp = np.array(temp, dtype=dtype)
@@ -375,24 +384,32 @@ def run_test_log():
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Test the database implementation.")
+        description="Test the database implementation.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
     
     parser.add_argument(
         'operation',
-        choices=['benchmark', 'benchmark_analysis', 'test', 'test_log'],
-        help='Operation that should be performed.')
+        choices=[
+            'benchmark', 'benchmark_analysis',
+            'test', 'test_log'
+        ],
+        help='Operation that should be performed.'
+    )
     
     parser.add_argument(
         '--nproc',
         type=int,
         dest='nproc',
         default=64,
-        help='Number of processes that access the database simultanously.')
+        help='Number of processes that access the database simultanously.'
+    )
     
     parser.add_argument(
         "--version",
         action="version",
-        version=__version__)
+        version=__version__
+    )
 
     return parser.parse_args()
 
@@ -415,12 +432,14 @@ def main():
     config = get_config()
     dbconf = config['db']
 
-    db.bind(provider=dbconf['provider'],
-            host=dbconf['host'],
-            port=dbconf['port'],
-            user=dbconf['root']['name'],
-            passwd=dbconf['root']['password'],
-            db='test')
+    db.bind(
+        provider=dbconf['provider'],
+        host=dbconf['host'],
+        port=dbconf['port'],
+        user=dbconf['root']['name'],
+        passwd=dbconf['root']['password'],
+        db='test'
+    )
 
     db.generate_mapping(create_tables=True)
 

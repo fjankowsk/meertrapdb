@@ -65,7 +65,10 @@ def find_pulsars(data):
 
     dms = np.arange(np.min(data['dm']), np.max(data['dm']), step)
 
-    dtype = [('dm',float), ('hits',int), ('snr_min',float), ('snr_med',float), ('snr_max',float)]
+    dtype = [
+        ('dm',float), ('hits',int),
+        ('snr_min',float), ('snr_med',float), ('snr_max',float)
+    ]
     info = np.zeros(len(dms), dtype=dtype)
 
     for i, dm in enumerate(dms):
@@ -83,21 +86,33 @@ def find_pulsars(data):
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
-    ax.scatter(info['dm'] + 1, info['hits'],
-               marker='x',
-               label='hits')
+    ax.scatter(
+        info['dm'] + 1,
+        info['hits'],
+        marker='x',
+        label='hits'
+    )
 
-    ax.scatter(info['dm'] + 1, info['snr_min'],
-               marker='+',
-               label='min S/N')
+    ax.scatter(
+        info['dm'] + 1,
+        info['snr_min'],
+        marker='+',
+        label='min S/N'
+    )
 
-    ax.scatter(info['dm'] + 1, info['snr_med'],
-               marker='s',
-               label='med S/N')
+    ax.scatter(
+        info['dm'] + 1,
+        info['snr_med'],
+        marker='s',
+        label='med S/N'
+    )
 
-    ax.scatter(info['dm'] + 1, info['snr_max'],
-               marker='d',
-               label='max S/N')
+    ax.scatter(
+        info['dm'] + 1,
+        info['snr_max'],
+        marker='d',
+        label='max S/N'
+    )
 
     ax.grid(True)
     ax.legend(loc='best', frameon=False)
@@ -131,16 +146,18 @@ def plot_heimdall(data, prefix):
     start_time = np.min(data['mjd'])
     elapsed_time = 24 * 60 * (data['mjd'] - start_time)
 
-    sc = ax.scatter(elapsed_time, data['dm'] + 1,
-            c=data['width'],
-            norm=LogNorm(),
-            s=60 * data['snr'] / np.max(data['snr']),
-            marker='o',
-            edgecolor='black',
-            lw=0.6,
-            cmap='Reds',
-            zorder=3
-        )
+    sc = ax.scatter(
+        elapsed_time,
+        data['dm'] + 1,
+        c=data['width'],
+        norm=LogNorm(),
+        s=60 * data['snr'] / np.max(data['snr']),
+        marker='o',
+        edgecolor='black',
+        lw=0.6,
+        cmap='Reds',
+        zorder=3
+    )
 
     cb = plt.colorbar(sc, label='Width (ms)')
 
@@ -219,33 +236,43 @@ def plot_sift_overview(t_data):
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
-    ax.scatter(data['sb'], fact * data['candidates'],
-               marker='x',
-               color='black',
-               label='Total')
+    ax.scatter(
+        data['sb'],
+        fact * data['candidates'],
+        marker='x',
+        color='black',
+        label='Total'
+    )
 
-    ax.scatter(data['sb'], fact * data['heads'],
-               marker='+',
-               color='dimgray',
-               label='Cluster heads')
+    ax.scatter(
+        data['sb'],
+        fact * data['heads'],
+        marker='+',
+        color='dimgray',
+        label='Cluster heads'
+    )
 
     # reduction on second axis
     ax2 = ax.twinx()
 
     reduction = 100 * (1.0 - data['heads'] / data['candidates'])
 
-    ax2.scatter(data['sb'], reduction,
-                marker='o',
-                color='indianred',
-                label='Reduction')
+    ax2.scatter(
+        data['sb'], reduction,
+        marker='o',
+        color='indianred',
+        label='Reduction'
+    )
 
     # median reduction
     med_red = np.median(reduction)
-    ax2.axhline(y=med_red,
-                color='indianred',
-                lw=2,
-                ls='dashed',
-                label='median: {0:.1f}'.format(med_red))
+    ax2.axhline(
+        y=med_red,
+        color='indianred',
+        lw=2,
+        ls='dashed',
+        label='median: {0:.1f}'.format(med_red)
+    )
 
     ax.grid(True)
     ax.legend(loc='upper left', frameon=False)
@@ -325,54 +352,70 @@ def plot_ks_overview(t_data):
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
-    ax.scatter(data['sb'], fact * data['candidates'],
-               marker='x',
-               s=20,
-               color='black',
-               label='Total',
-               zorder=2)
+    ax.scatter(
+        data['sb'],
+        fact * data['candidates'],
+        marker='x',
+        s=20,
+        color='black',
+        label='Total',
+        zorder=2
+    )
 
-    ax.scatter(data['sb'], fact * data['heads'],
-               marker='+',
-               s=20,
-               color='dimgray',
-               label='Cluster heads',
-               zorder=3)
+    ax.scatter(
+        data['sb'],
+        fact * data['heads'],
+        marker='+',
+        s=20,
+        color='dimgray',
+        label='Cluster heads',
+        zorder=3
+    )
 
-    ax.scatter(data['sb'], fact * data['ks'],
-               marker='s',
-               s=20,
-               color='C0',
-               label='Known sources',
-               zorder=4)
+    ax.scatter(
+        data['sb'], fact * data['ks'],
+        marker='s',
+        s=20,
+        color='C0',
+        label='Known sources',
+        zorder=4
+    )
 
-    ax.scatter(data['sb'], fact * data['unique'],
-               marker='*',
-               s=20,
-               color='C1',
-               label='Unique',
-               zorder=5)
+    ax.scatter(
+        data['sb'],
+        fact * data['unique'],
+        marker='*',
+        s=20,
+        color='C1',
+        label='Unique',
+        zorder=5
+    )
 
     # total reduction on second axis
     ax2 = ax.twinx()
 
     reduction = 100 * (1.0 - data['unique'] / data['candidates'])
 
-    ax2.scatter(data['sb'], reduction,
-                marker='o',
-                s=20,
-                color='indianred',
-                label='Total reduction',
-                zorder=6)
+    ax2.scatter(
+        data['sb'],
+        reduction,
+        marker='o',
+        s=20,
+        color='indianred',
+        label='Total reduction',
+        zorder=6
+    )
 
     # median reduction
     med_red = np.median(reduction)
-    ax2.axhline(y=med_red,
-                color='indianred',
-                lw=2,
-                ls='dashed',
-                label='median: {0:.1f}'.format(med_red),
-                zorder=5)
+    ax2.axhline(
+        y=med_red,
+        color='indianred',
+        lw=2,
+        ls='dashed',
+        label='median: {0:.1f}'.format(med_red),
+        zorder=5
+    )
 
     ax.grid(True)
     ax.legend(loc='upper left', frameon=False)
@@ -459,9 +502,12 @@ def plot_snr_timeline(data, prefix):
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
-    ax.scatter(data['mjd'], data['snr'] + 1,
-               marker='x',
-               color='black')
+    ax.scatter(
+        data['mjd'],
+        data['snr'] + 1,
+        marker='x',
+        color='black'
+    )
 
     ax.grid(True)
     #ax.legend(loc='best', frameon=False)
@@ -684,14 +730,17 @@ def plot_skymap_equatorial(coords, data, suffix, gridsize):
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
-    hb = ax.hexbin(coords.ra.hour, coords.dec.degree,
-                   C=data['tobs'],
-                   reduce_C_function=np.sum,
-                   gridsize=gridsize,
-                   bins='log',
-                   mincnt=1,
-                   linewidths=0.1,
-                   cmap='Reds')
+    hb = ax.hexbin(
+        coords.ra.hour,
+        coords.dec.degree,
+        C=data['tobs'],
+        reduce_C_function=np.sum,
+        gridsize=gridsize,
+        bins='log',
+        mincnt=1,
+        linewidths=0.1,
+        cmap='Reds'
+    )
 
     # get unique area from the number of filled hexagons
     counts = hb.get_array()
@@ -747,14 +796,17 @@ def plot_skymap_galactic(coords, data, suffix, gridsize):
     gl_rad = coords.galactic.l.wrap_at(180 * units.deg).radian
     gb_rad = coords.galactic.b.radian
 
-    hb = ax.hexbin(-1 * gl_rad, gb_rad,
-                   C=data['tobs'],
-                   reduce_C_function=np.sum,
-                   gridsize=gridsize,
-                   bins='log',
-                   mincnt=1,
-                   linewidths=0.3,
-                   cmap='Reds')
+    hb = ax.hexbin(
+        -1 * gl_rad,
+        gb_rad,
+        C=data['tobs'],
+        reduce_C_function=np.sum,
+        gridsize=gridsize,
+        bins='log',
+        mincnt=1,
+        linewidths=0.3,
+        cmap='Reds'
+    )
 
     # add colour bar
     cb = fig.colorbar(hb, ax=ax)
@@ -787,12 +839,14 @@ def main():
     config = get_config()
     dbconf = config['db']
 
-    db.bind(provider=dbconf['provider'],
-            host=dbconf['host'],
-            port=dbconf['port'],
-            user=dbconf['user']['name'],
-            passwd=dbconf['user']['password'],
-            db=dbconf['database'])
+    db.bind(
+        provider=dbconf['provider'],
+        host=dbconf['host'],
+        port=dbconf['port'],
+        user=dbconf['user']['name'],
+        passwd=dbconf['user']['password'],
+        db=dbconf['database']
+    )
 
     db.generate_mapping(create_tables=False)
 

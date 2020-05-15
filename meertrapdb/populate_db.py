@@ -47,7 +47,8 @@ from psrmatch.matcher import Matcher
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Populate the database."
+        description="Populate the database.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
 
     parser.add_argument(
@@ -260,8 +261,10 @@ def insert_candidates(data, sb_id, sb_info, obs_utc_start, node_name):
     config = get_config()
     fsconf = config['filesystem']
 
-    sb_lt_start = datetime.strptime(sb_info['actual_start_time'][:-2],
-                                    fsconf["date_formats"]["local"])
+    sb_lt_start = datetime.strptime(
+        sb_info['actual_start_time'][:-2],
+        fsconf["date_formats"]["local"]
+    )
     sb_utc_start = sb_lt_start.replace(tzinfo=timezone('UTC'))
 
     with db_session:
@@ -646,8 +649,10 @@ def run_production(schedule_block, test_run):
         log.info("Processing SPCCL file: {0}".format(filename))
 
         utc_start_str = os.path.basename(filename)[:19]
-        obs_utc_start = datetime.strptime(utc_start_str,
-                                          fsconf['date_formats']['utc'])
+        obs_utc_start = datetime.strptime(
+            utc_start_str,
+            fsconf['date_formats']['utc']
+        )
 
         log.info("UTC start: {0}".format(obs_utc_start))
 
@@ -768,8 +773,12 @@ def run_sift(schedule_block):
             if len(cand_queried) == 1:
                 cand = cand_queried[0]
             else:
-                raise RuntimeError('Something is wrong with the candidate index mapping: {0}, {1}, {2}'.format(
-                                   item['index'], len(cand_queried), cand_queried))
+                msg = 'Something is wrong with the candidate index mapping: {0}, {1}, {2}'.format(
+                    item['index'],
+                    len(cand_queried),
+                    cand_queried
+                )
+                raise RuntimeError(msg)
 
             # find cluster head
             head_queried = schema.SpsCandidate.select(lambda c: c.id == int(item['head']))[:]
@@ -777,8 +786,12 @@ def run_sift(schedule_block):
             if len(head_queried) == 1:
                 head = head_queried[0]
             else:
-                raise RuntimeError('Something is wrong with the head index mapping: {0}, {1}, {2}'.format(item['head'],
-                                   len(head_queried), head_queried))
+                msg = 'Something is wrong with the head index mapping: {0}, {1}, {2}'.format(
+                    item['head'],
+                    len(head_queried),
+                    head_queried
+                )
+                raise RuntimeError(msg)
             
             schema.SiftResult(
                 sps_candidate=cand,
@@ -839,7 +852,10 @@ def run_known_sources(schedule_block):
             cand.known_source.clear()
 
     # prepare known source matcher
-    m = Matcher(dist_thresh=ksconfig['dist_thresh'], dm_thresh=ksconfig['dm_thresh'])
+    m = Matcher(
+        dist_thresh=ksconfig['dist_thresh'],
+        dm_thresh=ksconfig['dm_thresh']
+    )
 
     log.info('Loading pulsar catalogue.')
 
@@ -884,10 +900,12 @@ def run_known_sources(schedule_block):
     ]
     candidates = np.array(candidates, dtype=dtype)
 
-    coords = SkyCoord(ra=candidates['ra'],
-                      dec=candidates['dec'],
-                      frame='icrs',
-                      unit=(u.hourangle, u.deg))
+    coords = SkyCoord(
+        ra=candidates['ra'],
+        dec=candidates['dec'],
+        frame='icrs',
+        unit=(u.hourangle, u.deg)
+    )
 
     dtype = [
         ('index',int), ('has_match',bool), ('source','|U32'), ('catalogue','|U32'),
@@ -924,8 +942,12 @@ def run_known_sources(schedule_block):
             if len(cand_queried) == 1:
                 cand = cand_queried[0]
             else:
-                raise RuntimeError('Something is wrong with the candidate index mapping: {0}, {1}, {2}'.format(
-                                   item['index'], len(cand_queried), cand_queried))
+                msg = 'Something is wrong with the candidate index mapping: {0}, {1}, {2}'.format(
+                    item['index'],
+                    len(cand_queried),
+                    cand_queried
+                )
+                raise RuntimeError(msg)
 
             # find known source
             ks_queried = schema.KnownSource.select(lambda c: c.name == item['source'])[:]
@@ -948,8 +970,12 @@ def run_known_sources(schedule_block):
                 cand.known_source.add(ks)
 
             else:
-                raise RuntimeError('Duplicate known source names are present: {0}, {1}, {2}'.format(
-                                   item['source'], len(ks_queried), ks_queried))
+                msg = 'Duplicate known source names are present: {0}, {1}, {2}'.format(
+                    item['source'],
+                    len(ks_queried),
+                    ks_queried
+                )
+                raise RuntimeError(msg)
 
     log.info("Done. Time taken: {0}".format(datetime.now() - start))
 
@@ -990,7 +1016,11 @@ def send_notification(info):
     message_json = json.dumps(cand_message)
 
     try:
-        req.post(config['notifier']['http_link'], data=message_json, timeout=2)
+        req.post(
+            config['notifier']['http_link'],
+            data=message_json,
+            timeout=2
+        )
     except Exception:
         log.error('Something happened when trying to send the data to Slack.')
         log.error(sys.exc_info()[0])

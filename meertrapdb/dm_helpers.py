@@ -6,6 +6,7 @@
 
 import pygedm
 
+
 def get_mw_dm(gl, gb):
     """
     Determine the Galactic Milky Way contribution to the dispersion measure

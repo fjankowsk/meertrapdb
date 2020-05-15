@@ -25,14 +25,19 @@ def setup_db():
 
     # set root password
     db = Database()
-    db.bind(provider=dbconf['provider'],
-            host=dbconf['host'],
-            port=dbconf['port'],
-            user=dbconf['root']['name'],
-            passwd='')
+    db.bind(
+        provider=dbconf['provider'],
+        host=dbconf['host'],
+        port=dbconf['port'],
+        user=dbconf['root']['name'],
+        passwd=''
+    )
     
     sql = "SET PASSWORD FOR '{0}'@'{1}' = PASSWORD('{2}');".format(
-        dbconf['root']['name'], dbconf['host'], dbconf['root']['password'])
+        dbconf['root']['name'],
+        dbconf['host'],
+        dbconf['root']['password']
+    )
 
     with db_session:
         db.execute(sql)
@@ -41,17 +46,21 @@ def setup_db():
     log.info('Root password was set successfully.')
 
     db = Database()
-    db.bind(provider=dbconf['provider'],
-            host=dbconf['host'],
-            port=dbconf['port'],
-            user=dbconf['root']['name'],
-            passwd=dbconf['root']['password'])
+    db.bind(
+        provider=dbconf['provider'],
+        host=dbconf['host'],
+        port=dbconf['port'],
+        user=dbconf['root']['name'],
+        passwd=dbconf['root']['password']
+    )
 
     commands = []
 
     for user in dbconf['users']:
         command = "CREATE USER IF NOT EXISTS '{0}'@'{1}' IDENTIFIED BY '{2}';".format(
-            user['name'], dbconf['host'], user['password']
+            user['name'],
+            dbconf['host'],
+            user['password']
         )
         commands.append(command)
     

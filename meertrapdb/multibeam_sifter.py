@@ -24,19 +24,29 @@ def parse_args():
     options: argparse.Parser object
     """
 
-    parser = argparse.ArgumentParser(description='Multibeam candidate sifting code.')
+    parser = argparse.ArgumentParser(
+        description='Multibeam candidate sifting code.',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
 
-    parser.add_argument('filename', type=str)
+    parser.add_argument(
+        'filename',
+        type=str
+    )
 
-    parser.add_argument('--dm',
-                        type=float,
-                        default=0.02,
-                        help='Fractional DM tolerance. Default: 0.02')
+    parser.add_argument(
+        '--dm',
+        type=float,
+        default=0.02,
+        help='Fractional DM tolerance.'
+    )
 
-    parser.add_argument('--time',
-                        type=float,
-                        default=10.0,
-                        help='Time tolerance for matching in milliseconds. Default: 10.0')
+    parser.add_argument(
+        '--time',
+        type=float,
+        default=10.0,
+        help='Time tolerance for matching in milliseconds.'
+    )
 
     return parser.parse_args()
 
@@ -149,7 +159,8 @@ def match_candidates(t_candidates, time_thresh, dm_thresh):
         log.info('Cluster heads: {0} ({1:.2f})'.format(
             len(candidates[mask]),
             100 * len(candidates[mask]) / float(len(candidates))
-            ))
+            )
+        )
 
         log.info('Clusters: {0}'.format(np.max(info['cluster_id']) + 1))
 
@@ -159,8 +170,9 @@ def match_candidates(t_candidates, time_thresh, dm_thresh):
                 np.min(info[field]),
                 np.mean(info[field]),
                 np.median(info[field]),
-                np.max(info[field]))
+                np.max(info[field])
                 )
+            )
 
     # display some debug output
     for item, cand in zip(info, candidates):
@@ -168,7 +180,8 @@ def match_candidates(t_candidates, time_thresh, dm_thresh):
             item['index'], item['cluster_id'], item['is_head'],
             item['members'], item['beams'], item['head'],
             cand['mjd'], cand['dm'], cand['snr']
-            ))
+            )
+        )
 
     info = np.sort(info, order='index')
 
