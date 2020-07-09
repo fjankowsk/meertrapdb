@@ -42,7 +42,6 @@ def parse_psrcat(filename):
         raise RuntimeError('The file does not exist: {0}'.format(filename))
 
     dtype = [
-        ('number',int),
         ('psrj','|U32'), ('ref_psrj','|U32'),
         ('ra_str','|U64'), ('err_ra',float), ('ref_ra','|U32'),
         ('dec_str','|U64'), ('err_dec',float), ('ref_dec','|U32'),
