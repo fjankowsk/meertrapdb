@@ -10,6 +10,9 @@
 * `psrmatch`: Wrap catalogue data loading in the `matcher` class and hide away that code from the user. Catalogues can now be loaded by name.
 * Upgraded to version 1.63 of the ATNF pulsar catalogue in `psrmatch`.
 * Code formatting improvements to increase readability.
+* Add Milky Way contribution to dispersion measure. Determine the mean Galactic DM based on the results from the `NE2001` and `YMW16` models.
+* Populate Galactic coordinates after candidate ingest in the `parameters` step.
+* Add fields for Milky Way DM and MTC and Fetch plots.
 * Switched to SPCCL version 2 candidate files by default.
 * Added Slack notification implemented by Mat Malenta. A short summary gets sent to a certain Slack channel upon successful ingest of candidates.
 * Implemented parsing of SPCCL version 2 candidate files. These have the beam mode (coherent or incoherent) specified.
