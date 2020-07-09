@@ -2,6 +2,9 @@
 
 ## HEAD ##
 
+* Keep track of the supported catalogues and allow the user the query them.
+* Wrap catalogue data loading in the `matcher` class and hide away that code from the user. Catalogues can now be loaded by name.
+* Upgraded to version 1.63 of the ATNF pulsar catalogue in `psrmatch`.
 * Code formatting improvements to increase readability.
 * Switched to SPCCL version 2 candidate files by default.
 * Added Slack notification implemented by Mat Malenta. A short summary gets sent to a certain Slack channel upon successful ingest of candidates.
