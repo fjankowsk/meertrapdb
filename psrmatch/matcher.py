@@ -17,6 +17,9 @@ class Matcher(object):
     Match sources to catalogues of known sources.
     """
 
+    # list of supported catalogues
+    supported_catalogues = ['psrcat']
+
     def __init__(self, dist_thresh=1.5, dm_thresh=5.0):
         """
         Match sources to catalogues of known sources.
@@ -36,6 +39,19 @@ class Matcher(object):
         self.log = logging.getLogger('psrmatch.matcher')
 
 
+    def get_supported_catalogues(self):
+        """
+        Get the list of supported catalogues.
+
+        Returns
+        -------
+        supported_catalogues: list of str
+            The list of supported catalogues.
+        """
+
+        return self.supported_catalogues
+
+
     def load_catalogue(self, catalogue_name):
         """
         Load a known-source catalogue.
@@ -51,6 +67,9 @@ class Matcher(object):
             If the catalogue `catalogue_name` is not implemented.
         """
 
+        if catalogue_name not in self.supported_catalogues:
+            raise NotImplementedError('The catalogue is not supported: {0}'.format(catalogue_name))
+
         if catalogue_name == 'psrcat':
             catalogue = parse_psrcat(
                 os.path.join(
@@ -59,8 +78,6 @@ class Matcher(object):
                     'psrcat_v163.txt'
                 )
             )
-        else:
-            raise NotImplementedError('The catalogue is not supported: {0}'.format(catalogue_name))
 
         self.catalogue = catalogue
 
