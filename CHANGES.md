@@ -6,8 +6,8 @@
 ## 0.6 (2020-07-09) ##
 
 * Bump `meertrapdb` to version 0.6 and `psrmatch` to version 0.2.
-* Keep track of the supported catalogues and allow the user the query them.
-* Wrap catalogue data loading in the `matcher` class and hide away that code from the user. Catalogues can now be loaded by name.
+* `psrmatch`: Keep track of the supported catalogues and allow the user the query them.
+* `psrmatch`: Wrap catalogue data loading in the `matcher` class and hide away that code from the user. Catalogues can now be loaded by name.
 * Upgraded to version 1.63 of the ATNF pulsar catalogue in `psrmatch`.
 * Code formatting improvements to increase readability.
 * Switched to SPCCL version 2 candidate files by default.
