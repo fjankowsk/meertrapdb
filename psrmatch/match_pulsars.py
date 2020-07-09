@@ -14,7 +14,6 @@ import numpy as np
 from astropy.coordinates import SkyCoord
 import astropy.units as u
 
-from psrmatch.catalogue_helpers import parse_psrcat
 from psrmatch.matcher import Matcher
 from psrmatch.version import __version__
 
@@ -96,18 +95,8 @@ def main():
     print('Source: {0}'.format(source.to_string('hmsdms')))
     print('DM: {0}'.format(args.dm))
 
-    psrcat = parse_psrcat(
-        os.path.join(
-            os.path.dirname(__file__),
-            'catalogues',
-            'psrcat_v161.txt'
-        )
-    )
-
     m = Matcher()
-
-    m.load_catalogue(psrcat)
-
+    m.load_catalogue('psrcat')
     m.create_search_tree()
 
     m.find_matches(source, args.dm)

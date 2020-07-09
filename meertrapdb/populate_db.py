@@ -37,7 +37,6 @@ from meertrapdb.parsing_helpers import parse_spccl_file
 from meertrapdb import schema
 from meertrapdb.schema import db
 from meertrapdb.version import __version__
-from psrmatch.catalogue_helpers import parse_psrcat
 from psrmatch.matcher import Matcher
 
 # astropy generates members dynamically, pylint therefore fails
@@ -858,18 +857,7 @@ def run_known_sources(schedule_block):
     )
 
     log.info('Loading pulsar catalogue.')
-
-    psrcat = parse_psrcat(
-        os.path.join(
-            os.path.dirname(__file__),
-            '..',
-            'psrmatch',
-            'catalogues',
-            'psrcat_v161.txt'
-        )
-    )
-
-    m.load_catalogue(psrcat)
+    m.load_catalogue('psrcat')
 
     log.info('Creating k-d search tree.')
     m.create_search_tree()

@@ -18,7 +18,7 @@ The cross-matcher operates on Astropy SkyCoord objects and input dispersion meas
 from psrmatch.matcher import Matcher
 
 m = Matcher()
-m.load_catalogue(psrcat)
+m.load_catalogue('psrcat')
 m.create_search_tree()
 m.find_matches(source, dm)
 ```

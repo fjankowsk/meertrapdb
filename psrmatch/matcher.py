@@ -5,8 +5,11 @@
 #
 
 import logging
+import os.path
 
 from scipy.spatial import KDTree
+
+from psrmatch.catalogue_helpers import parse_psrcat
 
 
 class Matcher(object):
@@ -33,15 +36,31 @@ class Matcher(object):
         self.log = logging.getLogger('psrmatch.matcher')
 
 
-    def load_catalogue(self, catalogue):
+    def load_catalogue(self, catalogue_name):
         """
         Load a known-source catalogue.
 
         Parameters
         ----------
-        catalogue: ~np.record
-            The catalogue data.
+        catalogue_name: string
+            The name of the catalogue to load.
+
+        Raises
+        ------
+        NotImplementedError
+            If the catalogue `catalogue_name` is not implemented.
         """
+
+        if catalogue_name == 'psrcat':
+            catalogue = parse_psrcat(
+                os.path.join(
+                    os.path.dirname(__file__),
+                    'catalogues',
+                    'psrcat_v163.txt'
+                )
+            )
+        else:
+            raise NotImplementedError('The catalogue is not supported: {0}'.format(catalogue_name))
 
         self.catalogue = catalogue
 
