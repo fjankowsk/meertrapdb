@@ -22,6 +22,7 @@ setup(name='meertrapdb',
       packages=['meertrapdb'],
       install_requires=[
             'astropy',
+            'healpy',
             'matplotlib',
             'numpy',
             'pandas',

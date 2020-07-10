@@ -2,6 +2,7 @@
 
 ## HEAD ##
 
+* Added `healpy` for healpix tesselation of the surveyed sky and simple test script.
 
 ## 0.6 (2020-07-09) ##
 

@@ -47,6 +47,7 @@ RUN pip3 install --upgrade pip
 
 RUN pip3 install \
     astropy \
+    healpy \
     ipython \
     matplotlib \
     mysqlclient \
