@@ -7,6 +7,7 @@
 import logging
 import os.path
 
+import numpy as np
 from scipy.spatial import KDTree
 
 from psrmatch.catalogue_helpers import parse_psrcat
@@ -106,18 +107,23 @@ class Matcher(object):
 
         Returns
         -------
-        result: [~np.array, ~np.array]
+        dist, idx: (~np.array, ~np.array)
             The distances and indices of the nearest neighbors.
         """
 
-        result = self.tree.query(
+        dist, idx = self.tree.query(
             x=[source.ra.deg, source.dec.deg],
             p=2,
             k=self.max_neighbors,
             distance_upper_bound=self.dist_thresh
         )
 
-        dist, idx  = result
+        # consider only those neighbors that are within the distance threshold
+        # and remove the other neighbors
+        mask = np.isfinite(dist)
+
+        dist = dist[mask]
+        idx = idx[mask]
 
         self.log.info('Nearest neighbors:')
         for d, i in zip(dist, idx):
@@ -131,7 +137,7 @@ class Matcher(object):
 
             self.log.info(info_str)
 
-        return result
+        return dist, idx
 
 
     def find_matches(self, source, dm):
