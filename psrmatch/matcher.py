@@ -38,6 +38,9 @@ class Matcher(object):
         self.tree = None
         self.log = logging.getLogger('psrmatch.matcher')
 
+        # tree lookup parameters
+        self.max_neighbors = 25
+
 
     def get_supported_catalogues(self):
         """
@@ -110,7 +113,8 @@ class Matcher(object):
         result = self.tree.query(
             x=[source.ra.deg, source.dec.deg],
             p=2,
-            k=5
+            k=self.max_neighbors,
+            distance_upper_bound=self.dist_thresh
         )
 
         dist, idx  = result
