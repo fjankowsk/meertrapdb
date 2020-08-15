@@ -217,7 +217,7 @@ def main():
     with open('unique_cands.txt', 'w') as f:
         for i in range(len(unique_cands)):
             cand_str = '\t'.join(str(x) for x in unique_cands[i])
-            info = "{0} {1}\n".format(cand_str, num_matches[i])
+            info = '{0} {1}\n'.format(cand_str, num_matches[i])
             f.write(info)
 
 
