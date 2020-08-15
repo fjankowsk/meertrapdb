@@ -22,10 +22,7 @@ def test_spccl_versions_parsing():
     for filename, version in zip([cand_v1, cand_v2], [1, 2]):
         print('Filename: {0}'.format(filename))
         print('Version: {0}'.format(version))
-        data = parse_spccl_file(filename, version)
-
-        for item in data:
-            print(item)
+        parse_spccl_file(filename, version)
 
 
 if __name__ == '__main__':
