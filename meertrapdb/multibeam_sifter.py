@@ -14,6 +14,10 @@ import numpy as np
 
 from meertrapdb.parsing_helpers import parse_spccl_file
 
+# disable false positives of 'assigning to function call which does not return'
+# pylint test case in numpy masks
+# pylint: disable=E1111
+
 
 def parse_args():
     """
@@ -46,6 +50,13 @@ def parse_args():
         type=float,
         default=10.0,
         help='Time tolerance for matching in milliseconds.'
+    )
+
+    parser.add_argument(
+        '--spccl_version',
+        type=int,
+        default=2,
+        help='The version of the input SPCCL file.'
     )
 
     return parser.parse_args()
@@ -87,7 +98,7 @@ def match_candidates(t_candidates, time_thresh, dm_thresh):
         ('head',int), ('is_head',bool),
         ('members',int), ('beams',int),
         ('processed',bool)
-        ]
+    ]
     info = np.zeros(len(candidates), dtype=dtype)
 
     # fill in the candidate indices
@@ -195,13 +206,13 @@ def match_candidates(t_candidates, time_thresh, dm_thresh):
 def main():
     args = parse_args()
 
-    candidates = parse_spccl_file(args.filename)
+    candidates = parse_spccl_file(args.filename, args.spccl_version)
 
     info = match_candidates(candidates, args.time, args.dm)
 
-    mask = info['uniq']
+    mask = info['is_head']
     unique_cands = candidates[mask]
-    num_matches = info['matches'][mask]
+    num_matches = info['members'][mask]
 
     with open('unique_cands.txt', 'w') as f:
         for i in range(len(unique_cands)):
