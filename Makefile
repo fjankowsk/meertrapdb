@@ -20,6 +20,7 @@ help:
 	@echo 'make clean           remove temporary files'
 	@echo 'make interactive     run an interactive shell'
 	@echo 'make run_db          start the database'
+	@echo 'make tests           run the regression tests'
 
 production:
 	${DCK} build \
@@ -54,4 +55,7 @@ run_db:
 	--name meertrap_db meertrapdb \
 	${PRODDIR}/scripts/start_database.sh
 
-.PHONY: help production init_db clean interactive run_db
+tests:
+	${DCK} run -it --rm meertrapdb nose2
+
+.PHONY: help production init_db clean interactive run_db tests

@@ -51,6 +51,7 @@ RUN pip3 install \
     ipython \
     matplotlib \
     mysqlclient \
+    nose2 \
     numpy \
     pandas \
     pony \
