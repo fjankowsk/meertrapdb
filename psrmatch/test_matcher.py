@@ -19,6 +19,9 @@ from psrmatch.matcher import Matcher
 
 class MyTimer():
     def __init__(self):
+        """
+        A simple timing context manager for benchmarking purposes.
+        """
         self.start = time.time()
 
     def __enter__(self):
@@ -26,9 +29,10 @@ class MyTimer():
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         end = time.time()
-        runtime = end - self.start
-        msg = 'The function took: {time:.3f} s.'
-        print(msg.format(time=runtime))
+        self.runtime = end - self.start
+
+        msg = 'The function took: {0:.3f} s.'.format(self.runtime)
+        print(msg)
 
 
 def run_matcher(m, coords, dms):
@@ -77,10 +81,15 @@ def main():
 
     print('Prepared matcher.')
 
-    with MyTimer():
+    with MyTimer() as timer:
         imatch = run_matcher(m, coords, dms)
 
+    print('Runtime: {0:.1f} s'.format(timer.runtime))
     print('Number of at least one matches: {0}'.format(imatch))
+    print('Matching rate: {0:.1f} sources/s'.format(
+        nsource / timer.runtime
+        )
+    )
 
 
 if __name__ == "__main__":
