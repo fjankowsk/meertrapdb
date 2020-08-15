@@ -92,13 +92,13 @@ def parse_spccl_file(filename, version):
 if __name__ == "__main__":
     cand_v1 = os.path.join(
         os.path.dirname(__file__),
-        'test',
+        'tests',
         'candidates_v1.spccl.log'
     )
 
     cand_v2 = os.path.join(
         os.path.dirname(__file__),
-        'test',
+        'tests',
         'candidates_v2.spccl.log'
     )
 
