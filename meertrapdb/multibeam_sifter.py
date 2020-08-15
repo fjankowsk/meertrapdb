@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 #
-#   Perform multibeam sifting of the single-pulse candidates.
+#   2019 - 2020 Fabian Jankowski
+#   Perform multi-beam clustering of single-pulse candidates.
 #
 
-from __future__ import print_function
 import argparse
 import logging
 import sys
@@ -30,7 +30,7 @@ def parse_args():
     """
 
     parser = argparse.ArgumentParser(
-        description='Multibeam candidate sifting code.',
+        description='Perform multi-beam candidate clustering.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
 
