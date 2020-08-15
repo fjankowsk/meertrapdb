@@ -18,15 +18,15 @@ class Clusterer(object):
     Cluster single-pulse candidates in various ways.
     """
 
-    def __init__(self, time_thresh, dm_thresh):
+    def __init__(self, time_thresh=10.0, dm_thresh=0.02):
         """
         Cluster single-pulse candidates in various ways.
 
         Parameters
         ----------
-        time_thresh: float
+        time_thresh: float (default: 10.0)
             The width of the matching box in ms.
-        dm_thresh: float
+        dm_thresh: float (default: 0.02)
             The fractional DM tolerance to use for matching.
         """
 
