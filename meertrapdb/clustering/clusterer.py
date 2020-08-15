@@ -13,7 +13,7 @@ import numpy as np
 # pylint: disable=E1111
 
 
-class Cluster(object):
+class Clusterer(object):
     """
     Cluster single-pulse candidates in various ways.
     """
