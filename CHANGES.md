@@ -2,6 +2,7 @@
 
 ## HEAD ##
 
+* Adjusted the code throughout to use the new multi-beam `Clusterer` module and documented it. Removed old clustering code.
 * Moved the multi-beam clustering code into a new `Clusterer` class to allow for easier code reuse. The code is functionally identical, as verified using regression tests.
 * Added regression tests using `nose2` and the corresponding infrastructure. Implemented tests for the SPCCL parsing helpers and the multi-beam clusterer.
 * `psrmatch`: Now that we use a distance threshold early in the spatial lookup, we can save some time later in the processing chain. This change results in a speedup of a factor of about 12 in my test setup on my laptop. My laptop manages to do about 800 lookups per second now.
