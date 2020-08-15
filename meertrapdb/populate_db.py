@@ -27,12 +27,12 @@ from numpy.lib import recfunctions
 from pony.orm import (db_session, delete, select)
 from pytz import timezone
 
+from meertrapdb.clustering.clusterer import Clusterer
 from meertrapdb.config_helpers import get_config
 from meertrapdb.db_helpers import setup_db
 from meertrapdb.db_logger import DBHandler
 from meertrapdb.dm_helpers import get_mw_dm
 from meertrapdb.general_helpers import setup_logging
-from meertrapdb.multibeam_sifter import match_candidates
 from meertrapdb.parsing_helpers import parse_spccl_file
 from meertrapdb import schema
 from meertrapdb.schema import db
@@ -760,7 +760,13 @@ def run_sift(schedule_block):
     dtype = [('index',int), ('mjd',float), ('dm',float), ('snr',float), ('beam',int)]
     candidates = np.array(candidates, dtype=dtype)
 
-    info = match_candidates(candidates, sconfig['time_thresh'], sconfig['dm_thresh'])
+    # do the clustering
+    clust = Clusterer(
+        sconfig['time_thresh'],
+        sconfig['dm_thresh']
+    )
+
+    info = clust.match_candidates(candidates)
 
     # write results back to database
     log.info('Writing results into database.')
