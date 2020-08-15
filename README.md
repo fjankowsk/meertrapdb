@@ -22,3 +22,14 @@ m.find_matches(source, dm)
 ```
 
 The list of supported catalogues can be queried using the `m.get_supported_catalogues()` function that returns a list of catalogue names.
+
+## Multi-beam clustering ##
+
+The repository contains a module to cluster (or sift) single-pulse candidates detected in multiple beams, based on their proximity in time and fractional dispersion measure. The parameters of the temporal width of the matching box and the fractional DM threshold can be tweaked as required. Example usage is like this:
+
+```python
+from meertrapdb.clustering.clusterer import Clusterer
+
+clust = Clusterer()
+info = clust.match_candidates(candidates)
+```

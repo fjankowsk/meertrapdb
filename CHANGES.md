@@ -2,6 +2,8 @@
 
 ## HEAD ##
 
+* Moved the multi-beam clustering code into a new `Clusterer` class to allow for easier code reuse. The code is functionally identical, as verified using regression tests.
+* Added regression tests using `nose2` and the corresponding infrastructure. Implemented tests for the SPCCL parsing helpers and the multi-beam clusterer.
 * `psrmatch`: Now that we use a distance threshold early in the spatial lookup, we can save some time later in the processing chain. This change results in a speedup of a factor of about 12 in my test setup on my laptop. My laptop manages to do about 800 lookups per second now.
 * `psrmatch`: Added script to test and benchmark the known source matcher on random input.
 * `psrmatch`: Bump the nearest neighbor tree lookup from 5 to the 25 nearest sources and make it a parameter. The spatial density of pulsars is high in the Galactic plane.
