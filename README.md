@@ -6,9 +6,9 @@ This repository contains the database backend code for the MeerTRAP project at t
 
 The software is primarily developed and maintained by Fabian Jankowski. For more information feel free to contact me via: fabian.jankowski at manchester.ac.uk.
 
-## psrmatch ##
+## Known source matching ##
 
-The repository contains a sub-module called psrmatch to efficiently cross-match large numbers of single-pulse candidates with known sources from the ATNF pulsar catalogue or other source catalogues. The cross-matching is based on their detected locations and dispersion measures.
+The repository contains a sub-module called `psrmatch` to efficiently cross-match large numbers of single-pulse candidates with known sources from the ATNF pulsar catalogue or other source catalogues. The cross-matching is based on their detected locations and dispersion measures.
 
 The cross-matcher operates on Astropy SkyCoord objects and input dispersion measures like this:
 
