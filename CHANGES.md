@@ -2,7 +2,7 @@
 
 ## HEAD ##
 
-* Added script to benchmark the multi-beam clustering algorithm and to determine its time complexity. The benchmark script outputs a runtime plot for visual inspection. On my laptop, the `Clusterer` operates in sub-quadratic time with increasing number of input candidates as $T(n) \propto (n^{1.6})$.
+* Added script to benchmark the multi-beam clustering algorithm and to determine its time complexity. The benchmark script outputs a runtime plot for visual inspection. On my laptop, the `Clusterer` operates in sub-quadratic time with increasing number of input candidates n as T(n) = O(n<sup>1.6</sup>).
 * Adjusted the code throughout to use the new multi-beam `Clusterer` module and documented it. Removed old clustering code.
 * Moved the multi-beam clustering code into a new `Clusterer` class to allow for easier code reuse. The code is functionally identical, as verified using regression tests.
 * Added regression tests using `nose2` and the corresponding infrastructure. Implemented tests for the SPCCL parsing helpers and the multi-beam clusterer.
