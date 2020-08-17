@@ -1,6 +1,6 @@
 # coding: utf-8
 #
-#   Test the known source matcher.
+#   Benchmark the known source matcher.
 #   2020 Fabian Jankowski
 #
 
