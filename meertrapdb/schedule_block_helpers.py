@@ -36,14 +36,30 @@ def get_sb_info(version):
     config = get_config()
     fsconf = config['filesystem']
 
-    sb_info_file = os.path.join(
-        os.path.dirname(__file__),
-        'config',
-        fsconf['sb_info']['filename']
-    )
+    if version not in [1, 2]:
+        raise NotImplementedError('The schedule block info version is not implemented: {0}'.format(version))
 
-    if not os.path.isfile(sb_info_file):
-        raise RuntimeError('SB info file does not exist: {0}'.format(sb_info_file))
+    if version == 1:
+        sb_info_file = os.path.join(
+            os.path.dirname(__file__),
+            'config',
+            fsconf['sb_info']['filename']
+        )
+
+        if not os.path.isfile(sb_info_file):
+            raise RuntimeError('SB info file does not exist: {0}'.format(sb_info_file))
+
+    elif version == 2:
+        # XXX: we want to use the summary file that is generated in each pointing here
+        # however, we need to iterate over the utc and tpn directories to get the right ones
+        sb_info_file = os.path.join(
+            os.path.dirname(__file__),
+            'config',
+            fsconf['sb_info']['filename']
+        )
+
+        if not os.path.isfile(sb_info_file):
+            raise RuntimeError('SB info file does not exist: {0}'.format(sb_info_file))
 
     with open(sb_info_file, 'r') as fh:
         data = json.load(fh)
