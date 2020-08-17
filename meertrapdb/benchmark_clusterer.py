@@ -7,7 +7,11 @@
 import os.path
 import time
 
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 from meertrapdb.clustering.clusterer import Clusterer
 from meertrapdb.parsing_helpers import parse_spccl_file
@@ -31,6 +35,55 @@ class MyTimer():
         print(msg)
 
 
+def plot_runtime_scaling(df):
+    """
+    Plot the runtime scaling.
+
+    Parameters
+    ----------
+    df: ~pd.DataFrame
+        The input data.
+    """
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+
+    plot_range = np.geomspace(
+        np.min(df['ncands']),
+        np.max(df['ncands']),
+        num=100
+    )
+
+    ax.plot(
+        df['ncands'],
+        df['runtime'],
+        marker='o',
+        label='measured'
+    )
+
+    ax.plot(
+        plot_range,
+        4.0E-7 * plot_range**1.6,
+        label=r'$T(n) \propto n^{1.6}$'
+    )
+
+    ax.grid()
+    ax.legend(loc='best', frameon=False)
+    ax.set_xlabel('Number of candidates')
+    ax.set_ylabel('Runtime (s)')
+    ax.set_xscale('log')
+    ax.set_yscale('log')
+
+    fig.tight_layout()
+
+    fig.savefig(
+        'clusterer_runtime_scaling.pdf',
+        bbox_inches='tight'
+    )
+
+    plt.close(fig)
+
+
 #
 # MAIN
 #
@@ -38,7 +91,6 @@ class MyTimer():
 def main():
     test_file = os.path.join(
         os.path.dirname(__file__),
-        '..',
         'tests',
         'test_clusterer_candidates.spccl.log'
     )
@@ -46,8 +98,10 @@ def main():
     example_cands = parse_spccl_file(test_file, 1)
     print('Number of example candidates: {0}'.format(len(example_cands)))
 
+    df = pd.DataFrame(columns=['ncands', 'runtime'])
+
     # benchmark on increasing numbers of synthetic candidates
-    for ncands in [5000, 10000, 50000, 100000, 200000]:
+    for ncands in [5000, 10000, 25000, 50000, 100000, 200000]:
         # generate larger synthetic data set from example candidates
         # pick candidates with replacement
         idx = np.random.choice(
@@ -74,6 +128,17 @@ def main():
             ncands / timer.runtime
             )
         )
+
+        temp = {
+            'ncands': ncands,
+            'runtime': timer.runtime
+        }
+
+        df = df.append(temp, ignore_index=True)
+
+    print(df.to_string())
+
+    plot_runtime_scaling(df)
 
 
 if __name__ == "__main__":
