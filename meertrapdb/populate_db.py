@@ -34,6 +34,7 @@ from meertrapdb.db_logger import DBHandler
 from meertrapdb.dm_helpers import get_mw_dm
 from meertrapdb.general_helpers import setup_logging
 from meertrapdb.parsing_helpers import parse_spccl_file
+from meertrapdb.schedule_block_helpers import get_sb_info
 from meertrapdb import schema
 from meertrapdb.schema import db
 from meertrapdb.version import __version__
@@ -46,7 +47,7 @@ from psrmatch.matcher import Matcher
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Populate the database.",
+        description='Populate the database.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
 
@@ -262,7 +263,7 @@ def insert_candidates(data, sb_id, sb_info, obs_utc_start, node_name):
 
     sb_lt_start = datetime.strptime(
         sb_info['actual_start_time'][:-2],
-        fsconf["date_formats"]["local"]
+        fsconf['date_formats']['local']
     )
     sb_utc_start = sb_lt_start.replace(tzinfo=timezone('UTC'))
 
@@ -565,29 +566,6 @@ def copy_plots(plots):
         shutil.move(filename, item['processed'])
 
 
-def get_sb_info():
-    """
-    Load the schedule block information from file.
-    """
-
-    config = get_config()
-    fsconf = config['filesystem']
-
-    sb_info_file = os.path.join(
-        os.path.dirname(__file__),
-        "config",
-        fsconf['sb_info_file']
-    )
-
-    if not os.path.isfile(sb_info_file):
-        raise RuntimeError("SB info file does not exist: {0}".format(sb_info_file))
-
-    with open(sb_info_file, 'r') as fh:
-        data = json.load(fh)
-
-    return data
-
-
 def run_production(schedule_block, test_run):
     """
     Run the processing for 'production' mode, i.e. insert real candidates into the database.
@@ -627,7 +605,7 @@ def run_production(schedule_block, test_run):
             raise RuntimeError(msg)
 
     # 1) load schedule block information
-    sb_info = get_sb_info()
+    sb_info = get_sb_info(fsconf['sb_info']['version'])
     start_time = sb_info['actual_start_time'][:-2]
 
     # 2) check for new directory
@@ -638,7 +616,7 @@ def run_production(schedule_block, test_run):
         staging_dir,
         fsconf['ingest']['glob_pattern']
     )
-    log.info("Glob pattern: {0}".format(glob_pattern))
+    log.info('Glob pattern: {0}'.format(glob_pattern))
 
     spcll_files = glob.glob(glob_pattern)
     spcll_files = sorted(spcll_files)

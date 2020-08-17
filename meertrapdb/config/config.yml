@@ -26,7 +26,9 @@ filesystem:
     staging_dir: /data/staging
     glob_pattern: "2*/tpn*/2*.spccl.log"
     processed_dir: /data/processed
-  sb_info_file: schedule_block.json
+  sb_info:
+    filename: schedule_block.json
+    version: 1
   date_formats:
     utc: "%Y-%m-%d_%H:%M:%S"
     local: "%Y-%m-%d %H:%M:%S.%f"
