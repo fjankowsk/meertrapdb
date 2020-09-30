@@ -775,7 +775,7 @@ def run_sift(schedule_block):
                     head_queried
                 )
                 raise RuntimeError(msg)
-            
+
             schema.SiftResult(
                 sps_candidate=cand,
                 cluster_id=item['cluster_id'],
