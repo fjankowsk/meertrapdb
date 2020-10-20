@@ -9,12 +9,42 @@ import pickle
 from astropy.coordinates import SkyCoord
 import astropy.units as units
 import numpy as np
+from numpy.testing import assert_raises
 
 from psrmatch.matcher import Matcher
 
 # astropy generates members dynamically, pylint therefore fails
 # disable the corresponding pylint test for now
 # pylint: disable=E1101
+
+
+def test_catalogue_loading():
+    m = Matcher()
+
+    # simple loading
+    m.load_catalogue('psrcat')
+
+    np.testing.assert_equal(m.get_loaded_catalogues(), ['psrcat'])
+
+    # double loading
+    with assert_raises(RuntimeError):
+        m.load_catalogue('psrcat')
+
+    # unknown catalogue
+    with assert_raises(NotImplementedError):
+        m.load_catalogue('blablabla')
+
+
+def test_catalogue_unloading():
+    m = Matcher()
+
+    np.testing.assert_equal(m.get_loaded_catalogues(), [])
+
+    m.load_catalogue('psrcat')
+
+    m.unload_catalogues()
+
+    np.testing.assert_equal(m.get_loaded_catalogues(), [])
 
 
 def test_psrcat_matches():
