@@ -2,6 +2,7 @@
 
 ## HEAD ##
 
+* `psrmatch`: Added initial code to allow for the handling of multiple catalogues at a time. Added simple functions to load, unload and check the status of the matcher, and corresponding regression tests.
 * `psrmatch`: Added regression test using known good results from fake source data.
 * `psrmatch`: Switched to latest psrcat version 1.64 beta.
 * Added script to benchmark the multi-beam clustering algorithm and to determine its time complexity. The benchmark script outputs a runtime plot for visual inspection. On my laptop, the `Clusterer` operates in sub-quadratic time with increasing number of input candidates n as T(n) = O(n^1.6).
