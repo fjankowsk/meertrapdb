@@ -47,7 +47,7 @@ def parse_psrcat(filename):
         ('dec_str','|U64'), ('err_dec',float), ('ref_dec','|U32'),
         ('p0',float), ('err_p0',float), ('ref_p0','|U32'),
         ('dm',float), ('err_dm',float), ('ref_dm','|U32'),
-        ('type','|U32'), ('ref_type','|U32')
+        ('type','|U32')
     ]
 
     temp = np.genfromtxt(
