@@ -4,7 +4,6 @@
 #   Populate the database.
 #
 
-from __future__ import print_function
 import argparse
 from datetime import datetime
 from decimal import Decimal
@@ -13,7 +12,6 @@ import json
 import logging
 import os.path
 import random
-import requests as req
 import shutil
 import sys
 import time
@@ -36,6 +34,7 @@ from meertrapdb.general_helpers import setup_logging
 from meertrapdb.parsing_helpers import parse_spccl_file
 from meertrapdb import schema
 from meertrapdb.schema import db
+from meertrapdb.slack_helpers import send_slack_notification
 from meertrapdb.version import __version__
 from psrmatch.matcher import Matcher
 
@@ -976,50 +975,6 @@ def run_known_sources(schedule_block):
     return len(candidates), len(matched)
 
 
-def send_notification(info):
-    """
-    Send notification to Slack.
-
-    Parameters
-    ----------
-    info: dict
-        All parameters for the Slack message.
-    """
-
-    log = logging.getLogger('meertrapdb.populate_db')
-    config = get_config()
-    current_time = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
-
-    text = 'SB: {0}, start date: {1}, raw candidates: {2}, unique heads: {3}, unmatched unique heads: {4}'.format(
-        info['schedule_block'],
-        info['start_time'],
-        info['raw_cands'],
-        info['unique_heads'],
-        info['unique_heads'] - info['known_matched']
-    )
-
-    message = {
-        'pretext': '* {0} NEW SB injected:* \n'.format(current_time),
-        'color': config['notifier']['colour'],
-        'text': text
-    }
-
-    cand_message = {
-        'attachments': [message]
-    }
-    message_json = json.dumps(cand_message)
-
-    try:
-        req.post(
-            config['notifier']['http_link'],
-            data=message_json,
-            timeout=2
-        )
-    except Exception:
-        log.error('Something happened when trying to send the data to Slack.')
-        log.error(sys.exc_info()[0])
-
-
 def run_parameters(schedule_block):
     """
     Run the processing for 'parameters' mode.
@@ -1163,7 +1118,7 @@ def main():
             'unique_heads': unique_heads,
             'known_matched': known_matched
         }
-        send_notification(info)
+        send_slack_notification(info)
 
     elif args.mode == "sift":
         run_sift(args.schedule_block)
