@@ -44,15 +44,28 @@ from psrmatch.matcher import Matcher
 
 
 def parse_args():
+    """
+    Parse the commandline arguments.
+
+    Returns
+    -------
+    args: populated namespace
+        The commandline arguments.
+    """
+
     parser = argparse.ArgumentParser(
-        description="Populate the database.",
+        description='Populate the database.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
 
     parser.add_argument(
         'mode',
         choices=[
-            'fake', 'init_tables', 'known_sources', 'production', 'sift',
+            'fake',
+            'init_tables',
+            'known_sources',
+            'production',
+            'sift',
             'parameters'
             ],
         help='Mode of operation.'
@@ -78,12 +91,35 @@ def parse_args():
     )
 
     parser.add_argument(
-        "--version",
-        action="version",
+        '--version',
+        action='version',
         version=__version__
     )
 
     return parser.parse_args()
+
+
+def check_args(args):
+    """
+    Sanity check the commandline arguments.
+
+    Parameters
+    ----------
+    args: populated namespace
+        The commandline arguments.
+    """
+
+    # sanity check test_run flag
+    if args.test_run is True \
+    and args.mode != 'production':
+        print('The "test_run" flag is only valid for "production" mode.')
+        sys.exit(1)
+
+    # check that there is a schedule block id given
+    if args.mode in ['known_sources', 'production', 'sift', 'parameters']:
+        if not args.schedule_block:
+            print('Please specify a schedule block ID to use.')
+            sys.exit(1)
 
 
 def check_if_schedule_block_exists(schedule_block):
@@ -574,12 +610,12 @@ def get_sb_info():
 
     sb_info_file = os.path.join(
         os.path.dirname(__file__),
-        "config",
+        'config',
         fsconf['sb_info_file']
     )
 
     if not os.path.isfile(sb_info_file):
-        raise RuntimeError("SB info file does not exist: {0}".format(sb_info_file))
+        raise RuntimeError('SB info file does not exist: {0}'.format(sb_info_file))
 
     with open(sb_info_file, 'r') as fh:
         data = json.load(fh)
@@ -631,20 +667,20 @@ def run_production(schedule_block, test_run):
 
     # 2) check for new directory
     staging_dir = fsconf['ingest']['staging_dir']
-    log.info("Staging directory: {0}".format(staging_dir))
+    log.info('Staging directory: {0}'.format(staging_dir))
 
     glob_pattern = os.path.join(
         staging_dir,
         fsconf['ingest']['glob_pattern']
     )
-    log.info("Glob pattern: {0}".format(glob_pattern))
+    log.info('Glob pattern: {0}'.format(glob_pattern))
 
     spcll_files = glob.glob(glob_pattern)
     spcll_files = sorted(spcll_files)
-    log.info("Found {0} SPCCL files.".format(len(spcll_files)))
+    log.info('Found {0} SPCCL files.'.format(len(spcll_files)))
 
     for filename in spcll_files:
-        log.info("Processing SPCCL file: {0}".format(filename))
+        log.info('Processing SPCCL file: {0}'.format(filename))
 
         utc_start_str = os.path.basename(filename)[:19]
         obs_utc_start = datetime.strptime(
@@ -652,22 +688,22 @@ def run_production(schedule_block, test_run):
             fsconf['date_formats']['utc']
         )
 
-        log.info("UTC start: {0}".format(obs_utc_start))
+        log.info('UTC start: {0}'.format(obs_utc_start))
 
         node_name = os.path.basename(
             os.path.dirname(filename)
         )
 
-        log.info("Node: {0}".format(node_name))
+        log.info('Node: {0}'.format(node_name))
 
         # 3) parse candidate data
         spccl_data = parse_spccl_file(filename, config['candidates']['version'])
 
         # check if we have candidates
         if len(spccl_data) > 0:
-            log.info("Parsed {0} candidates.".format(len(spccl_data)))
+            log.info('Parsed {0} candidates.'.format(len(spccl_data)))
         else:
-            log.warning("No candidates found.")
+            log.warning('No candidates found.')
             continue
 
         # 4) insert data into database
@@ -676,10 +712,10 @@ def run_production(schedule_block, test_run):
         if not test_run:
             # 5) move directory to processed
             if len(plots) > 0:
-                log.info("Copying {0} plots.".format(len(plots)))
+                log.info('Copying {0} plots.'.format(len(plots)))
                 copy_plots(plots)
             else:
-                log.warning("No plots to copy found.")
+                log.warning('No plots to copy found.')
 
             # 6) move spccl file to processed
             outfile = os.path.join(
@@ -695,7 +731,7 @@ def run_production(schedule_block, test_run):
 
             shutil.move(filename, outfile)
 
-    log.info("Done. Time taken: {0}".format(datetime.now() - start))
+    log.info('Done. Time taken: {0}'.format(datetime.now() - start))
 
     return start_time
 
@@ -1060,11 +1096,7 @@ def run_parameters(schedule_block):
 
 def main():
     args = parse_args()
-
-    # sanity check test_run flag
-    if args.test_run is True \
-    and args.mode != 'production':
-        sys.exit('The "test_run" flag is only valid for "production" mode.')
+    check_args(args)
 
     log = logging.getLogger('meertrapdb.populate_db')
 
@@ -1087,12 +1119,6 @@ def main():
 
     db.generate_mapping(create_tables=True)
 
-    # check that there is a schedule block id given
-    if args.mode in ['known_sources', 'production', 'sift', 'parameters']:
-        if not args.schedule_block:
-            print('Please specify a schedule block ID to use.')
-            sys.exit(1)
-
     if args.mode == 'fake':
         msg = "This operation mode will populate the database with random" + \
               " fake data. Make sure you want this."
@@ -1100,17 +1126,18 @@ def main():
         sleep(20)
         run_fake()
 
-    elif args.mode == "init_tables":
+    elif args.mode == 'init_tables':
         pass
 
-    elif args.mode == "known_sources":
+    elif args.mode == 'known_sources':
         run_known_sources(args.schedule_block)
 
-    elif args.mode == "production":
+    elif args.mode == 'production':
         start_time = run_production(args.schedule_block, args.test_run)
         run_parameters(args.schedule_block)
         raw_cands = run_sift(args.schedule_block)
         unique_heads, known_matched = run_known_sources(args.schedule_block)
+
         info = {
             'schedule_block': args.schedule_block,
             'start_time': start_time,
@@ -1120,14 +1147,14 @@ def main():
         }
         send_slack_notification(info)
 
-    elif args.mode == "sift":
+    elif args.mode == 'sift':
         run_sift(args.schedule_block)
 
-    elif args.mode == "parameters":
+    elif args.mode == 'parameters':
         run_parameters(args.schedule_block)
 
-    log.info("All done.")
+    log.info('All done.')
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
