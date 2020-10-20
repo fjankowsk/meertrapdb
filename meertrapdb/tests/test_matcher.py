@@ -47,6 +47,29 @@ def test_catalogue_unloading():
     np.testing.assert_equal(m.get_loaded_catalogues(), [])
 
 
+def test_matcher_readiness():
+    m = Matcher()
+
+    coords = SkyCoord(
+        ra='08:35:20',
+        dec='-45:10:34',
+        unit=(units.degree, units.degree),
+        frame='icrs'
+    )
+
+    dm = 67.97
+
+    # not prepared
+    with assert_raises(RuntimeError):
+        m.find_matches(coords, dm)
+
+    # working
+    m.load_catalogue('psrcat')
+    m.create_search_tree()
+
+    m.find_matches(coords, dm)
+
+
 def test_psrcat_matches():
     # known good output
     good_filename = os.path.join(

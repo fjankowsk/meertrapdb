@@ -104,6 +104,7 @@ class Matcher(object):
                 )
             )
 
+        # XXX: add catalogue data here
         self.catalogue = catalogue
         self.loaded_catalogues.append(catalogue_name)
 
@@ -182,7 +183,16 @@ class Matcher(object):
             The source to check.
         dm: float
             The dispersion measure of the source.
+
+        Raises
+        ------
+        RuntimeError
+            If the matcher is not prepared.
         """
+
+        if self.loaded_catalogues == [] \
+        or self.tree == None:
+            raise RuntimeError('The known-source matcher is not prepared')
 
         dist, idx  = self.query_search_tree(source)
 
