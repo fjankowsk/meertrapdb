@@ -79,7 +79,7 @@ class Matcher(object):
                 os.path.join(
                     os.path.dirname(__file__),
                     'catalogues',
-                    'psrcat_v163.txt'
+                    'psrcat_v164_beta.txt'
                 )
             )
 
