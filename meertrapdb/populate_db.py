@@ -1120,8 +1120,8 @@ def main():
     db.generate_mapping(create_tables=True)
 
     if args.mode == 'fake':
-        msg = "This operation mode will populate the database with random" + \
-              " fake data. Make sure you want this."
+        msg = 'This operation mode will populate the database with random' + \
+              ' fake data. Make sure you want this.'
         log.warning(msg)
         sleep(20)
         run_fake()
