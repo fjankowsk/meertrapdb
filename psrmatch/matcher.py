@@ -39,8 +39,24 @@ class Matcher(object):
         self.tree = None
         self.log = logging.getLogger('psrmatch.matcher')
 
+        # list of loaded catalogues
+        self.loaded_catalogues = []
+
         # tree lookup parameters
         self.max_neighbors = 25
+
+
+    def get_loaded_catalogues(self):
+        """
+        Get the list of loaded catalogues.
+
+        Returns
+        -------
+        loaded_catalogues: list of str
+            The list of loaded catalogues.
+        """
+
+        return self.loaded_catalogues
 
 
     def get_supported_catalogues(self):
@@ -69,21 +85,38 @@ class Matcher(object):
         ------
         NotImplementedError
             If the catalogue `catalogue_name` is not implemented.
+        RuntimeError
+            If the catalogue `catalogue_name` is already loaded.
         """
 
         if catalogue_name not in self.supported_catalogues:
             raise NotImplementedError('The catalogue is not supported: {0}'.format(catalogue_name))
+
+        if catalogue_name in self.loaded_catalogues:
+            raise RuntimeError('Catalogue is already loaded: {0}'.format(catalogue_name))
 
         if catalogue_name == 'psrcat':
             catalogue = parse_psrcat(
                 os.path.join(
                     os.path.dirname(__file__),
                     'catalogues',
-                    'psrcat_v163.txt'
+                    'psrcat_v164_beta.txt'
                 )
             )
 
+        # XXX: add catalogue data here
         self.catalogue = catalogue
+        self.loaded_catalogues.append(catalogue_name)
+
+
+    def unload_catalogues(self):
+        """
+        Unload all known-source catalogues.
+        """
+
+        self.catalogue = None
+        self.loaded_catalogues = []
+        self.tree = None
 
 
     def create_search_tree(self):
@@ -150,7 +183,16 @@ class Matcher(object):
             The source to check.
         dm: float
             The dispersion measure of the source.
+
+        Raises
+        ------
+        RuntimeError
+            If the matcher is not prepared.
         """
+
+        if self.loaded_catalogues == [] \
+        or self.tree == None:
+            raise RuntimeError('The known-source matcher is not prepared')
 
         dist, idx  = self.query_search_tree(source)
 
