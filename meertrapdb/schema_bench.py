@@ -4,7 +4,6 @@
 #   Schema classes for database benchmark.
 #
 
-from __future__ import print_function
 from datetime import datetime
 from decimal import Decimal
 

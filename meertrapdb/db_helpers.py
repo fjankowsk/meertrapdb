@@ -4,7 +4,6 @@
 #   Database related helper functions.
 #
 
-from __future__ import print_function
 import logging
 
 from pony.orm import (Database, db_session)
