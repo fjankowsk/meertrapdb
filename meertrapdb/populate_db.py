@@ -264,7 +264,7 @@ def run_fake():
                             pipeline_config=pipeline_config
                         )
 
-    log.info("Done. Time taken: {0}".format(datetime.now() - start))
+    log.info('Done. Time taken: {0}'.format(datetime.now() - start))
 
 
 def insert_candidates(data, sb_id, sb_info, obs_utc_start, node_name):
@@ -578,10 +578,10 @@ def copy_plots(plots):
 
     for item in plots:
         filename = item['staging']
-        log.info("Copying plot: {0}".format(filename))
+        log.info('Copying plot: {0}'.format(filename))
 
         if not os.path.isfile(filename):
-            raise RuntimeError("Staging file does not exist: {0}".format(filename))
+            raise RuntimeError('Staging file does not exist: {0}'.format(filename))
 
         # copy to webserver
         web_dir = os.path.dirname(item['webserver'])
@@ -842,7 +842,7 @@ def run_sift(schedule_block):
                 beams=item['beams']
             )
 
-    log.info("Done. Time taken: {0}".format(datetime.now() - start))
+    log.info('Done. Time taken: {0}'.format(datetime.now() - start))
 
     return len(candidates)
 
@@ -1006,7 +1006,7 @@ def run_known_sources(schedule_block):
                 )
                 raise RuntimeError(msg)
 
-    log.info("Done. Time taken: {0}".format(datetime.now() - start))
+    log.info('Done. Time taken: {0}'.format(datetime.now() - start))
 
     return len(candidates), len(matched)
 
@@ -1087,7 +1087,7 @@ def run_parameters(schedule_block):
             beam.gb = item['gb']
             beam.mw_dm = item['mw_dm']
 
-    log.info("Done. Time taken: {0}".format(datetime.now() - start))
+    log.info('Done. Time taken: {0}'.format(datetime.now() - start))
 
 
 #
