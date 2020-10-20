@@ -2,6 +2,7 @@
 
 ## HEAD ##
 
+* `psrmatch`: Switched to latest psrcat version 1.64 beta.
 * Added script to benchmark the multi-beam clustering algorithm and to determine its time complexity. The benchmark script outputs a runtime plot for visual inspection. On my laptop, the `Clusterer` operates in sub-quadratic time with increasing number of input candidates n as T(n) = O(n^1.6).
 * Adjusted the code throughout to use the new multi-beam `Clusterer` module and documented it. Removed old clustering code.
 * Moved the multi-beam clustering code into a new `Clusterer` class to allow for easier code reuse. The code is functionally identical, as verified using regression tests.
