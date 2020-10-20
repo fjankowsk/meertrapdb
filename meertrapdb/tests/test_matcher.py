@@ -79,7 +79,7 @@ def test_psrcat_matches():
             pickle.dump(
                 known_good,
                 fd,
-                pickle.HIGHEST_PROTOCOL
+                pickle.DEFAULT_PROTOCOL
             )
 
 
