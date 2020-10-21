@@ -315,7 +315,7 @@ def insert_candidates(data, sb_id, summary, obs_utc_start, node_name):
                 sb_id_code_mk=summary['sb_details']['id_code'],
                 proposal_id_mk=summary['sb_details']['proposal_id'],
                 proj_main=summary['sb_details']['description'].split()[0],
-                proj='For MeerTRAP internal use',
+                proj='MeerTRAP internal',
                 utc_start=sb_utc_start,
                 sub_array=summary['sb_details']['sub_nr'],
                 observer=summary['sb_details']['owner'],
