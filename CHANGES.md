@@ -2,9 +2,9 @@
 
 ## HEAD ##
 
-## 0.6.1 (2020-10-22) ##
+## 0.6.2 (2020-10-22) ##
 
-* Bumped `psrmatch` to version 0.3 and `meertrapdb` to version 0.6.1.
+* Bumped `psrmatch` to version 0.3 and `meertrapdb` to version 0.6.2.
 * Code formatting improvements and refactoring to increase code readability.
 * Removed legacy python 2 compatibility code.
 * `psrmatch`: Added initial code to allow for the handling of multiple catalogues at a time. Added simple functions to load, unload and check the status of the matcher, and corresponding regression tests.
