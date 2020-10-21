@@ -7,7 +7,6 @@ This example uses HTTP access to katportal, not websocket access.  It uses a
 specific subarray when initialising the KATPortalClient, as schedule blocks
 are assigned to specific subarrays.
 """
-from __future__ import print_function
 
 import json
 import logging

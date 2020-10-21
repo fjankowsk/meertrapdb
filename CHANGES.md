@@ -2,6 +2,8 @@
 
 ## HEAD ##
 
+* Code formatting improvements and refactoring to increase its readability.
+* Remove legacy python 2 compatibility code.
 * `psrmatch`: Added initial code to allow for the handling of multiple catalogues at a time. Added simple functions to load, unload and check the status of the matcher, and corresponding regression tests.
 * `psrmatch`: Added regression test using known good results from fake source data.
 * `psrmatch`: Switched to latest psrcat version 1.64 beta.
