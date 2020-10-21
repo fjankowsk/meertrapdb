@@ -2,19 +2,19 @@
 
 ## HEAD ##
 
-* Code formatting improvements and refactoring to increase its readability.
-* Remove legacy python 2 compatibility code.
+* Code formatting improvements and refactoring to increase code readability.
+* Removed legacy python 2 compatibility code.
 * `psrmatch`: Added initial code to allow for the handling of multiple catalogues at a time. Added simple functions to load, unload and check the status of the matcher, and corresponding regression tests.
-* `psrmatch`: Added regression test using known good results from fake source data.
-* `psrmatch`: Switched to latest psrcat version 1.64 beta.
+* `psrmatch`: Added regression test using known-good results from fake source data.
+* `psrmatch`: Switched to the latest version of the ATNF pulsar catalogue (version 1.64 beta).
 * Added script to benchmark the multi-beam clustering algorithm and to determine its time complexity. The benchmark script outputs a runtime plot for visual inspection. On my laptop, the `Clusterer` operates in sub-quadratic time with increasing number of input candidates n as T(n) = O(n^1.6).
 * Adjusted the code throughout to use the new multi-beam `Clusterer` module and documented it. Removed old clustering code.
 * Moved the multi-beam clustering code into a new `Clusterer` class to allow for easier code reuse. The code is functionally identical, as verified using regression tests.
 * Added regression tests using `nose2` and the corresponding infrastructure. Implemented tests for the SPCCL parsing helpers and the multi-beam clusterer.
-* `psrmatch`: Now that we use a distance threshold early in the spatial lookup, we can save some time later in the processing chain. This change results in a speedup of a factor of about 12 in my test setup on my laptop. My laptop manages to do about 800 lookups per second now.
+* `psrmatch`: Now that we use a distance threshold early in the spatial lookup, we can save some time later in the processing chain. This change resulted in a speedup of a factor of about 12 in my test setup on my laptop. My laptop manages to do about 800 lookups per second now.
 * `psrmatch`: Added script to test and benchmark the known source matcher on random input.
-* `psrmatch`: Bump the nearest neighbor tree lookup from 5 to the 25 nearest sources and make it a parameter. The spatial density of pulsars is high in the Galactic plane.
-* Added `healpy` for healpix tesselation of the surveyed sky and simple test script.
+* `psrmatch`: Bumped the nearest neighbor tree lookup from 5 to the 25 nearest sources and made it a parameter. The spatial density of pulsars is high in the Galactic plane, given MeerKAT's sensitivity.
+* Added the `healpy` python module for Healpix tesselation of the surveyed sky and added a simple test script.
 
 ## 0.6 (2020-07-09) ##
 
