@@ -39,7 +39,8 @@ class Observation(db.Entity):
     utc_added = Required(datetime, precision=0, default=datetime.utcnow())
     tobs = Optional(float)
     finished = Required(bool)
-    nant = Required(int, size=8, unsigned=True)
+    cb_nant = Required(int, size=8, unsigned=True)
+    ib_nant = Required(int, size=8, unsigned=True)
     receiver = Required(int, size=8, unsigned=True)
     cfreq = Required(float)
     bw = Required(float)
@@ -54,9 +55,19 @@ class Observation(db.Entity):
 
 class BeamConfig(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
-    nbeam = Required(int, size=16, unsigned=True)
-    tiling_mode = Required(str, max_len=32)
+    cb_angle = Required(float)
+    cb_x = Required(float)
+    cb_y = Required(float)
     observation = Set('Observation')
+    tiling = Set('Tiling')
+
+
+class Tiling(db.Entity):
+    id = PrimaryKey(int, auto=True, size=64, unsigned=True)
+    nbeam = Required(int, size=16, unsigned=True)
+    overlap = Required(float)
+    tiling_mode = Required(str, max_len=32)
+    beam_config = Set('BeamConfig')
 
 
 class Beam(db.Entity):

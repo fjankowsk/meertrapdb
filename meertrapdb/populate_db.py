@@ -268,7 +268,7 @@ def run_fake():
     log.info('Done. Time taken: {0}'.format(datetime.now() - start))
 
 
-def insert_candidates(data, sb_id, sb_info, obs_utc_start, node_name):
+def insert_candidates(data, sb_id, summary, obs_utc_start, node_name):
     """
     Insert candidates into database.
 
@@ -278,13 +278,13 @@ def insert_candidates(data, sb_id, sb_info, obs_utc_start, node_name):
         The parsed candidate data.
     sb_id: int
         The ID of the schedule block in the MeerTRAP database.
-    sb_info: dict
-        Information about the schedule block.
+    summary: dict
+        Information about the pipeline run.
     obs_utc_start: datetime.datetime
         The start UTC of the observation.
     node_name: str
         The name of the node, e.g. `tpn-0-37`.
-    
+
     Returns
     -------
     plots: list of dict
@@ -296,11 +296,12 @@ def insert_candidates(data, sb_id, sb_info, obs_utc_start, node_name):
     config = get_config()
     fsconf = config['filesystem']
 
-    sb_lt_start = datetime.strptime(
-        sb_info['actual_start_time'][:-2],
+    # start time of the schedule block
+    sb_local_time_start = datetime.strptime(
+        summary['sb_details']['actual_start_time'][:-2],
         fsconf['date_formats']['local']
     )
-    sb_utc_start = sb_lt_start.replace(tzinfo=timezone('UTC'))
+    sb_utc_start = sb_local_time_start.replace(tzinfo=timezone('UTC'))
 
     with db_session:
         # 1) schedule blocks
@@ -310,19 +311,19 @@ def insert_candidates(data, sb_id, sb_info, obs_utc_start, node_name):
         if len(sb_queried) == 0:
             schedule_block = schema.ScheduleBlock(
                 sb_id=sb_id,
-                sb_id_mk=sb_info['id'],
-                sb_id_code_mk=sb_info['id_code'],
-                proposal_id_mk=sb_info['proposal_id'],
-                proj_main="TRAPUM",
-                proj="DWF run (day 5)",
+                sb_id_mk=summary['sb_details']['id'],
+                sb_id_code_mk=summary['sb_details']['id_code'],
+                proposal_id_mk=summary['sb_details']['proposal_id'],
+                proj_main=summary['sb_details']['description'].split()[0],
+                proj='For MeerTRAP internal use',
                 utc_start=sb_utc_start,
-                sub_array=sb_info['sub_nr'],
-                observer=sb_info['owner'],
-                description=sb_info['description']
+                sub_array=summary['sb_details']['sub_nr'],
+                observer=summary['sb_details']['owner'],
+                description=summary['sb_details']['description']
             )
 
         elif len(sb_queried) == 1:
-            log.info("Schedule block is already in the database: {0}".format(sb_id))
+            log.info('Schedule block is already in the database: {0}'.format(sb_id))
             schedule_block = sb_queried[0]
 
         else:
@@ -335,29 +336,51 @@ def insert_candidates(data, sb_id, sb_info, obs_utc_start, node_name):
 
         if len(obs_queried) == 0:
             beam_config = schema.BeamConfig(
-                nbeam=390,
-                tiling_mode='fill'
+                cb_angle=summary['beams']['coherent_beam_shape']['angle'],
+                cb_x=summary['beams']['coherent_beam_shape']['x'],
+                cb_y=summary['beams']['coherent_beam_shape']['y']
             )
+
+            tilings = summary['beams']['ca_target_request']['tilings']
+
+            for tiling in tilings:
+                schema.Tiling(
+                    nbeam=tiling['nbeams'],
+                    overlap=tiling['overlap'],
+                    tiling_mode='fill',
+                    beam_config=beam_config
+                )
+
+            # utc end time of the observation
+            obs_utc_end = datetime.strptime(
+                summary['utc_stop'],
+                fsconf['date_formats']['utc']
+            )
+
+            log.info('Observation UTC end: {0}'.format(obs_utc_end))
 
             observation = schema.Observation(
                 schedule_block=schedule_block,
-                field_name="NGC 6101",
-                boresight_ra="16:26:00.00",
-                boresight_dec="-73:00:00.0",
+                # XXX: how to populate these?
+                field_name='NGC 6101',
+                boresight_ra='16:26:00.00',
+                boresight_dec='-73:00:00.0',
                 utc_start=obs_utc_start,
+                utc_end=obs_utc_end,
                 finished=True,
-                nant=len(sb_info['antennas_alloc'].split(",")),
+                cb_nant=len(summary['beams']['cb_antennas']),
+                ib_nant=len(summary['beams']['ib_antennas']),
                 receiver=1,
-                cfreq=1284.0,
-                bw=856.0,
-                nchan=4096,
+                cfreq=1E-6 * summary['data']['cfreq'],
+                bw=1E-6 * summary['data']['bw'],
+                nchan=summary['data']['nchan'],
                 npol=1,
-                tsamp=0.0003062429906542056,
+                tsamp=summary['data']['tsamp'],
                 beam_config=beam_config
             )
 
         elif len(obs_queried) == 1:
-            log.info("Observation is already in the database: {0}".format(obs_utc_start))
+            log.info('Observation is already in the database: {0}'.format(obs_utc_start))
             observation = obs_queried[0]
 
         else:
@@ -367,7 +390,7 @@ def insert_candidates(data, sb_id, sb_info, obs_utc_start, node_name):
         # 3) nodes
         # check if node is already in the database, otherwise reference it
         node_nr = int(node_name[6:])
-        log.info("Node number: {0}".format(node_nr))
+        log.info('Node number: {0}'.format(node_nr))
 
         node_queried = select(
             n
@@ -380,11 +403,11 @@ def insert_candidates(data, sb_id, sb_info, obs_utc_start, node_name):
         if len(node_queried) == 0:
             node = schema.Node(
                 number=node_nr,
-                hostname="tpn-0-{0}".format(node_nr)
+                hostname='tpn-0-{0}'.format(node_nr)
             )
 
         elif len(node_queried) == 1:
-            log.info("Node is already in the database: {0}, {1}".format(obs_utc_start, node_nr))
+            log.info('Node is already in the database: {0}, {1}'.format(obs_utc_start, node_nr))
             node = node_queried[0]
 
         else:
@@ -405,27 +428,27 @@ def insert_candidates(data, sb_id, sb_info, obs_utc_start, node_name):
 
         if len(pc_queried) == 0:
             pipeline_config = schema.PipelineConfig(
-                name="Test",
-                version="0.1",
-                dd_plan="Test",
-                dm_threshold=10.0,
-                snr_threshold=10.0,
-                width_threshold=500.0,
+                name=summary['pipeline']['mode'],
+                version=summary['version_info']['control'],
+                dd_plan=summary['pipeline']['cheetah']['ddplan_str'],
+                dm_threshold=summary['pipeline']['cheetah']['spsift']['dm_thresh'],
+                snr_threshold=summary['pipeline']['cheetah']['spsift']['sigma_thresh'],
+                width_threshold=summary['pipeline']['cheetah']['spsift']['pulse_width_threshold'],
                 zerodm_zapping=True
             )
 
         elif len(pc_queried) == 1:
-            msg = "Pipeline config is already in the database:" + \
-                  " {0}, {1}".format(obs_utc_start, node_nr)
+            msg = 'Pipeline config is already in the database:' + \
+                  ' {0}, {1}'.format(obs_utc_start, node_nr)
             log.info(msg)
             pipeline_config = pc_queried[0]
 
         else:
-            msg = "There are duplicate pipeline configs:" + \
-                  " {0}, {1}".format(obs_utc_start, node_nr)
+            msg = 'There are duplicate pipeline configs:' + \
+                  ' {0}, {1}'.format(obs_utc_start, node_nr)
             log.error(msg)
             pipeline_config = pc_queried[0]
-        
+
         # 5) beams
         # check if beam is already in the database, otherwise reference it
 
@@ -433,9 +456,15 @@ def insert_candidates(data, sb_id, sb_info, obs_utc_start, node_name):
         # mixing of beams within a candidate file
         beam_nr = int(data['beam'][0])
         beam_coherent = bool(data['coherent'][0])
-        beam_source = "Test source"
         ra = data['ra'][0]
         dec = data['dec'][0]
+
+        # figure out beam source
+        beam_source = 'undefined'
+        for item in summary['beams']['list']:
+            if item['relnum'] == beam_nr:
+                beam_source = item['source']
+                break
 
         beam_queried = select(
             beam
@@ -459,14 +488,14 @@ def insert_candidates(data, sb_id, sb_info, obs_utc_start, node_name):
             )
 
         elif len(beam_queried) == 1:
-            msg = "Beam is already in the database:" + \
-                  " {0}, {1}, {2}".format(obs_utc_start, node_nr, beam_nr)
+            msg = 'Beam is already in the database:' + \
+                  ' {0}, {1}, {2}'.format(obs_utc_start, node_nr, beam_nr)
             log.info(msg)
             beam = beam_queried[0]
 
         else:
-            msg = "There are duplicate beams:" + \
-                  " {0}, {1}, {2}".format(obs_utc_start, node_nr, beam_nr)
+            msg = 'There are duplicate beams:' + \
+                  ' {0}, {1}, {2}'.format(obs_utc_start, node_nr, beam_nr)
             log.error(msg)
             beam = beam_queried[0]
 
@@ -475,7 +504,7 @@ def insert_candidates(data, sb_id, sb_info, obs_utc_start, node_name):
         plots = []
 
         for item in data:
-            cand_mjd = Decimal("{0:.10f}".format(item['mjd']))
+            cand_mjd = Decimal('{0:.10f}'.format(item['mjd']))
             cand_utc = Time(item['mjd'], format='mjd').iso
 
             # check if candidate is already in the database
@@ -491,8 +520,8 @@ def insert_candidates(data, sb_id, sb_info, obs_utc_start, node_name):
             )
 
             if cand_queried.count() > 0:
-                msg = "Candidate is already in the database:" + \
-                      " {0}, {1}, {2}".format(obs_utc_start, beam_nr, cand_mjd)
+                msg = 'Candidate is already in the database:' + \
+                      ' {0}, {1}, {2}'.format(obs_utc_start, beam_nr, cand_mjd)
                 log.error(msg)
                 continue
 
@@ -506,13 +535,13 @@ def insert_candidates(data, sb_id, sb_info, obs_utc_start, node_name):
                 item['plot_file']
             )
 
-            ds_web = ""
+            ds_web = ''
 
             if not os.path.isfile(ds_staging):
-                log.warning("Dynamic spectrum plot not found: {0}".format(ds_staging))
+                log.warning('Dynamic spectrum plot not found: {0}'.format(ds_staging))
             else:
                 ds_web = os.path.join(
-                    "{0}".format(sb_id),
+                    '{0}'.format(sb_id),
                     obs_utc_start_str,
                     node_name,
                     item['plot_file']
@@ -531,9 +560,9 @@ def insert_candidates(data, sb_id, sb_info, obs_utc_start, node_name):
                 )
 
                 file_info = {
-                    "staging": ds_staging,
-                    "processed": ds_processed,
-                    "webserver": ds_web_full
+                    'staging': ds_staging,
+                    'processed': ds_processed,
+                    'webserver': ds_web_full
                 }
 
                 plots.append(file_info)
@@ -548,8 +577,8 @@ def insert_candidates(data, sb_id, sb_info, obs_utc_start, node_name):
                 width=item['width'],
                 node=node,
                 dynamic_spectrum=ds_web,
-                profile="",
-                heimdall_plot="",
+                profile='',
+                heimdall_plot='',
                 pipeline_config=pipeline_config
             )
 
@@ -601,6 +630,27 @@ def copy_plots(plots):
         shutil.move(filename, item['processed'])
 
 
+def load_summary_file(filename):
+    """
+    Load a new-style summary file.
+
+    Parameters
+    ----------
+    filename: str
+        The name of the summary file.
+
+    Returns
+    -------
+    data: dict
+        The summary data for each pipeline run.
+    """
+
+    with open(filename, 'r') as fd:
+        data = json.load(fd)
+
+    return data
+
+
 def run_production(schedule_block, test_run):
     """
     Run the processing for 'production' mode, i.e. insert real candidates into the database.
@@ -614,12 +664,12 @@ def run_production(schedule_block, test_run):
 
     Returns
     -------
-    start_time: str
-        The start time of the schedule block.
+    sb_utc_start: datetime.datetime
+        The UTC start time of the schedule block.
     """
 
     log = logging.getLogger('meertrapdb.populate_db')
-    
+
     config = get_config()
     fsconf = config['filesystem']
 
@@ -639,11 +689,7 @@ def run_production(schedule_block, test_run):
             msg = 'There are duplicate schedule blocks: {0}'.format(schedule_block)
             raise RuntimeError(msg)
 
-    # 1) load schedule block information
-    sb_info = get_sb_info(fsconf['sb_info']['version'])
-    start_time = sb_info['actual_start_time'][:-2]
-
-    # 2) check for new directory
+    # 1) gather all spccl files
     staging_dir = fsconf['ingest']['staging_dir']
     log.info('Staging directory: {0}'.format(staging_dir))
 
@@ -651,7 +697,7 @@ def run_production(schedule_block, test_run):
         staging_dir,
         fsconf['ingest']['glob_pattern']
     )
-    log.info('Glob pattern: {0}'.format(glob_pattern))
+    log.info('SPCCL glob pattern: {0}'.format(glob_pattern))
 
     spcll_files = glob.glob(glob_pattern)
     spcll_files = sorted(spcll_files)
@@ -660,13 +706,33 @@ def run_production(schedule_block, test_run):
     for filename in spcll_files:
         log.info('Processing SPCCL file: {0}'.format(filename))
 
+        # 2) load run information from summary file
+        glob_pattern = os.path.join(
+            os.path.dirname(filename),
+            fsconf['summary_file']['glob_pattern']
+        )
+        log.info('Summary file glob pattern: {0}'.format(glob_pattern))
+
+        summary_file = glob.glob(glob_pattern)
+
+        if len(summary_file) == 0:
+            raise RuntimeError('No summary file found for SPCCL file: {0}'.format(filename))
+        elif len(summary_file) == 1:
+            summary = load_summary_file(summary_file[0])
+        else:
+            raise RuntimeError('There are duplicate summary files for SPCCL file: {0}'.format(filename))
+
         utc_start_str = os.path.basename(filename)[:19]
+
+        # sanity check
+        assert utc_start_str == summary['utc_start']
+
         obs_utc_start = datetime.strptime(
             utc_start_str,
             fsconf['date_formats']['utc']
         )
 
-        log.info('UTC start: {0}'.format(obs_utc_start))
+        log.info('Observation UTC start: {0}'.format(obs_utc_start))
 
         node_name = os.path.basename(
             os.path.dirname(filename)
@@ -685,7 +751,13 @@ def run_production(schedule_block, test_run):
             continue
 
         # 4) insert data into database
-        plots = insert_candidates(spccl_data, schedule_block, sb_info, obs_utc_start, node_name)
+        plots = insert_candidates(
+            spccl_data,
+            schedule_block,
+            summary,
+            obs_utc_start,
+            node_name
+        )
 
         if not test_run:
             # 5) move directory to processed
@@ -711,7 +783,14 @@ def run_production(schedule_block, test_run):
 
     log.info('Done. Time taken: {0}'.format(datetime.now() - start))
 
-    return start_time
+    # return start time of schedule block for notification
+    sb_local_time_start = datetime.strptime(
+        summary['sb_details']['actual_start_time'][:-2],
+        fsconf['date_formats']['local']
+    )
+    sb_utc_start = sb_local_time_start.replace(tzinfo=timezone('UTC'))
+
+    return sb_utc_start
 
 
 def run_sift(schedule_block):
@@ -1111,14 +1190,14 @@ def main():
         run_known_sources(args.schedule_block)
 
     elif args.mode == 'production':
-        start_time = run_production(args.schedule_block, args.test_run)
+        sb_utc_start = run_production(args.schedule_block, args.test_run)
         run_parameters(args.schedule_block)
         raw_cands = run_sift(args.schedule_block)
         unique_heads, known_matched = run_known_sources(args.schedule_block)
 
         info = {
             'schedule_block': args.schedule_block,
-            'start_time': start_time,
+            'start_time': sb_utc_start,
             'raw_cands': raw_cands,
             'unique_heads': unique_heads,
             'known_matched': known_matched
