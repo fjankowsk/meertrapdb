@@ -345,8 +345,11 @@ def insert_candidates(data, sb_id, summary, obs_utc_start, node_name):
 
             for tiling in tilings:
                 schema.Tiling(
+                    epoch=tiling['epoch'],
                     nbeam=tiling['nbeams'],
                     overlap=tiling['overlap'],
+                    ref_freq=1E-6 * tiling['reference_frequency'],
+                    target=tiling['target'],
                     tiling_mode='fill',
                     beam_config=beam_config
                 )

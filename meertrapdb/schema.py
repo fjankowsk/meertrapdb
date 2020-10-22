@@ -64,8 +64,11 @@ class BeamConfig(db.Entity):
 
 class Tiling(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
+    epoch = Required(Decimal, precision=16, scale=6)
     nbeam = Required(int, size=16, unsigned=True)
     overlap = Required(float)
+    ref_freq = Required(float)
+    target = Required(str, max_len=128)
     tiling_mode = Required(str, max_len=32)
     beam_config = Set('BeamConfig')
 
