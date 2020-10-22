@@ -804,6 +804,7 @@ def run_production(schedule_block, test_run):
             outfile = os.path.join(
                 fsconf['ingest']['processed_dir'],
                 utc_start_str,
+                node_name,
                 os.path.basename(summary_file)
             )
 
@@ -818,6 +819,7 @@ def run_production(schedule_block, test_run):
             outfile = os.path.join(
                 fsconf['ingest']['processed_dir'],
                 utc_start_str,
+                node_name,
                 os.path.basename(filename)
             )
 
