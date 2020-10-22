@@ -681,9 +681,10 @@ def run_production(schedule_block, test_run):
 
         if len(sb_queried) == 1:
             msg = 'The schedule block is already in the database: {0}\n'.format(schedule_block) + \
-                  'Are you sure you want to continue?'
-            log.warning(msg)
-            sleep(20)
+                  'Are you sure you want to continue? (Y/N)'
+            response = input(msg)
+            if response != 'Y':
+                sys.exit(1)
 
         elif len(sb_queried) > 1:
             msg = 'There are duplicate schedule blocks: {0}'.format(schedule_block)
@@ -1178,10 +1179,13 @@ def main():
 
     if args.mode == 'fake':
         msg = 'This operation mode will populate the database with random' + \
-              ' fake data. Make sure you want this.'
-        log.warning(msg)
-        sleep(20)
-        run_fake()
+              ' fake data. This can seriously damage a production database.' + \
+              ' Do you really want this? (Y/N)'
+        response = input(msg)
+        if response == 'Y':
+            run_fake()
+        else:
+            sys.exit(1)
 
     elif args.mode == 'init_tables':
         pass

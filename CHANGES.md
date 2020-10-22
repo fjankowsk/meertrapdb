@@ -2,6 +2,8 @@
 
 ## HEAD ##
 
+* Require user input before ingesting data into an existing schedule block and before running in 'fake' operation mode. This should prevent us better from damaging the database content involuntarily.
+
 ## 0.6.2 (2020-10-22) ##
 
 * Bumped `psrmatch` to version 0.3 and `meertrapdb` to version 0.6.2.
