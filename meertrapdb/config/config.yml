@@ -30,7 +30,7 @@ filesystem:
     filename: schedule_block.json
     version: 1
   summary_file:
-    glob_pattern: '*_run_summary.json'
+    postfix: 'run_summary.json'
   date_formats:
     utc: "%Y-%m-%d_%H:%M:%S"
     local: "%Y-%m-%d %H:%M:%S.%f"

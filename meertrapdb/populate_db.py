@@ -718,27 +718,8 @@ def run_production(schedule_block, test_run):
     for filename in spcll_files:
         log.info('Processing SPCCL file: {0}'.format(filename))
 
-        # 2) load run information from summary file
-        glob_pattern = os.path.join(
-            os.path.dirname(filename),
-            fsconf['summary_file']['glob_pattern']
-        )
-        log.info('Summary file glob pattern: {0}'.format(glob_pattern))
-
-        summary_file = glob.glob(glob_pattern)
-
-        if len(summary_file) == 0:
-            raise RuntimeError('No summary file found for SPCCL file: {0}'.format(filename))
-        elif len(summary_file) == 1:
-            summary_file = summary_file[0]
-            summary = load_summary_file(summary_file)
-        else:
-            raise RuntimeError('There are duplicate summary files for SPCCL file: {0}'.format(filename))
-
+        # 2) work out basic parameters
         utc_start_str = os.path.basename(filename)[:19]
-
-        # sanity check
-        assert utc_start_str == summary['utc_start']
 
         obs_utc_start = datetime.strptime(
             utc_start_str,
@@ -753,7 +734,27 @@ def run_production(schedule_block, test_run):
 
         log.info('Node: {0}'.format(node_name))
 
-        # 3) parse candidate data
+        # 3) load run information from summary file
+        summary_file = os.path.join(
+            os.path.dirname(filename),
+            '{0}_{1}_{2}'.format(
+                utc_start_str,
+                node_name,
+                fsconf['summary_file']['postfix']
+            )
+        )
+
+        log.info('Summary filename: {0}'.format(summary_file))
+
+        if not os.path.isfile(summary_file):
+            raise RuntimeError('Summary file does not exist: {0}'.format(summary_file))
+
+        summary = load_summary_file(summary_file)
+
+        # sanity check
+        assert utc_start_str == summary['utc_start']
+
+        # 4) parse candidate data
         spccl_data = parse_spccl_file(filename, config['candidates']['version'])
 
         # check if we have candidates
@@ -763,7 +764,7 @@ def run_production(schedule_block, test_run):
             log.warning('No candidates found.')
             continue
 
-        # 4) insert data into database
+        # 5) insert data into database
         plots = insert_candidates(
             spccl_data,
             schedule_block,
@@ -773,14 +774,14 @@ def run_production(schedule_block, test_run):
         )
 
         if not test_run:
-            # 5) copy plots to webserver area and move them to processed
+            # 6) copy plots to webserver area and move them to processed
             if len(plots) > 0:
                 log.info('Copying {0} plots.'.format(len(plots)))
                 copy_plots(plots)
             else:
                 log.warning('No plots to copy found.')
 
-            # 6) copy summary file to processed directory
+            # 7) copy summary file to processed directory
             # we copy the file, because other spccl files might need it
             # summary files are deleted manually at the end of the ingest
             outfile = os.path.join(
@@ -796,7 +797,7 @@ def run_production(schedule_block, test_run):
 
             shutil.copy(summary_file, outfile)
 
-            # 7) move spccl file to processed directory
+            # 8) move spccl file to processed directory
             outfile = os.path.join(
                 fsconf['ingest']['processed_dir'],
                 utc_start_str,
