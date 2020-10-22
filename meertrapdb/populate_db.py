@@ -653,7 +653,7 @@ def run_production(schedule_block, test_run):
 
         if len(sb_queried) == 1:
             msg = 'The schedule block is already in the database: {0}\n'.format(schedule_block) + \
-                  'Are you sure you want to continue? (Y/N)'
+                  'Are you sure you want to continue? (Y/N) '
             response = input(msg)
             if response != 'Y':
                 sys.exit(1)
@@ -1123,7 +1123,7 @@ def main():
     if args.mode == 'fake':
         msg = 'This operation mode will populate the database with random' + \
               ' fake data. This can seriously damage a production database.' + \
-              ' Do you really want this? (Y/N)'
+              ' Do you really want this? (Y/N) '
         response = input(msg)
         if response == 'Y':
             run_fake()
