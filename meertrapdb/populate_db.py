@@ -666,6 +666,11 @@ def run_production(schedule_block, test_run):
     -------
     sb_utc_start: datetime.datetime
         The UTC start time of the schedule block.
+
+    Raises
+    ------
+    RuntimeError
+        If summary file does not exist.
     """
 
     log = logging.getLogger('meertrapdb.populate_db')
@@ -719,7 +724,8 @@ def run_production(schedule_block, test_run):
         if len(summary_file) == 0:
             raise RuntimeError('No summary file found for SPCCL file: {0}'.format(filename))
         elif len(summary_file) == 1:
-            summary = load_summary_file(summary_file[0])
+            summary_file = summary_file[0]
+            summary = load_summary_file(summary_file)
         else:
             raise RuntimeError('There are duplicate summary files for SPCCL file: {0}'.format(filename))
 
@@ -761,24 +767,35 @@ def run_production(schedule_block, test_run):
         )
 
         if not test_run:
-            # 5) move directory to processed
+            # 5) copy plots to webserver area and move them to processed
             if len(plots) > 0:
                 log.info('Copying {0} plots.'.format(len(plots)))
                 copy_plots(plots)
             else:
                 log.warning('No plots to copy found.')
 
-            # 6) move spccl file to processed
+            # 6) copy summary file to processed directory
+            # we copy the file, because other spccl files might need it
+            # summary files are deleted manually at the end of the ingest
             outfile = os.path.join(
                 fsconf['ingest']['processed_dir'],
                 utc_start_str,
-                os.path.basename(filename)
+                os.path.basename(summary_file)
             )
 
             outdir = os.path.dirname(outfile)
 
             if not os.path.isdir(outdir):
                 os.makedirs(outdir)
+
+            shutil.copy(summary_file, outfile)
+
+            # 7) move spccl file to processed directory
+            outfile = os.path.join(
+                fsconf['ingest']['processed_dir'],
+                utc_start_str,
+                os.path.basename(filename)
+            )
 
             shutil.move(filename, outfile)
 
