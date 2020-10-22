@@ -359,10 +359,25 @@ def insert_candidates(data, sb_id, summary, obs_utc_start, node_name):
                 )
 
                 log.info('Observation UTC end: {0}'.format(obs_utc_end))
+                finished = True
+                tobs = (obs_utc_end - obs_utc_start).total_seconds()
 
             else:
                 log.warning('Summary file does not have utc_stop field.')
                 obs_utc_end = None
+                finished = False
+                tobs = None
+
+            # receiver
+            cfreq = 1E-6 * summary['data']['cfreq']
+            bw = 1E-6 * summary['data']['bw']
+
+            if 1000 < cfreq < 2000:
+                receiver = 1
+            elif cfreq < 1000:
+                receiver = 2
+            else:
+                raise NotImplementedError('Unknown receiver: {0}'.format(cfreq))
 
             observation = schema.Observation(
                 schedule_block=schedule_block,
@@ -373,12 +388,13 @@ def insert_candidates(data, sb_id, summary, obs_utc_start, node_name):
                 boresight_dec='-73:00:00.0',
                 utc_start=obs_utc_start,
                 utc_end=obs_utc_end,
-                finished=True,
+                tobs=tobs,
+                finished=finished,
                 cb_nant=len(summary['beams']['cb_antennas']),
                 ib_nant=len(summary['beams']['ib_antennas']),
-                receiver=1,
-                cfreq=1E-6 * summary['data']['cfreq'],
-                bw=1E-6 * summary['data']['bw'],
+                receiver=receiver,
+                cfreq=cfreq,
+                bw=bw,
                 nchan=summary['data']['nchan'],
                 npol=1,
                 tsamp=summary['data']['tsamp'],
