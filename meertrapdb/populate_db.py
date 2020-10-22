@@ -484,7 +484,8 @@ def insert_candidates(data, sb_id, summary, obs_utc_start, node_name):
         # figure out beam source
         beam_source = 'undefined'
         for item in summary['beams']['list']:
-            if item['relnum'] == beam_nr:
+            if item['absnum'] == beam_nr \
+            and item['coherent'] == beam_coherent:
                 beam_source = item['source']
                 break
 
