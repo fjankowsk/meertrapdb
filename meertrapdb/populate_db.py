@@ -352,16 +352,22 @@ def insert_candidates(data, sb_id, summary, obs_utc_start, node_name):
                 )
 
             # utc end time of the observation
-            obs_utc_end = datetime.strptime(
-                summary['utc_stop'],
-                fsconf['date_formats']['utc']
-            )
+            if 'utc_stop' in summary:
+                obs_utc_end = datetime.strptime(
+                    summary['utc_stop'],
+                    fsconf['date_formats']['utc']
+                )
 
-            log.info('Observation UTC end: {0}'.format(obs_utc_end))
+                log.info('Observation UTC end: {0}'.format(obs_utc_end))
+
+            else:
+                log.warning('Summary file does not have utc_stop field.')
+                obs_utc_end = None
 
             observation = schema.Observation(
                 schedule_block=schedule_block,
                 # XXX: how to populate these?
+                # these are bogus values at the moment
                 field_name='NGC 6101',
                 boresight_ra='16:26:00.00',
                 boresight_dec='-73:00:00.0',
