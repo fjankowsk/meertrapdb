@@ -2,6 +2,15 @@
 
 ## HEAD ##
 
+* Added `tiling_epoch`, `ref_freq` and `target` fields to the database schema and added code to populate them.
+* Copy or move the SPCCL and summary files into the corresponding node directories in the processed directory, replicating the ingest directory hierarchy.
+* Populated the `finished`, `tobs` and `receiver` fields in the database.
+* Treated special case when `utc_stop` is not present in the run summary file.
+* Added code to copy the run summary files to the processed directory to retain a full history of what was ingested.
+* Increased the length of project fields in the database schema.
+* Major changes to the candidate ingestion code. Populate meta data from run summary files and allow different parameters per Observation. Added more fields to the database and added new Tiling table. The Tiling table will allow us to store multiple tilings per pointing, which will become useful soon. In particular, we correctly populate the following fields now: `sb_utc_start, obs_utc_start, sb_id_mk, sb_id_code, proposal_id_mk, proj_main, sub_array, observer, description, cb_angle, cb_x, cb_y, nbeam, overlap, utc_end, cb_nant, ib_nant, cfreq, bw, nchan, tsamp, (pipeline) name, version, dd_plan, dm_threshold, snr_threshold, width_threshold`.
+* Added functionality to read meta data from the new JSON run summary files that are output by the control system. We call them summary file version 2.
+* Moved schedule block parsing code into own module. Added regression tests for it.
 * Require user input before ingesting data into an existing schedule block and before running in 'fake' operation mode. This should prevent us better from damaging the database content involuntarily.
 
 ## 0.6.2 (2020-10-22) ##
