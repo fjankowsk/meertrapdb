@@ -65,7 +65,7 @@ class Matcher(object):
         String representation of the object.
         """
 
-        info_str = 'Thresholds (distance: {0}, dm: {1}), catalogues: {3}'.format(
+        info_str = 'Thresholds (distance: {0}, dm: {1}), catalogues: {2}'.format(
             self.dist_thresh,
             self.dm_thresh,
             self.loaded_catalogues
