@@ -19,7 +19,7 @@ The repository contains a sub-module called `psrmatch` to efficiently cross-matc
 The cross-matcher operates on Astropy SkyCoord objects and input dispersion measures like this:
 
 ```python
-from psrmatch.matcher import Matcher
+from psrmatch import Matcher
 
 m = Matcher()
 m.load_catalogue('psrcat')
@@ -34,7 +34,7 @@ The list of supported catalogues can be queried using the `m.get_supported_catal
 The repository contains a module to cluster (or sift) single-pulse candidates detected in multiple beams, based on their proximity in time and fractional dispersion measure. The parameters of the temporal width of the matching box and the fractional DM threshold can be tweaked as required. Example usage is like this:
 
 ```python
-from meertrapdb.clustering.clusterer import Clusterer
+from meertrapdb.clustering import Clusterer
 
 clust = Clusterer()
 info = clust.match_candidates(candidates)
