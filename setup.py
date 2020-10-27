@@ -32,6 +32,10 @@ setup(
     url='https://bitbucket.org/jankowsk/meertrapdb',
     license='MIT',
     packages=find_packages(),
+    package_data={
+        'meertrapdb': ['config'],
+        'psrmatch': ['catalogues']
+    },
     install_requires=[
         'astropy',
         'healpy',
