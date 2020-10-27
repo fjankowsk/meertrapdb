@@ -45,6 +45,18 @@ class Matcher(object):
         # tree lookup parameters
         self.max_neighbors = 25
 
+    def __str__(self):
+        """
+        String representation of the object.
+        """
+
+        info_str = 'Thresholds (distance: {0}, dm: {1}), catalogues: {3}'.format(
+            self.dist_thresh,
+            self.dm_thresh,
+            self.loaded_catalogues
+        )
+
+        return info_str
 
     def get_loaded_catalogues(self):
         """

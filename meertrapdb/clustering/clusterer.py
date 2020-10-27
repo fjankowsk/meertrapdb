@@ -34,6 +34,18 @@ class Clusterer(object):
         self.dm_thresh = dm_thresh
         self.log = logging.getLogger('meertrapdb.clustering.clusterer')
 
+    def __str__(self):
+        """
+        String representation of the object.
+        """
+
+        info_str = 'Thresholds (Time: {0}, dm: {1})'.format(
+            self.time_thresh,
+            self.dm_thresh
+        )
+
+        return info_str
+
     def match_candidates(self, t_candidates):
         """
         Match candidates based on MJD and DM.
