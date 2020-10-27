@@ -56,7 +56,9 @@ class Matcher(object):
             'loaded_catalogues': self.loaded_catalogues
         }
 
-        return info_dict
+        info_str = '{0}'.format(info_dict)
+
+        return info_str
 
     def __str__(self):
         """

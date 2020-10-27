@@ -44,7 +44,9 @@ class Clusterer(object):
             'dm_thresh': self.dm_thresh
         }
 
-        return info_dict
+        info_str = '{0}'.format(info_dict)
+
+        return info_str
 
     def __str__(self):
         """
