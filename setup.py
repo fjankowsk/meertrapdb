@@ -33,8 +33,8 @@ setup(
     license='MIT',
     packages=find_packages(),
     package_data={
-        'meertrapdb': ['config'],
-        'psrmatch': ['catalogues']
+        'meertrapdb': ['config/*'],
+        'psrmatch': ['catalogues/*.txt']
     },
     install_requires=[
         'astropy',
