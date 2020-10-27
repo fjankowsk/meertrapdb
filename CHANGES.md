@@ -2,7 +2,10 @@
 
 ## HEAD ##
 
-* Add section about installing the software to the readme file.
+## 0.7 (2020-10-28) ##
+
+* Bumped `meertrapdb` to version 0.7. `psrmatch` stays at version 0.3.
+* Added section about installing the software to the readme file.
 * Added `tiling_epoch`, `ref_freq` and `target` fields to the database schema and added code to populate them.
 * Copy or move the SPCCL and summary files into the corresponding node directories in the processed directory, replicating the ingest directory hierarchy.
 * Populated the `finished`, `tobs` and `receiver` fields in the database.
