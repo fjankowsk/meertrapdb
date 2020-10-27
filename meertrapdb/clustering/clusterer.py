@@ -34,6 +34,18 @@ class Clusterer(object):
         self.dm_thresh = dm_thresh
         self.log = logging.getLogger('meertrapdb.clustering.clusterer')
 
+    def __repr__(self):
+        """
+        Representation of the object.
+        """
+
+        info_dict = {
+            'time_thresh': self.time_thresh,
+            'dm_thresh': self.dm_thresh
+        }
+
+        return info_dict
+
     def __str__(self):
         """
         String representation of the object.

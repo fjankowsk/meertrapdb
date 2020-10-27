@@ -45,6 +45,19 @@ class Matcher(object):
         # tree lookup parameters
         self.max_neighbors = 25
 
+    def __repr__(self):
+        """
+        Representation of the object.
+        """
+
+        info_dict = {
+            'dist_thresh': self.dist_thresh,
+            'dm_thresh': self.dm_thresh,
+            'loaded_catalogues': self.loaded_catalogues
+        }
+
+        return info_dict
+
     def __str__(self):
         """
         String representation of the object.
