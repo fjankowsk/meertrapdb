@@ -2,6 +2,7 @@
 
 ## HEAD ##
 
+* Add representation and string functions to the matcher and the clusterer.
 * Simplified importing the known-source matcher and the multibeam clusterer.
 * Improved and corrected the python setup file. Both `meertrapdb` and `psrmatch` are now correctly included in the package list, and the package data (configuration files and catalogue data) are now included properly too.
 
