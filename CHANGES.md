@@ -2,6 +2,8 @@
 
 ## HEAD ##
 
+* Improved and corrected the python setup file. Both `meertrapdb` and `psrmatch` are now correctly included in the package list, and the package data (configuration files and catalogue data) are now included properly too.
+
 ## 0.7 (2020-10-27) ##
 
 * Bumped `meertrapdb` to version 0.7. `psrmatch` stays at version 0.3.
