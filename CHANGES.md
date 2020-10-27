@@ -2,7 +2,7 @@
 
 ## HEAD ##
 
-## 0.7 (2020-10-28) ##
+## 0.7 (2020-10-27) ##
 
 * Bumped `meertrapdb` to version 0.7. `psrmatch` stays at version 0.3.
 * Added section about installing the software to the readme file.
