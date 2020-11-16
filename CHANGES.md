@@ -2,7 +2,10 @@
 
 ## HEAD ##
 
-* Add representation and string functions to the matcher and the clusterer.
+* Fixed the size computation of the HEALPIX exposure sky map and reduced it further (from tens of GB to ~1.5 GB). Added code to create sky maps, to visualise them and to save them to file.
+* Added MIT license file.
+* Added a CITATION file and a citation section to the readme file.
+* Added representation and string functions to the matcher and the clusterer.
 * Simplified importing the known-source matcher and the multibeam clusterer.
 * Improved and corrected the python setup file. Both `meertrapdb` and `psrmatch` are now correctly included in the package list, and the package data (configuration files and catalogue data) are now included properly too.
 
