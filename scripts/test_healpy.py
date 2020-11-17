@@ -51,7 +51,7 @@ print('Array size in memory')
 for expon in range(10, 15):
     iside = 2**expon
     npix = hp.nside2npix(iside)
-    test = np.zeros(npix, dtype=np.float16)
+    test = np.zeros(npix, dtype=np.float32)
 
     print('{0:<6} {1:8.1f} GB'.format(
         expon,
@@ -67,7 +67,7 @@ NPIX = hp.nside2npix(NSIDE)
 
 print(NSIDE, NPIX)
 
-m = np.full(NPIX, hp.UNSEEN, dtype=np.float16)
+m = np.full(NPIX, hp.UNSEEN, dtype=np.float32)
 print(m)
 print('Size in memory: {0:.1f} GB'.format(
     m.nbytes / 1024**3
@@ -105,6 +105,7 @@ hp.cartview(
     m,
     badcolor='lightgray',
     cmap='Reds',
+    coord=['C'],
     rot=(0, 0, 0),
     title='',
     unit='min',
