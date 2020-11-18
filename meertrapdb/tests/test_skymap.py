@@ -3,7 +3,7 @@
 #   2020 Fabian Jankowski
 #
 
-import os.path
+import os
 
 from astropy.coordinates import SkyCoord
 from astropy import units as u
@@ -87,7 +87,7 @@ def test_private_access():
 def test_save():
     nside = 2**8
     unit = 'min'
-    filename = 'skymap_test.npy'
+    filename = 'skymap_save_test.npy'
 
     m = Skymap(nside=nside, unit=unit)
     print(m)
@@ -96,6 +96,9 @@ def test_save():
 
     if not os.path.isfile(filename):
         raise RuntimeError('File does not exist.')
+    else:
+        # remove test file
+        os.remove(filename)
 
 
 def test_size():
