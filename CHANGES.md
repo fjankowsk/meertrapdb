@@ -2,6 +2,7 @@
 
 ## HEAD ##
 
+* Made instance variables private to protect them from external access in the `Clusterer` and `psrmatch`. Exposed the ones that should be accessible by adding properties and added setters, that include parameter validation. Added regression tests for private access, parameter changes and invalid parameters.
 * Fixed the size computation of the HEALPIX exposure sky map and reduced it further (from tens of GB to ~1.5 GB). Added code to create sky maps, to visualise them and to save them to file.
 * Added MIT license file.
 * Added a CITATION file and a citation section to the readme file.
