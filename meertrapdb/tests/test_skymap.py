@@ -17,7 +17,7 @@ from meertrapdb.skymap import Skymap
 # pylint: disable=E1101
 
 
-def test_skymap_creation():
+def test_creation():
     nside = 2**8
     unit = 'min'
 
@@ -25,7 +25,7 @@ def test_skymap_creation():
     print(m)
 
 
-def test_skymap_addition_success():
+def test_addition_success():
     nside = 2**8
     unit = 'min'
 
@@ -45,7 +45,7 @@ def test_skymap_addition_success():
     assert_equal(mtot.data, m1.data + m2.data)
 
 
-def test_skymap_addition_fail():
+def test_addition_fail():
     nside = 2**8
     unit = 'min'
 
@@ -71,7 +71,7 @@ def test_skymap_addition_fail():
         m1 + m4
 
 
-def test_skymap_private_access():
+def test_private_access():
     nside = 2**8
     unit = 'min'
 
@@ -84,7 +84,7 @@ def test_skymap_private_access():
         m.data = None
 
 
-def test_skymap_save():
+def test_save():
     nside = 2**8
     unit = 'min'
     filename = 'skymap_test.npy'
@@ -98,7 +98,7 @@ def test_skymap_save():
         raise RuntimeError('File does not exist.')
 
 
-def test_skymap_size():
+def test_size():
     nside = 2**10
     unit = 'min'
 
@@ -106,7 +106,7 @@ def test_skymap_size():
     print(m.size)
 
 
-def test_skymap_add_exposure():
+def test_add_exposure():
     nside = 2**10
     unit = 'min'
 
