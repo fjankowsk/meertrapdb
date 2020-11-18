@@ -38,12 +38,11 @@ def test_skymap_addition_success():
     mtot = m1 + m2
     print(mtot)
 
-    for item in ['arrangement', 'coordinate', 'dtype', 'nside', 'unit']:
-        param = '_{0}'.format(item)
+    for param in ['arrangement', 'coordinate', 'dtype', 'nside', 'unit']:
         assert (getattr(mtot, param) == getattr(m1, param))
         assert (getattr(mtot, param) == getattr(m2, param))
 
-    assert_equal(mtot._data, m1._data + m2._data)
+    assert_equal(mtot.data, m1.data + m2.data)
 
 
 def test_skymap_addition_fail():
@@ -70,6 +69,19 @@ def test_skymap_addition_fail():
 
     with assert_raises(RuntimeError):
         m1 + m4
+
+
+def test_skymap_private_access():
+    nside = 2**8
+    unit = 'min'
+
+    m = Skymap(nside=nside, unit=unit)
+
+    with assert_raises(AttributeError):
+        m.__data
+
+    with assert_raises(AttributeError):
+        m.data = None
 
 
 def test_skymap_save():
