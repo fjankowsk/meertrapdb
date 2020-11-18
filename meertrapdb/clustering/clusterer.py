@@ -18,6 +18,8 @@ class Clusterer(object):
     Cluster single-pulse candidates in various ways.
     """
 
+    name = 'Clusterer'
+
     def __init__(self, time_thresh=10.0, dm_thresh=0.02):
         """
         Cluster single-pulse candidates in various ways.
@@ -30,9 +32,13 @@ class Clusterer(object):
             The fractional DM tolerance to use for matching.
         """
 
+        self.__time_thresh = None
+        self.__dm_thresh = None
+        self.__log = logging.getLogger('meertrapdb.clustering.clusterer')
+
+        # use validation in the setter functions
         self.time_thresh = time_thresh
         self.dm_thresh = dm_thresh
-        self.log = logging.getLogger('meertrapdb.clustering.clusterer')
 
     def __repr__(self):
         """
@@ -53,12 +59,59 @@ class Clusterer(object):
         String representation of the object.
         """
 
-        info_str = 'Thresholds (Time: {0}, dm: {1})'.format(
-            self.time_thresh,
-            self.dm_thresh
-        )
+        info_str = '{0}: {1}'.format(self.name, repr(self))
 
         return info_str
+
+    @property
+    def time_thresh(self):
+        """
+        The width of the matching box in ms.
+        """
+
+        return self.__time_thresh
+
+    @time_thresh.setter
+    def time_thresh(self, time):
+        """
+        Set the width of the matching box in ms.
+
+        Raises
+        ------
+        RuntimeError
+            If time threshold is invalid.
+        """
+
+        if type(time) == float \
+        and time > 0:
+            self.__time_thresh = time
+        else:
+            raise RuntimeError('Time threshold is invalid: {0}'.format(time))
+
+    @property
+    def dm_thresh(self):
+        """
+        The fractional DM tolerance to use for matching.
+        """
+
+        return self.__dm_thresh
+
+    @dm_thresh.setter
+    def dm_thresh(self, thresh):
+        """
+        Set the fractional DM tolerance to use for matching.
+
+        Raises
+        ------
+        RuntimeError
+            If DM threshold is invalid.
+        """
+
+        if type(thresh) == float \
+        and thresh > 0:
+            self.__dm_thresh = thresh
+        else:
+            raise RuntimeError('DM threshold is invalid: {0}'.format(thresh))
 
     def match_candidates(self, t_candidates):
         """
@@ -85,9 +138,9 @@ class Clusterer(object):
         candidates = np.copy(t_candidates)
 
         mjd_tol = 1E-3 * self.time_thresh / (24 * 60 * 60.0)
-        self.log.info('Time tolerance: {0:.2f} ms'.format(self.time_thresh))
-        self.log.info('MJD tolerance: {0:.10f}'.format(mjd_tol))
-        self.log.info('DM tolerance: {0:.2f} %'.format(100 * self.dm_thresh))
+        self.__log.info('Time tolerance: {0:.2f} ms'.format(self.time_thresh))
+        self.__log.info('MJD tolerance: {0:.10f}'.format(mjd_tol))
+        self.__log.info('DM tolerance: {0:.2f} %'.format(100 * self.dm_thresh))
 
         candidates = np.sort(candidates, order=['mjd', 'dm', 'snr'])
 
@@ -110,7 +163,7 @@ class Clusterer(object):
             # check if the candidate was already processed
             mask_cand = (info['index'] == cand['index'])
             if info['processed'][mask_cand]:
-                self.log.debug('Candidate was already assigned a cluster, skipping it: {0}'.format(cand['index']))
+                self.__log.debug('Candidate was already assigned a cluster, skipping it: {0}'.format(cand['index']))
                 continue
 
             mask_in_box = np.logical_and(
@@ -126,7 +179,7 @@ class Clusterer(object):
 
             # skip further in the candidates
             if len(members) == 0:
-                self.log.info('No members found.')
+                self.__log.info('No members found.')
                 continue
 
             members = np.sort(members, order='snr')
@@ -163,18 +216,18 @@ class Clusterer(object):
         # output sifting statistics
         mask = info['is_head']
 
-        self.log.info('Total candidates: {0}'.format(len(candidates)))
+        self.__log.info('Total candidates: {0}'.format(len(candidates)))
         if len(candidates) > 0:
-            self.log.info('Cluster heads: {0} ({1:.2f})'.format(
+            self.__log.info('Cluster heads: {0} ({1:.2f})'.format(
                 len(candidates[mask]),
                 100 * len(candidates[mask]) / float(len(candidates))
                 )
             )
 
-            self.log.info('Clusters: {0}'.format(np.max(info['cluster_id']) + 1))
+            self.__log.info('Clusters: {0}'.format(np.max(info['cluster_id']) + 1))
 
             for field in ['members', 'beams']:
-                self.log.info('{0} (min, mean, median, max): {1}, {2}, {3}, {4}'.format(
+                self.__log.info('{0} (min, mean, median, max): {1}, {2}, {3}, {4}'.format(
                     field.capitalize(),
                     np.min(info[field]),
                     np.mean(info[field]),
@@ -185,7 +238,7 @@ class Clusterer(object):
 
         # display some debug output
         for item, cand in zip(info, candidates):
-            self.log.debug('{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}'.format(
+            self.__log.debug('{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}'.format(
                 item['index'],
                 item['cluster_id'],
                 item['is_head'],

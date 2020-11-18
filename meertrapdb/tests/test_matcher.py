@@ -24,7 +24,7 @@ def test_catalogue_loading():
     # simple loading
     m.load_catalogue('psrcat')
 
-    np.testing.assert_equal(m.get_loaded_catalogues(), ['psrcat'])
+    np.testing.assert_equal(m.loaded_catalogues, ['psrcat'])
 
     # double loading
     with assert_raises(RuntimeError):
@@ -38,13 +38,13 @@ def test_catalogue_loading():
 def test_catalogue_unloading():
     m = Matcher()
 
-    np.testing.assert_equal(m.get_loaded_catalogues(), [])
+    np.testing.assert_equal(m.loaded_catalogues, [])
 
     m.load_catalogue('psrcat')
 
     m.unload_catalogues()
 
-    np.testing.assert_equal(m.get_loaded_catalogues(), [])
+    np.testing.assert_equal(m.loaded_catalogues, [])
 
 
 def test_matcher_readiness():
@@ -134,6 +134,46 @@ def test_psrcat_matches():
                 fd,
                 pickle.DEFAULT_PROTOCOL
             )
+
+
+def test_private_access():
+    m = Matcher()
+
+    with assert_raises(AttributeError):
+        m.__dist_thresh
+
+    with assert_raises(AttributeError):
+        m.__dm_thresh
+
+
+def test_parameter_access():
+    m = Matcher(1.5, 5.0)
+
+    assert (m.dist_thresh == 1.5)
+    assert (m.dm_thresh == 0.05)
+
+
+def test_parameter_change():
+    m = Matcher(1.5, 5.0)
+
+    m.dist_thresh = 3.0
+    m.dm_thresh = 15.0
+
+    assert (m.dist_thresh == 3.0)
+    assert (m.dm_thresh == 0.15)
+
+
+def test_invalid_parameters():
+    m = Matcher(1.5, 5.0)
+
+    with assert_raises(RuntimeError):
+        m.dist_thresh = -20.0
+
+    with assert_raises(RuntimeError):
+        m.dm_thresh = 'bla'
+
+    assert (m.dist_thresh == 1.5)
+    assert (m.dm_thresh == 0.05)
 
 
 if __name__ == '__main__':

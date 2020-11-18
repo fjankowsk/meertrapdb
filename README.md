@@ -31,7 +31,7 @@ m.create_search_tree()
 m.find_matches(source, dm)
 ```
 
-The list of supported catalogues can be queried using the `m.get_supported_catalogues()` function that returns a list of catalogue names.
+The list of supported catalogues can be queried using the `m.supported_catalogues` property that returns a list of catalogue names.
 
 ## Multi-beam clustering ##
 

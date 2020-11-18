@@ -18,8 +18,10 @@ class Matcher(object):
     Match sources to catalogues of known sources.
     """
 
+    name = 'Matcher'
+
     # list of supported catalogues
-    supported_catalogues = ['psrcat']
+    __supported_catalogues = ['psrcat']
 
     def __init__(self, dist_thresh=1.5, dm_thresh=5.0):
         """
@@ -28,22 +30,26 @@ class Matcher(object):
         Parameters
         ----------
         dist_thresh: float
-            Distance threshold in degree.
+            Distance threshold in degrees.
         dm_thresh: float
             DM threshold in per cent.
         """
 
-        self.dist_thresh = dist_thresh
-        self.dm_thresh = dm_thresh / 100.0
-        self.catalogue = None
-        self.tree = None
-        self.log = logging.getLogger('psrmatch.matcher')
+        self.__dist_thresh = None
+        self.__dm_thresh = None
+        self.__catalogue = None
+        self.__tree = None
+        self.__log = logging.getLogger('psrmatch.matcher')
 
         # list of loaded catalogues
-        self.loaded_catalogues = []
+        self.__loaded_catalogues = []
 
         # tree lookup parameters
-        self.max_neighbors = 25
+        self.__max_neighbors = 25
+
+        # use the validation of the setter functions
+        self.dist_thresh = dist_thresh
+        self.dm_thresh = dm_thresh
 
     def __repr__(self):
         """
@@ -65,15 +71,62 @@ class Matcher(object):
         String representation of the object.
         """
 
-        info_str = 'Thresholds (distance: {0}, dm: {1}), catalogues: {2}'.format(
-            self.dist_thresh,
-            self.dm_thresh,
-            self.loaded_catalogues
-        )
+        info_str = '{0}: {1}'.format(self.name, repr(self))
 
         return info_str
 
-    def get_loaded_catalogues(self):
+    @property
+    def dist_thresh(self):
+        """
+        Distance threshold in degrees.
+        """
+
+        return self.__dist_thresh
+
+    @dist_thresh.setter
+    def dist_thresh(self, dist):
+        """
+        Set the Distance threshold in degrees.
+
+        Raises
+        ------
+        RuntimeError
+            If dist threshold is invalid.
+        """
+
+        if type(dist) == float \
+        and dist > 0:
+            self.__dist_thresh = dist
+        else:
+            raise RuntimeError('Distance threshold is invalid: {0}'.format(dist))
+
+    @property
+    def dm_thresh(self):
+        """
+        DM threshold in per cent.
+        """
+
+        return self.__dm_thresh
+
+    @dm_thresh.setter
+    def dm_thresh(self, thresh):
+        """
+        Set the DM threshold in per cent.
+
+        Raises
+        ------
+        RuntimeError
+            If DM threshold is invalid.
+        """
+
+        if type(thresh) == float \
+        and thresh > 0:
+            self.__dm_thresh = thresh / 100.0
+        else:
+            raise RuntimeError('DM threshold is invalid: {0}'.format(thresh))
+
+    @property
+    def loaded_catalogues(self):
         """
         Get the list of loaded catalogues.
 
@@ -83,10 +136,10 @@ class Matcher(object):
             The list of loaded catalogues.
         """
 
-        return self.loaded_catalogues
+        return self.__loaded_catalogues
 
-
-    def get_supported_catalogues(self):
+    @property
+    def supported_catalogues(self):
         """
         Get the list of supported catalogues.
 
@@ -96,8 +149,7 @@ class Matcher(object):
             The list of supported catalogues.
         """
 
-        return self.supported_catalogues
-
+        return self.__supported_catalogues
 
     def load_catalogue(self, catalogue_name):
         """
@@ -132,29 +184,26 @@ class Matcher(object):
             )
 
         # XXX: add catalogue data here
-        self.catalogue = catalogue
-        self.loaded_catalogues.append(catalogue_name)
-
+        self.__catalogue = catalogue
+        self.__loaded_catalogues.append(catalogue_name)
 
     def unload_catalogues(self):
         """
         Unload all known-source catalogues.
         """
 
-        self.catalogue = None
-        self.loaded_catalogues = []
-        self.tree = None
-
+        self.__catalogue = None
+        self.__loaded_catalogues = []
+        self.__tree = None
 
     def create_search_tree(self):
         """
         Create a k-d search tree from the catalogue.
         """
 
-        self.tree = KDTree(
-            list(zip(self.catalogue['ra'], self.catalogue['dec']))
+        self.__tree = KDTree(
+            list(zip(self.__catalogue['ra'], self.__catalogue['dec']))
         )
-
 
     def query_search_tree(self, source):
         """
@@ -171,11 +220,11 @@ class Matcher(object):
             The distances and indices of the nearest neighbors.
         """
 
-        dist, idx = self.tree.query(
+        dist, idx = self.__tree.query(
             x=[source.ra.deg, source.dec.deg],
             p=2,
-            k=self.max_neighbors,
-            distance_upper_bound=self.dist_thresh
+            k=self.__max_neighbors,
+            distance_upper_bound=self.__dist_thresh
         )
 
         # consider only those neighbors that are within the distance threshold
@@ -185,20 +234,19 @@ class Matcher(object):
         dist = dist[mask]
         idx = idx[mask]
 
-        self.log.info('Nearest neighbors:')
+        self.__log.info('Nearest neighbors:')
         for d, i in zip(dist, idx):
             info_str = '{0:.3f}: {1:10} {2:17} {3:17} {4:.3f}'.format(
                 d,
-                self.catalogue[i]['psrj'],
-                self.catalogue[i]['ra_str'],
-                self.catalogue[i]['dec_str'],
-                self.catalogue[i]['dm']
+                self.__catalogue[i]['psrj'],
+                self.__catalogue[i]['ra_str'],
+                self.__catalogue[i]['dec_str'],
+                self.__catalogue[i]['dm']
             )
 
-            self.log.info(info_str)
+            self.__log.info(info_str)
 
         return dist, idx
-
 
     def find_matches(self, source, dm):
         """
@@ -218,29 +266,29 @@ class Matcher(object):
         """
 
         if self.loaded_catalogues == [] \
-        or self.tree == None:
+        or self.__tree == None:
             raise RuntimeError('The known-source matcher is not prepared')
 
         dist, idx  = self.query_search_tree(source)
 
-        self.log.debug('Using distance threshold: {0} deg'.format(self.dist_thresh))
-        self.log.debug('Using DM threshold: {0}'.format(self.dm_thresh))
+        self.__log.debug('Using distance threshold: {0} deg'.format(self.dist_thresh))
+        self.__log.debug('Using DM threshold: {0}'.format(self.dm_thresh))
 
-        self.log.info('Source: {0}'.format(source.to_string('hmsdms')))
+        self.__log.info('Source: {0}'.format(source.to_string('hmsdms')))
 
         match = None
 
         for d, i in zip(dist, idx):
             if d < self.dist_thresh \
-            and abs(dm - self.catalogue[i]['dm']) / dm < self.dm_thresh:
-                match = self.catalogue[i]
-                self.log.info('Match found with distance: {0:.3f} deg'.format(d))
+            and abs(dm - self.__catalogue[i]['dm']) / dm < self.dm_thresh:
+                match = self.__catalogue[i]
+                self.__log.info('Match found with distance: {0:.3f} deg'.format(d))
                 break
 
         if match is None:
-            self.log.info('No match found.')
+            self.__log.info('No match found.')
         else:
-            self.log.info('Found match: {0}, {1}, {2}, {3}'.format(
+            self.__log.info('Found match: {0}, {1}, {2}, {3}'.format(
                 match['psrj'],
                 match['ra'],
                 match['dec'],
