@@ -569,13 +569,11 @@ def run_skymap():
 
     with db_session:
         temp = select(
-                (b.id, b.number, b.ra, b.dec, b.gl, b.gb,
-                 b.coherent, obs.cb_nant, obs.ib_nant,
-                 obs.utc_start, obs.utc_end, obs.tobs)
-                    for c in schema.SpsCandidate
-                    for b in c.beam
-                    for obs in c.observation
-                ).sort_by(10)[:]
+                (b.id, b.number, b.ra, b.dec, b.gl, b.gb, b.coherent,
+                 obs.cb_nant, obs.ib_nant, obs.tobs)
+                    for b in schema.Beam
+                    for obs in b.sps_candidate.observation
+                )[:]
 
     print('Beams loaded: {0}'.format(len(temp)))
 
@@ -590,9 +588,7 @@ def run_skymap():
             'coherent':     [item[6] for item in temp],
             'cb_nant':      [item[7] for item in temp],
             'ib_nant':      [item[8] for item in temp],
-            'utc_start':    [item[9] for item in temp],
-            'utc_end':      [item[10] for item in temp],
-            'tobs':         [item[11] for item in temp]
+            'tobs':         [item[9] for item in temp]
         }
 
     data = DataFrame.from_dict(temp2)
