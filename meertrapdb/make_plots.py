@@ -41,7 +41,14 @@ def parse_args():
     
     parser.add_argument(
         'mode',
-        choices=['heimdall', 'knownsources', 'sifting', 'timeline', 'skymap'],
+        choices=[
+            'heimdall',
+            'knownsources',
+            'sifting',
+            'skymap',
+            'timeline',
+            'timeonsky'
+        ],
         help='Mode of operation.'
     )
     
@@ -570,9 +577,11 @@ def run_skymap():
     with db_session:
         temp = select(
                 (b.id, b.number, b.ra, b.dec, b.gl, b.gb, b.coherent,
-                 obs.cb_nant, obs.ib_nant, obs.tobs)
+                 obs.cb_nant, obs.ib_nant, obs.tobs,
+                 bc.cb_angle, bc.cb_x, bc.cb_y)
                     for b in schema.Beam
                     for obs in b.sps_candidate.observation
+                    for bc in obs.beam_config
                 )[:]
 
     print('Beams loaded: {0}'.format(len(temp)))
@@ -588,7 +597,10 @@ def run_skymap():
             'coherent':     [item[6] for item in temp],
             'cb_nant':      [item[7] for item in temp],
             'ib_nant':      [item[8] for item in temp],
-            'tobs':         [item[9] for item in temp]
+            'tobs':         [item[9] for item in temp],
+            'cb_angle':     [item[10] for item in temp],
+            'cb_x':         [item[11] for item in temp],
+            'cb_y':         [item[12] for item in temp]
         }
 
     data = DataFrame.from_dict(temp2)
@@ -830,6 +842,51 @@ def plot_skymap_galactic(coords, data, suffix, gridsize):
     plt.close(fig)
 
 
+def run_timeonsky():
+    """
+    Run the processing for 'timeonsky' mode.
+    """
+
+    with db_session:
+        temp = select(
+                (obs.id, obs.utc_start, obs.tobs)
+                    for obs in schema.Observation
+                )[:]
+
+    print('Observations loaded: {0}'.format(len(temp)))
+
+    # convert to pandas dataframe
+    temp2 = {
+        'id':               [item[0] for item in temp],
+        'utc_start_str':    [item[1] for item in temp],
+        'tobs':             [item[2] for item in temp],
+    }
+
+    df = DataFrame.from_dict(temp2)
+
+    # convert to datetime
+    df['utc_start'] = pd.to_datetime(df['utc_start_str'])
+
+    df.sort_values(by='utc_start')
+
+    tobs = 0
+
+    for i in range(df.index - 1):
+        diff = df.at[i + 1, 'utc_start'] - df.at[i, 'utc_start']
+        diff = diff.total_seconds()
+
+        if 30 < diff < 900:
+            if np.isfinite(df.at[i, 'tobs']):
+                tobs += df.at[i + 1, 'tobs']
+            else:
+                tobs += diff
+
+        else:
+            continue
+
+    print('Time on sky: {0:.1f} days'.format(tobs / (60 * 60 * 24.0)))
+
+
 #
 # MAIN
 #
@@ -868,6 +925,9 @@ def main():
 
     elif args.mode == 'skymap':
         run_skymap()
+
+    elif args.mode == 'timeonsky':
+        run_timeonsky()
 
     log.info("All done.")
 
