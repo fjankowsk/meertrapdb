@@ -571,10 +571,10 @@ def run_skymap():
         temp = select(
                 (b.id, b.number, b.ra, b.dec, b.coherent,
                  obs.cb_nant, obs.ib_nant, obs.utc_start, obs.utc_end, obs.tobs)
-                    for c in schema.SpsCandidate
-                    for b in c.beam
+                    for b in schema.Beam
+                    for c in b.sps_candidate[0]
                     for obs in c.observation
-                ).sort_by(7)[:]
+                ).sort_by(8)[:]
 
     print('Beams loaded: {0}'.format(len(temp)))
 
