@@ -570,7 +570,7 @@ def run_skymap():
     with db_session:
         temp = select(
                 (b.id, b.number, b.ra, b.dec, b.coherent,
-                 obs.nant, obs.utc_start, obs.utc_end)
+                 obs.cb_nant, obs.ib_nant, obs.utc_start, obs.utc_end, obs.tobs)
                     for c in schema.SpsCandidate
                     for b in c.beam
                     for obs in c.observation
@@ -585,16 +585,21 @@ def run_skymap():
             'ra':           [item[2] for item in temp],
             'dec':          [item[3] for item in temp],
             'coherent':     [item[4] for item in temp],
-            'nant':         [item[5] for item in temp],
-            'utc_start':    [item[6] for item in temp],
-            'utc_end':      [item[7] for item in temp]
+            'cb_nant':      [item[5] for item in temp],
+            'ib_nant':      [item[6] for item in temp],
+            'utc_start':    [item[7] for item in temp],
+            'utc_end':      [item[8] for item in temp],
+            'tobs':         [item[9] for item in temp]
         }
 
     data = DataFrame.from_dict(temp2)
 
-    # assume contant tobs (hr) for now
-    tobs = 10.0 / 60.0
-    data['tobs'] = tobs
+    # convert tobs from seconds to hours
+    data['tobs'] = data['tobs'] / 3600.0
+
+    # if we don't have tobs defined, assume 10 min
+    mask = np.logical_not(np.isfinite(data['tobs']))
+    data[mask, 'tobs'] = 10.0 / 60.0
 
     # galactic latitude thresholds
     lat_thresh = [0, 5, 19.5, 42, 90]
