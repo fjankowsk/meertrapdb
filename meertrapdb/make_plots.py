@@ -19,6 +19,7 @@ from matplotlib.colors import LogNorm
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
 import numpy as np
+import pandas as pd
 from pandas import DataFrame
 from pony.orm import (db_session, delete, select)
 
@@ -871,13 +872,13 @@ def run_timeonsky():
 
     tobs = 0
 
-    for i in range(df.index - 1):
+    for i in range(len(df) - 1):
         diff = df.at[i + 1, 'utc_start'] - df.at[i, 'utc_start']
         diff = diff.total_seconds()
 
         if 30 < diff < 900:
             if np.isfinite(df.at[i, 'tobs']):
-                tobs += df.at[i + 1, 'tobs']
+                tobs += df.at[i, 'tobs']
             else:
                 tobs += diff
 
