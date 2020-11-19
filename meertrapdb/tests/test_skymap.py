@@ -87,7 +87,7 @@ def test_private_access():
 def test_save():
     nside = 2**8
     unit = 'min'
-    filename = 'skymap_save_test.npy'
+    filename = 'skymap_save_test.pkl'
 
     m = Skymap(nside=nside, unit=unit)
     print(m)
@@ -99,6 +99,23 @@ def test_save():
     else:
         # remove test file
         os.remove(filename)
+
+
+def test_load():
+    nside = 2**8
+    unit = 'min'
+    filename = 'skymap_save_test.pkl'
+
+    m1 = Skymap(nside=nside, unit=unit)
+
+    m1.save_to_file(filename)
+
+    m2 = m1.load_from_file(filename)
+
+    assert (m2.coordinate == m1.coordinate)
+    assert (m2.nside == m1.nside)
+    assert (m2.unit == m1.unit)
+    assert (np.all(m2.data == m1.data))
 
 
 def test_size():
