@@ -599,14 +599,17 @@ def run_skymap():
 
     # if we don't have tobs defined, assume 10 min
     mask = np.logical_not(np.isfinite(data['tobs']))
-    data[mask, 'tobs'] = 10.0 / 60.0
+    data.loc[mask, 'tobs'] = 10.0 / 60.0
 
     # galactic latitude thresholds
     lat_thresh = [0, 5, 19.5, 42, 90]
 
     # split into coherent and incoherent beams
-    coherent = data[data['number'] != 0].copy()
-    inco = data[data['number'] == 0].copy()
+    mask_incoherent = (data['number'] == 0) & (data['coherent'] == False)
+    mask_coherent = np.logical_not(mask_incoherent)
+
+    coherent = data[mask_coherent].copy()
+    inco = data[mask_incoherent].copy()
 
     coords_co = SkyCoord(
         ra=coherent['ra'],
@@ -626,14 +629,17 @@ def run_skymap():
     print('Coherent search')
     print('---------------')
 
-    # assume constant tied-array beam area (deg2) for now
+    # XXX: assume constant tied-array beam area (deg2) for now
+    # this is about 1.6 arcmin2, or 0.44 mdeg2
     a = 28.8 / 3600
     b = 64.0 / 3600
-    # about 1.6 arcmin2, or 0.44 mdeg2
     area_co = np.pi * a * b
 
+    # XXX: assume 10 min tobs for the moment
+    tobs = 10 / 60.0
+
     # output total stats
-    nbeams = len(coherent) + 0.5 * len(inco)
+    nbeams = len(coherent)
     print('{0:16} {1:10.2f} deg2'.format('Total area', nbeams * area_co))
     print('{0:16} {1:10.2f} hr deg2'.format('Total coverage', nbeams * area_co * tobs))
 
@@ -646,17 +652,12 @@ def run_skymap():
         stop = lat_thresh[i + 1]
         print('Latitude bin: {0} <= abs(gb) < {1} deg'.format(start, stop))
 
-        mask_co = np.logical_and(
+        mask = np.logical_and(
             start <= np.abs(coords_co.galactic.b.deg),
             np.abs(coords_co.galactic.b.deg) < stop
         )
 
-        mask_in = np.logical_and(
-            start <= np.abs(coords_in.galactic.b.deg),
-            np.abs(coords_in.galactic.b.deg) < stop
-        )
-
-        nbeams = len(coherent[mask_co]) + 0.5 * len(inco[mask_in])
+        nbeams = len(coherent[mask])
 
         print('{0:10} {1:10.2f} deg2'.format('Area', nbeams * area_co))
         print('{0:10} {1:10.2f} hr deg2'.format('Coverage', nbeams * area_co * tobs))
@@ -671,7 +672,7 @@ def run_skymap():
     area_inco = 0.97
 
     # output total stats
-    nbeams = 0.5 * len(inco)
+    nbeams = len(inco)
     print('{0:16} {1:10.2f} deg2'.format('Total area', nbeams * area_inco))
     print('{0:16} {1:10.2f} hr deg2'.format('Total coverage', nbeams * area_inco * tobs))
 
@@ -684,12 +685,12 @@ def run_skymap():
         stop = lat_thresh[i + 1]
         print('Latitude bin: {0} <= abs(gb) < {1} deg'.format(start, stop))
 
-        mask_in = np.logical_and(
+        mask = np.logical_and(
             start <= np.abs(coords_in.galactic.b.deg),
             np.abs(coords_in.galactic.b.deg) < stop
         )
 
-        nbeams = 0.5 * len(inco[mask_in])
+        nbeams = len(inco[mask])
 
         print('{0:10} {1:10.2f} deg2'.format('Area', nbeams * area_inco))
         print('{0:10} {1:10.2f} hr deg2'.format('Coverage', nbeams * area_inco * tobs))
