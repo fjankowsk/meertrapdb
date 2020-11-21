@@ -868,7 +868,7 @@ def run_timeonsky():
     # convert to datetime
     df['utc_start'] = pd.to_datetime(df['utc_start_str'])
 
-    df.sort_values(by='utc_start')
+    df = df.sort_values(by='utc_start')
 
     tobs = 0
 
