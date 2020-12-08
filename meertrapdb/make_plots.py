@@ -19,6 +19,7 @@ from matplotlib.colors import LogNorm
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
 import numpy as np
+import pandas as pd
 from pandas import DataFrame
 from pony.orm import (db_session, delete, select)
 
@@ -41,7 +42,14 @@ def parse_args():
     
     parser.add_argument(
         'mode',
-        choices=['heimdall', 'knownsources', 'sifting', 'timeline', 'skymap'],
+        choices=[
+            'heimdall',
+            'knownsources',
+            'sifting',
+            'skymap',
+            'timeline',
+            'timeonsky'
+        ],
         help='Mode of operation.'
     )
     
@@ -569,12 +577,13 @@ def run_skymap():
 
     with db_session:
         temp = select(
-                (b.id, b.number, b.ra, b.dec, b.coherent,
-                 obs.nant, obs.utc_start, obs.utc_end)
-                    for c in schema.SpsCandidate
-                    for b in c.beam
-                    for obs in c.observation
-                ).sort_by(7)[:]
+                (b.id, b.number, b.ra, b.dec, b.gl, b.gb, b.coherent,
+                 obs.cb_nant, obs.ib_nant, obs.tobs,
+                 bc.cb_angle, bc.cb_x, bc.cb_y)
+                    for b in schema.Beam
+                    for obs in b.sps_candidate.observation
+                    for bc in obs.beam_config
+                )[:]
 
     print('Beams loaded: {0}'.format(len(temp)))
 
@@ -584,24 +593,35 @@ def run_skymap():
             'number':       [item[1] for item in temp],
             'ra':           [item[2] for item in temp],
             'dec':          [item[3] for item in temp],
-            'coherent':     [item[4] for item in temp],
-            'nant':         [item[5] for item in temp],
-            'utc_start':    [item[6] for item in temp],
-            'utc_end':      [item[7] for item in temp]
+            'gl':           [item[4] for item in temp],
+            'gb':           [item[5] for item in temp],
+            'coherent':     [item[6] for item in temp],
+            'cb_nant':      [item[7] for item in temp],
+            'ib_nant':      [item[8] for item in temp],
+            'tobs':         [item[9] for item in temp],
+            'cb_angle':     [item[10] for item in temp],
+            'cb_x':         [item[11] for item in temp],
+            'cb_y':         [item[12] for item in temp]
         }
 
     data = DataFrame.from_dict(temp2)
 
-    # assume contant tobs (hr) for now
-    tobs = 10.0 / 60.0
-    data['tobs'] = tobs
+    # convert tobs from seconds to hours
+    data['tobs'] = data['tobs'] / 3600.0
+
+    # if we don't have tobs defined, assume 10 min
+    mask = np.logical_not(np.isfinite(data['tobs']))
+    data.loc[mask, 'tobs'] = 10.0 / 60.0
 
     # galactic latitude thresholds
     lat_thresh = [0, 5, 19.5, 42, 90]
 
     # split into coherent and incoherent beams
-    coherent = data[data['number'] != 0].copy()
-    inco = data[data['number'] == 0].copy()
+    mask_incoherent = (data['number'] == 0) & (data['coherent'] == False)
+    mask_coherent = np.logical_not(mask_incoherent)
+
+    coherent = data[mask_coherent].copy()
+    inco = data[mask_incoherent].copy()
 
     coords_co = SkyCoord(
         ra=coherent['ra'],
@@ -621,14 +641,17 @@ def run_skymap():
     print('Coherent search')
     print('---------------')
 
-    # assume constant tied-array beam area (deg2) for now
+    # XXX: assume constant tied-array beam area (deg2) for now
+    # this is about 1.6 arcmin2, or 0.44 mdeg2
     a = 28.8 / 3600
     b = 64.0 / 3600
-    # about 1.6 arcmin2, or 0.44 mdeg2
     area_co = np.pi * a * b
 
+    # XXX: assume 10 min tobs for the moment
+    tobs = 10 / 60.0
+
     # output total stats
-    nbeams = len(coherent) + 0.5 * len(inco)
+    nbeams = len(coherent)
     print('{0:16} {1:10.2f} deg2'.format('Total area', nbeams * area_co))
     print('{0:16} {1:10.2f} hr deg2'.format('Total coverage', nbeams * area_co * tobs))
 
@@ -641,17 +664,12 @@ def run_skymap():
         stop = lat_thresh[i + 1]
         print('Latitude bin: {0} <= abs(gb) < {1} deg'.format(start, stop))
 
-        mask_co = np.logical_and(
+        mask = np.logical_and(
             start <= np.abs(coords_co.galactic.b.deg),
             np.abs(coords_co.galactic.b.deg) < stop
         )
 
-        mask_in = np.logical_and(
-            start <= np.abs(coords_in.galactic.b.deg),
-            np.abs(coords_in.galactic.b.deg) < stop
-        )
-
-        nbeams = len(coherent[mask_co]) + 0.5 * len(inco[mask_in])
+        nbeams = len(coherent[mask])
 
         print('{0:10} {1:10.2f} deg2'.format('Area', nbeams * area_co))
         print('{0:10} {1:10.2f} hr deg2'.format('Coverage', nbeams * area_co * tobs))
@@ -666,7 +684,7 @@ def run_skymap():
     area_inco = 0.97
 
     # output total stats
-    nbeams = 0.5 * len(inco)
+    nbeams = len(inco)
     print('{0:16} {1:10.2f} deg2'.format('Total area', nbeams * area_inco))
     print('{0:16} {1:10.2f} hr deg2'.format('Total coverage', nbeams * area_inco * tobs))
 
@@ -679,12 +697,12 @@ def run_skymap():
         stop = lat_thresh[i + 1]
         print('Latitude bin: {0} <= abs(gb) < {1} deg'.format(start, stop))
 
-        mask_in = np.logical_and(
+        mask = np.logical_and(
             start <= np.abs(coords_in.galactic.b.deg),
             np.abs(coords_in.galactic.b.deg) < stop
         )
 
-        nbeams = 0.5 * len(inco[mask_in])
+        nbeams = len(inco[mask])
 
         print('{0:10} {1:10.2f} deg2'.format('Area', nbeams * area_inco))
         print('{0:10} {1:10.2f} hr deg2'.format('Coverage', nbeams * area_inco * tobs))
@@ -825,6 +843,51 @@ def plot_skymap_galactic(coords, data, suffix, gridsize):
     plt.close(fig)
 
 
+def run_timeonsky():
+    """
+    Run the processing for 'timeonsky' mode.
+    """
+
+    with db_session:
+        temp = select(
+                (obs.id, obs.utc_start, obs.tobs)
+                    for obs in schema.Observation
+                )[:]
+
+    print('Observations loaded: {0}'.format(len(temp)))
+
+    # convert to pandas dataframe
+    temp2 = {
+        'id':               [item[0] for item in temp],
+        'utc_start_str':    [item[1] for item in temp],
+        'tobs':             [item[2] for item in temp],
+    }
+
+    df = DataFrame.from_dict(temp2)
+
+    # convert to datetime
+    df['utc_start'] = pd.to_datetime(df['utc_start_str'])
+
+    df = df.sort_values(by='utc_start')
+
+    tobs = 0
+
+    for i in range(len(df) - 1):
+        diff = df.at[i + 1, 'utc_start'] - df.at[i, 'utc_start']
+        diff = diff.total_seconds()
+
+        if 30 < diff < 900:
+            if np.isfinite(df.at[i, 'tobs']):
+                tobs += df.at[i, 'tobs']
+            else:
+                tobs += diff
+
+        else:
+            continue
+
+    print('Time on sky: {0:.1f} days'.format(tobs / (60 * 60 * 24.0)))
+
+
 #
 # MAIN
 #
@@ -863,6 +926,9 @@ def main():
 
     elif args.mode == 'skymap':
         run_skymap()
+
+    elif args.mode == 'timeonsky':
+        run_timeonsky()
 
     log.info("All done.")
 

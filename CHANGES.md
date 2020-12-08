@@ -2,6 +2,10 @@
 
 ## HEAD ##
 
+* Added script to search for detections of known sources.
+* Plotting: Added mode to calculate the total time on sky.
+* Plotting: Fixed database query in skymap mode to only include distinct beams. Previously the database query joined the Beam and SpsCandidate tables incorrectly so that the number of beams (and therefore the sky exposure) was overestimated by a factor of 4.
+* Plotting: Adjusted skymap plotting mode for recent changes in the database schema. Fixed and simplified the code.
 * Made instance variables private to protect them from external access in the `Clusterer` and `psrmatch`. Exposed the ones that should be accessible by adding properties and added setters, that include parameter validation. Added regression tests for private access, parameter changes and invalid parameters.
 * Fixed the size computation of the HEALPIX exposure sky map and reduced it further (from tens of GB to ~1.5 GB). Added code to create sky maps, to visualise them and to save them to file.
 * Added MIT license file.
