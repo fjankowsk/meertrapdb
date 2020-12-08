@@ -2,6 +2,12 @@
 
 ## HEAD ##
 
+* `Skymap`: Changed saving and loading to use pickle. Added regression test for loading.
+* `Skymap`: Made instance variables private and added properties to access the ones that should be accessable externally. Adjusted the regression tests accordingly and added test to check access of private variables. Similar changes in the `Optimiser` class.
+* Implemented initial functionality in `Skymap`. Added various properties to the map, code to add exposure, visualisation, get basic statistics, saving to file, etc. Added corresponding regression tests, too.
+* Switched healpix maps to float32. This doubled the size of the map (3 GB), but extends their usage significantly in terms of the number of days that can be stored.
+* Added `Tiling` class to encapsulate multi-beam tilings.
+* Added initial design for `Skymap` and `Optimiser` classes.
 
 ## 0.7.1 (2020-12-08) ##
 
