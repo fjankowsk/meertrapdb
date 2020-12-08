@@ -2,6 +2,10 @@
 
 ## HEAD ##
 
+
+## 0.7.1 (2020-12-08) ##
+
+* Bumped `meertrapdb` to version 0.7.1 and `psrmatch` to version 0.4.
 * Added script to search for detections of known sources.
 * Plotting: Added mode to calculate the total time on sky.
 * Plotting: Fixed database query in skymap mode to only include distinct beams. Previously the database query joined the Beam and SpsCandidate tables incorrectly so that the number of beams (and therefore the sky exposure) was overestimated by a factor of 4.
