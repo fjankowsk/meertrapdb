@@ -668,11 +668,19 @@ def run_skymap():
                 frame='icrs'
             )
 
-            # add exposure to sky map
-            radii = np.full(len(coords), 0.58)
-            lengths = np.full(len(coords), obs['tobs'] / 3600.0)
+            # tied-array beam coverage
+            # 43 arcsec radius at l-band is typical
+            df['radius'] = np.full(len(coords), 43.0 / 3600.0)
 
-            m.add_exposure(coords, radii, lengths)
+            # primary beam coverage
+            mask_pb = (df['coherent'] == False) & (df['number'] == 0)
+            # XXX: consider uhf vs. l-band
+            df.loc[mask_pb, 'radius'] = 0.58
+
+            # add exposure to sky map
+            df['length'] = np.full(len(coords), obs['tobs'] / 3600.0)
+
+            m.add_exposure(coords, df['radius'], df['length'])
 
     m.save_to_file('skymap.pkl')
 
