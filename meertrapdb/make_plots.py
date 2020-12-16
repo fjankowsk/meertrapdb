@@ -670,6 +670,9 @@ def run_skymap():
                 frame='icrs'
             )
 
+            # tobs in hours
+            df['length'] = np.full(len(coords), obs['tobs'] / 3600.0)
+
             # tied-array beam coverage
             # 43 arcsec radius at l-band is typical
             df['radius'] = np.full(len(coords), 43.0 / 3600.0)
@@ -679,8 +682,20 @@ def run_skymap():
             # XXX: consider uhf vs. l-band
             df.loc[mask_pb, 'radius'] = 0.58
 
-            # add exposure to sky map
-            df['length'] = np.full(len(coords), obs['tobs'] / 3600.0)
+            # treat case of no detection in the incoherent beam
+            if len(df[mask_pb]) == 0:
+                print('No incoherent beam found.')
+                mean_ra = np.mean(coords.ra.deg)
+                mean_dec = np.mean(coords.dec.deg)
+
+                mean_coord = SkyCoord(
+                    ra=mean_ra,
+                    dec=mean_dec,
+                    unit=(units.deg, units.deg),
+                    frame='icrs'
+                )
+
+                m.add_exposure(mean_coord, list(0.58), list(obs['tobs']))
 
             if len(df) == 1:
                 print(df.to_string())
