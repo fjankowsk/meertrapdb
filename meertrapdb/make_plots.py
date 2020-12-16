@@ -576,6 +576,8 @@ def run_skymap():
     Run the processing for 'skymap' mode.
     """
 
+    log = logging.getLogger('meertrapdb.make_plots')
+
     # 1) determine the good observations and their observing times
     with db_session:
         temp = select(
@@ -583,7 +585,7 @@ def run_skymap():
                     for obs in schema.Observation
                 )[:]
 
-    print('Observations loaded: {0}'.format(len(temp)))
+    log.info('Observations loaded: {0}'.format(len(temp)))
 
     # convert to pandas dataframe
     temp2 = {
@@ -621,7 +623,7 @@ def run_skymap():
         else:
             continue
 
-    print('Good observations: {0}'.format(len(observations)))
+    log.info('Good observations: {0}'.format(len(observations)))
 
     # 2) create skymap
     config = get_config()
@@ -661,7 +663,7 @@ def run_skymap():
 
             df = DataFrame.from_dict(temp2)
 
-            print('Observation, beams loaded: {0}, {1}'.format(obs_id, len(df)))
+            log.info('Observation, beams loaded: {0}, {1}'.format(obs_id, len(df)))
 
             coords = SkyCoord(
                 ra=df['ra'],
@@ -684,7 +686,8 @@ def run_skymap():
 
             # treat case of no detection in the incoherent beam
             if len(df[mask_pb]) == 0:
-                print('No incoherent beam found.')
+                log.info('No incoherent beam found.')
+
                 mean_ra = np.mean(coords.ra.deg)
                 mean_dec = np.mean(coords.dec.deg)
 
@@ -695,7 +698,7 @@ def run_skymap():
                     frame='icrs'
                 )
 
-                m.add_exposure(mean_coord, list(0.58), list(obs['tobs']))
+                m.add_exposure([mean_coord], [0.58], [obs['tobs']])
 
             if len(df) == 1:
                 print(df.to_string())
