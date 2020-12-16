@@ -576,159 +576,204 @@ def run_skymap():
     Run the processing for 'skymap' mode.
     """
 
+    # 1) determine the good observations and their observing times
     with db_session:
         temp = select(
-                (b.id, b.number, b.ra, b.dec, b.gl, b.gb, b.coherent,
-                 obs.cb_nant, obs.ib_nant, obs.tobs,
-                 bc.cb_angle, bc.cb_x, bc.cb_y)
-                    for b in schema.Beam
-                    for obs in b.sps_candidate.observation
-                    for bc in obs.beam_config
+                (obs.id, obs.utc_start, obs.tobs)
+                    for obs in schema.Observation
                 )[:]
 
-    print('Beams loaded: {0}'.format(len(temp)))
+    print('Observations loaded: {0}'.format(len(temp)))
 
     # convert to pandas dataframe
     temp2 = {
-            'id':           [item[0] for item in temp],
-            'number':       [item[1] for item in temp],
-            'ra':           [item[2] for item in temp],
-            'dec':          [item[3] for item in temp],
-            'gl':           [item[4] for item in temp],
-            'gb':           [item[5] for item in temp],
-            'coherent':     [item[6] for item in temp],
-            'cb_nant':      [item[7] for item in temp],
-            'ib_nant':      [item[8] for item in temp],
-            'tobs':         [item[9] for item in temp],
-            'cb_angle':     [item[10] for item in temp],
-            'cb_x':         [item[11] for item in temp],
-            'cb_y':         [item[12] for item in temp]
-        }
+        'id':               [item[0] for item in temp],
+        'utc_start_str':    [item[1] for item in temp],
+        'tobs':             [item[2] for item in temp],
+    }
 
     df = DataFrame.from_dict(temp2)
 
-    # convert tobs from seconds to hours
-    df['tobs'] = df['tobs'] / 3600.0
+    # convert to datetime
+    df['utc_start'] = pd.to_datetime(df['utc_start_str'])
 
-    # if we don't have tobs defined, assume 10 min
-    mask = np.logical_not(np.isfinite(df['tobs']))
-    df.loc[mask, 'tobs'] = 10.0 / 60.0
+    df = df.sort_values(by='utc_start')
 
-    coords = SkyCoord(
-        ra=df['ra'],
-        dec=df['dec'],
-        unit=(units.hourangle, units.deg),
-        frame='icrs'
-    )
+    observations = []
 
-    # create skymap
+    for i in range(len(df) - 1):
+        diff = df.at[i + 1, 'utc_start'] - df.at[i, 'utc_start']
+        diff = diff.total_seconds()
+
+        if 30 < diff < 900:
+            if np.isfinite(df.at[i, 'tobs']):
+                tobs = df.at[i, 'tobs']
+            else:
+                tobs = diff
+
+            obs = {
+                'id': df.at[i, 'id'],
+                'tobs': tobs
+            }
+
+            observations.append(obs)
+
+        else:
+            continue
+
+    print('Good observations: {0}'.format(len(observations)))
+
+    # 2) create skymap
     config = get_config()
     nside = config['skymap']['nside']
     unit = config['skymap']['unit']
 
     m = Skymap(nside=nside, unit=unit)
 
-    # add exposure to sky map
-    radii = np.full(len(coords), 0.58)
+    # 3) retrieve the beam information and fill in the exposure
+    with db_session:
+        for obs in observations:
+            temp = select(
+                    (beam.id, beam.number, beam.ra, beam.dec, beam.gl, beam.gb, beam.coherent,
+                     bc.cb_angle, bc.cb_x, bc.cb_y)
+                        for obs in schema.Observation
+                        for beam in obs.sps_candidate.beam
+                        for bc in obs.beam_config
+                        if obs.id == obs['id']
+                    )[:]
 
-    m.add_exposure(coords, radii, df['tobs'])
-    print(m)
+            print('Beams loaded: {0}'.format(len(temp)))
+
+            # convert to pandas dataframe
+            temp2 = {
+                    'beam_id':      [item[0] for item in temp],
+                    'number':       [item[1] for item in temp],
+                    'ra':           [item[2] for item in temp],
+                    'dec':          [item[3] for item in temp],
+                    'gl':           [item[4] for item in temp],
+                    'gb':           [item[5] for item in temp],
+                    'coherent':     [item[6] for item in temp],
+                    'cb_angle':     [item[7] for item in temp],
+                    'cb_x':         [item[8] for item in temp],
+                    'cb_y':         [item[9] for item in temp]
+                }
+
+            df = DataFrame.from_dict(temp2)
+
+            coords = SkyCoord(
+                ra=df['ra'],
+                dec=df['dec'],
+                unit=(units.hourangle, units.deg),
+                frame='icrs'
+            )
+
+            # add exposure to sky map
+            radii = np.full(len(coords), 0.58)
+
+            m.add_exposure(
+                coords,
+                radii,
+                obs['tobs'] / 3600.0
+            )
+
+            print(m)
+
     m.save_to_file('skymap.pkl')
 
-    # galactic latitude thresholds
-    lat_thresh = [0, 5, 19.5, 42, 90]
+    # # galactic latitude thresholds
+    # lat_thresh = [0, 5, 19.5, 42, 90]
 
-    # split into coherent and incoherent beams
-    mask_incoherent = (df['number'] == 0) & (df['coherent'] == False)
-    mask_coherent = np.logical_not(mask_incoherent)
+    # # split into coherent and incoherent beams
+    # mask_incoherent = (df['number'] == 0) & (df['coherent'] == False)
+    # mask_coherent = np.logical_not(mask_incoherent)
 
-    coherent = data[mask_coherent].copy()
-    inco = data[mask_incoherent].copy()
+    # coherent = data[mask_coherent].copy()
+    # inco = data[mask_incoherent].copy()
 
-    coords_co = SkyCoord(
-        ra=coherent['ra'],
-        dec=coherent['dec'],
-        unit=(units.hourangle, units.deg),
-        frame='icrs'
-    )
+    # coords_co = SkyCoord(
+    #     ra=coherent['ra'],
+    #     dec=coherent['dec'],
+    #     unit=(units.hourangle, units.deg),
+    #     frame='icrs'
+    # )
 
-    coords_in = SkyCoord(
-        ra=inco['ra'],
-        dec=inco['dec'],
-        unit=(units.hourangle, units.deg),
-        frame='icrs'
-    )
+    # coords_in = SkyCoord(
+    #     ra=inco['ra'],
+    #     dec=inco['dec'],
+    #     unit=(units.hourangle, units.deg),
+    #     frame='icrs'
+    # )
 
-    # 1) coherent search
-    print('Coherent search')
-    print('---------------')
+    # # 1) coherent search
+    # print('Coherent search')
+    # print('---------------')
 
-    # XXX: assume constant tied-array beam area (deg2) for now
-    # this is about 1.6 arcmin2, or 0.44 mdeg2
-    a = 28.8 / 3600
-    b = 64.0 / 3600
-    area_co = np.pi * a * b
+    # # XXX: assume constant tied-array beam area (deg2) for now
+    # # this is about 1.6 arcmin2, or 0.44 mdeg2
+    # a = 28.8 / 3600
+    # b = 64.0 / 3600
+    # area_co = np.pi * a * b
 
-    # XXX: assume 10 min tobs for the moment
-    tobs = 10 / 60.0
+    # # XXX: assume 10 min tobs for the moment
+    # tobs = 10 / 60.0
 
-    # output total stats
-    nbeams = len(coherent)
-    print('{0:16} {1:10.2f} deg2'.format('Total area', nbeams * area_co))
-    print('{0:16} {1:10.2f} hr deg2'.format('Total coverage', nbeams * area_co * tobs))
+    # # output total stats
+    # nbeams = len(coherent)
+    # print('{0:16} {1:10.2f} deg2'.format('Total area', nbeams * area_co))
+    # print('{0:16} {1:10.2f} hr deg2'.format('Total coverage', nbeams * area_co * tobs))
 
-    #plot_skymap_equatorial(coords_co, coherent, 'coherent', 8640)
-    #plot_skymap_galactic(coords_co, coherent, 'coherent', 300)
+    # #plot_skymap_equatorial(coords_co, coherent, 'coherent', 8640)
+    # #plot_skymap_galactic(coords_co, coherent, 'coherent', 300)
 
-    # do analysis by galactic latitude bins
-    for i in range(len(lat_thresh) - 1):
-        start = lat_thresh[i]
-        stop = lat_thresh[i + 1]
-        print('Latitude bin: {0} <= abs(gb) < {1} deg'.format(start, stop))
+    # # do analysis by galactic latitude bins
+    # for i in range(len(lat_thresh) - 1):
+    #     start = lat_thresh[i]
+    #     stop = lat_thresh[i + 1]
+    #     print('Latitude bin: {0} <= abs(gb) < {1} deg'.format(start, stop))
 
-        mask = np.logical_and(
-            start <= np.abs(coords_co.galactic.b.deg),
-            np.abs(coords_co.galactic.b.deg) < stop
-        )
+    #     mask = np.logical_and(
+    #         start <= np.abs(coords_co.galactic.b.deg),
+    #         np.abs(coords_co.galactic.b.deg) < stop
+    #     )
 
-        nbeams = len(coherent[mask])
+    #     nbeams = len(coherent[mask])
 
-        print('{0:10} {1:10.2f} deg2'.format('Area', nbeams * area_co))
-        print('{0:10} {1:10.2f} hr deg2'.format('Coverage', nbeams * area_co * tobs))
-        print('')
+    #     print('{0:10} {1:10.2f} deg2'.format('Area', nbeams * area_co))
+    #     print('{0:10} {1:10.2f} hr deg2'.format('Coverage', nbeams * area_co * tobs))
+    #     print('')
 
-    # 2) incoherent search
-    print('')
-    print('Incoherent search')
-    print('-----------------')
+    # # 2) incoherent search
+    # print('')
+    # print('Incoherent search')
+    # print('-----------------')
 
-    # area of the primary beam (deg2) at 1284 MHz
-    area_inco = 0.97
+    # # area of the primary beam (deg2) at 1284 MHz
+    # area_inco = 0.97
 
-    # output total stats
-    nbeams = len(inco)
-    print('{0:16} {1:10.2f} deg2'.format('Total area', nbeams * area_inco))
-    print('{0:16} {1:10.2f} hr deg2'.format('Total coverage', nbeams * area_inco * tobs))
+    # # output total stats
+    # nbeams = len(inco)
+    # print('{0:16} {1:10.2f} deg2'.format('Total area', nbeams * area_inco))
+    # print('{0:16} {1:10.2f} hr deg2'.format('Total coverage', nbeams * area_inco * tobs))
 
-    #plot_skymap_equatorial(coords_in, inco, 'inco', 190)
-    #plot_skymap_galactic(coords_in, inco, 'inco', 150)
+    # #plot_skymap_equatorial(coords_in, inco, 'inco', 190)
+    # #plot_skymap_galactic(coords_in, inco, 'inco', 150)
 
-    # do analysis by galactic latitude bins
-    for i in range(len(lat_thresh) - 1):
-        start = lat_thresh[i]
-        stop = lat_thresh[i + 1]
-        print('Latitude bin: {0} <= abs(gb) < {1} deg'.format(start, stop))
+    # # do analysis by galactic latitude bins
+    # for i in range(len(lat_thresh) - 1):
+    #     start = lat_thresh[i]
+    #     stop = lat_thresh[i + 1]
+    #     print('Latitude bin: {0} <= abs(gb) < {1} deg'.format(start, stop))
 
-        mask = np.logical_and(
-            start <= np.abs(coords_in.galactic.b.deg),
-            np.abs(coords_in.galactic.b.deg) < stop
-        )
+    #     mask = np.logical_and(
+    #         start <= np.abs(coords_in.galactic.b.deg),
+    #         np.abs(coords_in.galactic.b.deg) < stop
+    #     )
 
-        nbeams = len(inco[mask])
+    #     nbeams = len(inco[mask])
 
-        print('{0:10} {1:10.2f} deg2'.format('Area', nbeams * area_inco))
-        print('{0:10} {1:10.2f} hr deg2'.format('Coverage', nbeams * area_inco * tobs))
-        print('')
+    #     print('{0:10} {1:10.2f} deg2'.format('Area', nbeams * area_inco))
+    #     print('{0:10} {1:10.2f} hr deg2'.format('Coverage', nbeams * area_inco * tobs))
+    #     print('')
 
 
 def get_area_polygon(x, y):
