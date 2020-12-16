@@ -645,7 +645,7 @@ def run_skymap():
                         if obs.id == obs_id
                     )[:]
 
-            print('Beams loaded: {0}'.format(len(temp)))
+            print('Observation, beams loaded: {0}, {1}'.format(obs_id, len(temp)))
 
             # convert to pandas dataframe
             temp2 = {
