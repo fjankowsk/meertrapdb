@@ -683,6 +683,7 @@ def run_skymap():
             m.add_exposure(coords, df['radius'], df['length'])
 
     m.save_to_file('skymap.pkl')
+    print(m)
 
     # # galactic latitude thresholds
     # lat_thresh = [0, 5, 19.5, 42, 90]
