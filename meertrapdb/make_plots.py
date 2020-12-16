@@ -633,13 +633,16 @@ def run_skymap():
     # 3) retrieve the beam information and fill in the exposure
     with db_session:
         for obs in observations:
+            # ponyorm requires native python types in the generator expression
+            obs_id = int(obs['id'])
+
             temp = select(
                     (beam.id, beam.number, beam.ra, beam.dec, beam.gl, beam.gb, beam.coherent,
                      bc.cb_angle, bc.cb_x, bc.cb_y)
                         for obs in schema.Observation
                         for beam in obs.sps_candidate.beam
                         for bc in obs.beam_config
-                        if obs.id == obs['id']
+                        if obs.id == obs_id
                     )[:]
 
             print('Beams loaded: {0}'.format(len(temp)))
@@ -669,14 +672,9 @@ def run_skymap():
 
             # add exposure to sky map
             radii = np.full(len(coords), 0.58)
+            lengths = np.full(len(coords), obs['tobs'] / 3600.0)
 
-            m.add_exposure(
-                coords,
-                radii,
-                obs['tobs'] / 3600.0
-            )
-
-            print(m)
+            m.add_exposure(coords, radii, lengths)
 
     m.save_to_file('skymap.pkl')
 
