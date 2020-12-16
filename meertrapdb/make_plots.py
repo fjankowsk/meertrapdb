@@ -637,7 +637,7 @@ def run_skymap():
             obs_id = int(obs['id'])
 
             temp = select(
-                    (beam.id, beam.number, beam.ra, beam.dec, beam.gl, beam.gb, beam.coherent,
+                    (beam.id, beam.number, beam.ra, beam.dec, beam.coherent,
                      bc.cb_angle, bc.cb_x, bc.cb_y)
                         for obs in schema.Observation
                         for beam in obs.sps_candidate.beam
@@ -653,12 +653,10 @@ def run_skymap():
                     'number':       [item[1] for item in temp],
                     'ra':           [item[2] for item in temp],
                     'dec':          [item[3] for item in temp],
-                    'gl':           [item[4] for item in temp],
-                    'gb':           [item[5] for item in temp],
-                    'coherent':     [item[6] for item in temp],
-                    'cb_angle':     [item[7] for item in temp],
-                    'cb_x':         [item[8] for item in temp],
-                    'cb_y':         [item[9] for item in temp]
+                    'coherent':     [item[4] for item in temp],
+                    'cb_angle':     [item[5] for item in temp],
+                    'cb_x':         [item[6] for item in temp],
+                    'cb_y':         [item[7] for item in temp]
                 }
 
             df = DataFrame.from_dict(temp2)
