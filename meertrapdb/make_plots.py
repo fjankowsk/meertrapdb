@@ -645,8 +645,6 @@ def run_skymap():
                         if obs.id == obs_id
                     )[:]
 
-            print('Observation, beams loaded: {0}, {1}'.format(obs_id, len(temp)))
-
             # convert to pandas dataframe
             temp2 = {
                     'beam_id':      [item[0] for item in temp],
@@ -660,6 +658,11 @@ def run_skymap():
                 }
 
             df = DataFrame.from_dict(temp2)
+
+            print('Observation, beams loaded: {0}, {1}'.format(obs_id, len(df)))
+
+            if len(df) == 1:
+                print(df.to_string())
 
             coords = SkyCoord(
                 ra=df['ra'],
