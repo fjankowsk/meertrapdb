@@ -28,6 +28,7 @@ from meertrapdb.db_helpers import setup_db
 from meertrapdb.general_helpers import setup_logging
 from meertrapdb import schema
 from meertrapdb.schema import db
+from meertrapdb.skymap import Skymap
 from meertrapdb.version import __version__
 
 # astropy.units generates members dynamically, pylint therefore fails
@@ -604,20 +605,41 @@ def run_skymap():
             'cb_y':         [item[12] for item in temp]
         }
 
-    data = DataFrame.from_dict(temp2)
+    df = DataFrame.from_dict(temp2)
 
     # convert tobs from seconds to hours
-    data['tobs'] = data['tobs'] / 3600.0
+    df['tobs'] = df['tobs'] / 3600.0
 
     # if we don't have tobs defined, assume 10 min
-    mask = np.logical_not(np.isfinite(data['tobs']))
-    data.loc[mask, 'tobs'] = 10.0 / 60.0
+    mask = np.logical_not(np.isfinite(df['tobs']))
+    df.loc[mask, 'tobs'] = 10.0 / 60.0
+
+    coords = SkyCoord(
+        ra=df['ra'],
+        dec=df['dec'],
+        unit=(units.hourangle, units.deg),
+        frame='icrs'
+    )
+
+    # create skymap
+    config = get_config()
+    nside = config['skymap']['nside']
+    unit = config['skymap']['unit']
+
+    m = Skymap(nside=nside, unit=unit)
+
+    # add exposure to sky map
+    radii = np.full(len(coords), 0.58)
+
+    m.add_exposure(coords, radii, df['tobs'])
+    print(m)
+    m.save_to_file('skymap.pkl')
 
     # galactic latitude thresholds
     lat_thresh = [0, 5, 19.5, 42, 90]
 
     # split into coherent and incoherent beams
-    mask_incoherent = (data['number'] == 0) & (data['coherent'] == False)
+    mask_incoherent = (df['number'] == 0) & (df['coherent'] == False)
     mask_coherent = np.logical_not(mask_incoherent)
 
     coherent = data[mask_coherent].copy()
@@ -655,8 +677,8 @@ def run_skymap():
     print('{0:16} {1:10.2f} deg2'.format('Total area', nbeams * area_co))
     print('{0:16} {1:10.2f} hr deg2'.format('Total coverage', nbeams * area_co * tobs))
 
-    plot_skymap_equatorial(coords_co, coherent, 'coherent', 8640)
-    plot_skymap_galactic(coords_co, coherent, 'coherent', 300)
+    #plot_skymap_equatorial(coords_co, coherent, 'coherent', 8640)
+    #plot_skymap_galactic(coords_co, coherent, 'coherent', 300)
 
     # do analysis by galactic latitude bins
     for i in range(len(lat_thresh) - 1):
@@ -688,8 +710,8 @@ def run_skymap():
     print('{0:16} {1:10.2f} deg2'.format('Total area', nbeams * area_inco))
     print('{0:16} {1:10.2f} hr deg2'.format('Total coverage', nbeams * area_inco * tobs))
 
-    plot_skymap_equatorial(coords_in, inco, 'inco', 190)
-    plot_skymap_galactic(coords_in, inco, 'inco', 150)
+    #plot_skymap_equatorial(coords_in, inco, 'inco', 190)
+    #plot_skymap_galactic(coords_in, inco, 'inco', 150)
 
     # do analysis by galactic latitude bins
     for i in range(len(lat_thresh) - 1):

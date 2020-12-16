@@ -59,3 +59,9 @@ knownsources:
 notifier:
   http_link: XXX
   colour: "#37961d"
+
+# sky map related options
+skymap:
+  # 2^13
+  nside: 8192
+  unit: 'hour'
