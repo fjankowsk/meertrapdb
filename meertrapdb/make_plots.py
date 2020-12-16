@@ -638,6 +638,7 @@ def run_skymap():
 
             temp = select(
                     (beam.id, beam.number, beam.ra, beam.dec, beam.coherent,
+                     obs.utc_start,
                      bc.cb_angle, bc.cb_x, bc.cb_y)
                         for obs in schema.Observation
                         for beam in obs.sps_candidate.beam
@@ -652,17 +653,15 @@ def run_skymap():
                     'ra':           [item[2] for item in temp],
                     'dec':          [item[3] for item in temp],
                     'coherent':     [item[4] for item in temp],
-                    'cb_angle':     [item[5] for item in temp],
-                    'cb_x':         [item[6] for item in temp],
-                    'cb_y':         [item[7] for item in temp]
+                    'utc_start':    [item[5] for item in temp],
+                    'cb_angle':     [item[6] for item in temp],
+                    'cb_x':         [item[7] for item in temp],
+                    'cb_y':         [item[8] for item in temp]
                 }
 
             df = DataFrame.from_dict(temp2)
 
             print('Observation, beams loaded: {0}, {1}'.format(obs_id, len(df)))
-
-            if len(df) == 1:
-                print(df.to_string())
 
             coords = SkyCoord(
                 ra=df['ra'],
@@ -682,6 +681,9 @@ def run_skymap():
 
             # add exposure to sky map
             df['length'] = np.full(len(coords), obs['tobs'] / 3600.0)
+
+            if len(df) == 1:
+                print(df.to_string())
 
             m.add_exposure(coords, df['radius'], df['length'])
 
