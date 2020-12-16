@@ -685,7 +685,8 @@ def run_skymap():
             df.loc[mask_pb, 'radius'] = 0.58
 
             # treat case of no detection in the incoherent beam
-            if len(df[mask_pb]) == 0:
+            if len(df[mask_pb]) == 0 \
+            or (len(df) == 1 and df.at[0, 'coherent'] == False):
                 log.info('No incoherent beam found.')
 
                 mean_ra = np.mean(coords.ra.deg)
