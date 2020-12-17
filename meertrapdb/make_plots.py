@@ -640,7 +640,8 @@ def run_skymap():
 
             temp = select(
                 (beam.id, beam.number, beam.ra, beam.dec, beam.coherent,
-                obs.utc_start, bc.cb_angle, bc.cb_x, bc.cb_y)
+                obs.utc_start, obs.receiver,
+                bc.cb_angle, bc.cb_x, bc.cb_y)
                 for obs in schema.Observation
                 for beam in obs.sps_candidate.beam
                 for bc in obs.beam_config
@@ -655,9 +656,10 @@ def run_skymap():
                     'dec':          [item[3] for item in temp],
                     'coherent':     [item[4] for item in temp],
                     'utc_start':    [item[5] for item in temp],
-                    'cb_angle':     [item[6] for item in temp],
-                    'cb_x':         [item[7] for item in temp],
-                    'cb_y':         [item[8] for item in temp]
+                    'receiver':     [item[6] for item in temp],
+                    'cb_angle':     [item[7] for item in temp],
+                    'cb_x':         [item[8] for item in temp],
+                    'cb_y':         [item[9] for item in temp]
                 }
 
             df = DataFrame.from_dict(temp2)
@@ -672,15 +674,26 @@ def run_skymap():
             )
 
             # tobs in hours
-            df['length'] = np.full(len(coords), obs['tobs'] / 3600.0)
+            df['length'] = np.full(len(df), obs['tobs'] / 3600.0)
+
+            # treat centre frequencies
+            if df.at[0, 'receiver'] == 1:
+                # l-band
+                cb_radius = smconfig['beam_radius']['l_band']['cb']
+                pb_radius = smconfig['beam_radius']['l_band']['pb']
+            elif df.at[0, 'receiver'] == 2:
+                # uhf-band
+                cb_radius = smconfig['beam_radius']['uhf']['cb']
+                pb_radius = smconfig['beam_radius']['uhf']['pb']
+            else:
+                raise RuntimeError('Receiver number unknown: {0}'.format(df.at[0, 'receiver']))
 
             # tied-array beam coverage
-            df['radius'] = np.full(len(coords), smconfig['beam_radius']['l_band']['cb'])
+            df['radius'] = np.full(len(df), cb_radius)
 
             # primary beam coverage
             mask_pb = (df['coherent'] == False) & (df['number'] == 0)
-            # XXX: consider uhf vs. l-band
-            df.loc[mask_pb, 'radius'] = smconfig['beam_radius']['l_band']['pb']
+            df.loc[mask_pb, 'radius'] = pb_radius
 
             # treat case of no detection in the incoherent beam
             if len(df[mask_pb]) == 0 \
@@ -701,8 +714,8 @@ def run_skymap():
 
                 m.add_exposure(
                     [mean_coord],
-                    [smconfig['beam_radius']['l_band']['pb']],
-                    [obs['tobs']]
+                    [pb_radius],
+                    [df.at[0, 'length']]
                 )
 
             if len(df) == 1:
