@@ -581,11 +581,9 @@ def run_skymap():
     # 1) determine the good observations and their observing times
     with db_session:
         temp = select(
-                (obs.id, obs.utc_start, obs.tobs)
-                    for obs in schema.Observation
-                )[:]
-
-    log.info('Observations loaded: {0}'.format(len(temp)))
+            (obs.id, obs.utc_start, obs.tobs)
+            for obs in schema.Observation
+        )[:]
 
     # convert to pandas dataframe
     temp2 = {
@@ -595,6 +593,8 @@ def run_skymap():
     }
 
     df = DataFrame.from_dict(temp2)
+
+    log.info('Observations loaded: {0}'.format(len(df)))
 
     # convert to datetime
     df['utc_start'] = pd.to_datetime(df['utc_start_str'])
@@ -619,7 +619,6 @@ def run_skymap():
             }
 
             observations.append(obs)
-
         else:
             continue
 
@@ -627,8 +626,9 @@ def run_skymap():
 
     # 2) create skymap
     config = get_config()
-    nside = config['skymap']['nside']
-    unit = config['skymap']['unit']
+    smconfig = config['skymap']
+    nside = smconfig['nside']
+    unit = smconfig['unit']
 
     m = Skymap(nside=nside, unit=unit)
 
@@ -639,14 +639,13 @@ def run_skymap():
             obs_id = int(obs['id'])
 
             temp = select(
-                    (beam.id, beam.number, beam.ra, beam.dec, beam.coherent,
-                     obs.utc_start,
-                     bc.cb_angle, bc.cb_x, bc.cb_y)
-                        for obs in schema.Observation
-                        for beam in obs.sps_candidate.beam
-                        for bc in obs.beam_config
-                        if obs.id == obs_id
-                    )[:]
+                (beam.id, beam.number, beam.ra, beam.dec, beam.coherent,
+                obs.utc_start, bc.cb_angle, bc.cb_x, bc.cb_y)
+                for obs in schema.Observation
+                for beam in obs.sps_candidate.beam
+                for bc in obs.beam_config
+                if obs.id == obs_id
+            )[:]
 
             # convert to pandas dataframe
             temp2 = {
@@ -676,30 +675,35 @@ def run_skymap():
             df['length'] = np.full(len(coords), obs['tobs'] / 3600.0)
 
             # tied-array beam coverage
-            # 43 arcsec radius at l-band is typical
-            df['radius'] = np.full(len(coords), 43.0 / 3600.0)
+            df['radius'] = np.full(len(coords), smconfig['beam_radius']['l_band']['cb'])
 
             # primary beam coverage
             mask_pb = (df['coherent'] == False) & (df['number'] == 0)
             # XXX: consider uhf vs. l-band
-            df.loc[mask_pb, 'radius'] = 0.58
+            df.loc[mask_pb, 'radius'] = smconfig['beam_radius']['l_band']['pb']
 
             # treat case of no detection in the incoherent beam
             if len(df[mask_pb]) == 0 \
             or (len(df) == 1 and df.at[0, 'coherent'] == False):
                 log.info('No incoherent beam found.')
 
-                mean_ra = np.mean(coords.ra.deg)
-                mean_dec = np.mean(coords.dec.deg)
+                mean = {
+                    'ra': np.mean(coords.ra.deg),
+                    'dec': np.mean(coords.dec.deg)
+                }
 
                 mean_coord = SkyCoord(
-                    ra=mean_ra,
-                    dec=mean_dec,
+                    ra=mean['ra'],
+                    dec=mean['dec'],
                     unit=(units.deg, units.deg),
                     frame='icrs'
                 )
 
-                m.add_exposure([mean_coord], [0.58], [obs['tobs']])
+                m.add_exposure(
+                    [mean_coord],
+                    [smconfig['beam_radius']['l_band']['pb']],
+                    [obs['tobs']]
+                )
 
             if len(df) == 1:
                 print(df.to_string())

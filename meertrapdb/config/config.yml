@@ -62,6 +62,20 @@ notifier:
 
 # sky map related options
 skymap:
-  # 2^13
+  # 2^13, which corresponds to 25.8 arcsec resolution
   nside: 8192
   unit: 'hour'
+  # beam hpbw radii in degrees
+  # at the centre frequencies of the sampled bands
+  # and for the core antennas tied together
+  beam_radius:
+    # at 1284 MHz
+    l_band:
+      pb: 0.58
+      # 43.2 arcsec is typical
+      cb: 0.012
+    # at 856 MHz
+    uhf:
+      pb: 0.88
+      # 64.8 arcsec is typical
+      cb: 0.018
