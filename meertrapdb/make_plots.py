@@ -677,6 +677,7 @@ def run_skymap():
             df['length'] = np.full(len(df), obs['tobs'] / 3600.0)
 
             # treat centre frequencies
+            # set default values for the cb radius
             if df.at[0, 'receiver'] == 1:
                 # l-band
                 cb_radius = smconfig['beam_radius']['l_band']['cb']
@@ -687,6 +688,17 @@ def run_skymap():
                 pb_radius = smconfig['beam_radius']['uhf']['pb']
             else:
                 raise RuntimeError('Receiver number unknown: {0}'.format(df.at[0, 'receiver']))
+
+            # compute the radius of the circle with the same area
+            # as the elliptical cb beam pattern
+            # XXX: switch to elliptical exposure regions in the skymap
+            # a_ell = pi * a * b
+            # a_circ = pi * r**2
+            # => r = sqrt(a * b)
+            if df.at[0, 'cb_x'] > 0 \
+            and df.at[0, 'cb_y'] > 0:
+                cb_radius = np.sqrt(df.at[0, 'cb_x'] * df.at[0, 'cb_y'])
+                log.info('Using computed CB radius: {0} arcsec'.format(cb_radius * 3600.0))
 
             # tied-array beam coverage
             df['radius'] = np.full(len(df), cb_radius)
