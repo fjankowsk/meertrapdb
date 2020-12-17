@@ -634,7 +634,7 @@ def run_skymap():
 
     # 3) retrieve the beam information and fill in the exposure
     with db_session:
-        for obs in observations:
+        for iobs, obs in enumerate(observations):
             # ponyorm requires native python types in the generator expression
             obs_id = int(obs['id'])
 
@@ -664,7 +664,7 @@ def run_skymap():
 
             df = DataFrame.from_dict(temp2)
 
-            log.info('Observation, beams loaded: {0}, {1}'.format(obs_id, len(df)))
+            log.info('Number, obs id, beams: {0}, {1}, {2}'.format(iobs, obs_id, len(df)))
 
             coords = SkyCoord(
                 ra=df['ra'],
@@ -698,7 +698,7 @@ def run_skymap():
             if df.at[0, 'cb_x'] > 0 \
             and df.at[0, 'cb_y'] > 0:
                 cb_radius = np.sqrt(df.at[0, 'cb_x'] * df.at[0, 'cb_y'])
-                log.info('Using computed CB radius: {0} arcsec'.format(cb_radius * 3600.0))
+                log.info('Using computed CB radius: {0:.3f} arcsec'.format(cb_radius * 3600.0))
 
             # tied-array beam coverage
             df['radius'] = np.full(len(df), cb_radius)
