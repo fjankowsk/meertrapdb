@@ -579,6 +579,11 @@ def run_skymap():
     log = logging.getLogger('meertrapdb.make_plots')
 
     # 1) determine the good observations and their observing times
+    # XXX: need to group observations into sets so that we do not
+    # lose the beams that started later
+    # can imagine situations when a single node started early
+    # all other beams from that session would be lost
+    # need to make plot of observations over time
     with db_session:
         temp = select(
             (obs.id, obs.utc_start, obs.tobs)
