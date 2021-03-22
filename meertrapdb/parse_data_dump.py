@@ -1,15 +1,32 @@
+# -*- coding: utf-8 -*-
+#
+#   2021 Fabian Jankowski
+#   Process the sensor data dump.
+#
+
 import glob
 
+from astropy import units
+from astropy.coordinates import SkyCoord
+from healpy.visufunc import projscatter
+import katpoint
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+from meertrapdb.config_helpers import get_config
+from meertrapdb.skymap import Skymap
 
-#
-# MAIN
-#
+# astropy.units generates members dynamically, pylint therefore fails
+# disable the corresponding pylint test for now
+# pylint: disable=E1101
 
-def main():
+
+def run_timeline():
+    """
+    Run the processing for timeline mode.
+    """
+
     files = glob.glob('fbfuse*.csv')
     files = sorted(files)
 
@@ -33,7 +50,11 @@ def main():
 
         frames.append(temp)
 
-    df = pd.concat(frames, axis=0)
+    df = pd.concat(
+        frames,
+        ignore_index=True,
+        sort=False
+    )
 
     # convert to dates
     df['date'] = pd.to_datetime(df['value_ts'], unit='s')
@@ -91,6 +112,190 @@ def main():
         'timeline.png',
         dpi=300
     )
+
+
+def run_pointing():
+    """
+    Run the processing for pointing mode.
+    """
+
+    files = glob.glob('fbfuse_sensor_dump/*_phase_reference_*.csv')
+    files = sorted(files)
+
+    if not len(files) > 0:
+        raise RuntimeError('Need to provide input files.')
+
+    frames = []
+
+    for item in files:
+        names = [
+            'name',
+            'sample_ts',
+            'value_ts',
+            'status',
+            'value'
+        ]
+
+        temp = pd.read_csv(
+            item,
+            names=names,
+            quotechar='"'
+        )
+
+        frames.append(temp)
+
+    df = pd.concat(
+        frames,
+        ignore_index=True,
+        sort=False
+    )
+
+    # sort
+    df = df.sort_values(by='sample_ts')
+    df = df.reindex()
+
+    # convert to dates
+    df['date'] = pd.to_datetime(df['value_ts'], unit='s')
+
+    # parse targets
+    df['value'] = df['value'].str.strip('"')
+
+    coords = []
+
+    for i in range(len(df)):
+        raw = df.at[i, 'value']
+
+        name = ''
+        ra = np.nan
+        dec = np.nan
+
+        try:
+            target = katpoint.Target(raw)
+            name = target.name
+            result = target.astrometric_radec()
+            ra = np.degrees(result[0])
+            dec = np.degrees(result[1])
+        except Exception:
+            pass
+
+        coords.append([name, ra, dec])
+
+    df['name'] = [item[0] for item in coords]
+    df['ra'] = [item[1] for item in coords]
+    df['dec'] = [item[2] for item in coords]
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+
+    ax.scatter(
+        df['date'],
+        [1 for _ in range(len(df))]
+    )
+
+    ax.grid()
+    ax.set_xlabel('MJD')
+
+    fig.tight_layout()
+
+    # add exposure to sky map
+    config = get_config()
+    smconfig = config['skymap']
+    nside = smconfig['nside']
+    unit = smconfig['unit']
+
+    m = Skymap(nside=nside, unit=unit)
+
+    coords = SkyCoord(
+        ra=df['ra'],
+        dec=df['dec'],
+        unit=(units.deg, units.deg),
+        frame='icrs'
+    )
+
+    pb_radius = smconfig['beam_radius']['l_band']['pb']
+
+    for i in range(len(df) - 1):
+        name = df.at[i, 'name']
+        if name in ['', 'unset']:
+            continue
+
+        if np.isnan(coords[i].ra) or np.isnan(coords[i].dec):
+            continue
+
+        tobs = (df.at[i + 1, 'sample_ts'] - df.at[i, 'sample_ts']) / 3600.0
+        #print(name, tobs, coords[i])
+        #print(name, tobs)
+
+        # remove short bogus pointings
+        if tobs < 60.0 / 3600.0:
+            continue
+
+        m.add_exposure(
+           [coords[i]],
+           [pb_radius],
+           [tobs]
+        )
+
+        # XXX: test
+        #if i > 100:
+        #    break
+
+    m.show(coordinates='galactic')
+
+    # plot discoveries
+    names = [
+        'name',
+        'ra',
+        'dec',
+        'type'
+    ]
+
+    df_sources = pd.read_csv(
+        'sources.csv',
+        sep=';',
+        names=names,
+        comment='#'
+    )
+
+    types = np.unique(df_sources['type'])
+    colors = ['tab:olive', 'tab:blue', 'tab:red']
+
+    for i, item in enumerate(types):
+        mask = (df_sources['type'] == item)
+        sel = df_sources[mask]
+
+        coords = SkyCoord(
+            ra=sel['ra'],
+            dec=sel['dec'],
+            unit=(units.hourangle, units.deg),
+            frame='icrs'
+        )
+
+        color = colors[i % len(colors)]
+
+        projscatter(
+            coords.galactic.l.deg,
+            coords.galactic.b.deg,
+            lonlat=True,
+            coord='G',
+            marker='*',
+            facecolor=color,
+            edgecolor='black',
+            lw=0.5,
+            s=50,
+            zorder=5
+        )
+
+    #m.save_to_file('skymap_from_data_dump.pkl')
+    print(m)
+
+
+#
+# MAIN
+#
+
+def main():
+    run_pointing()
 
     plt.show()
 
