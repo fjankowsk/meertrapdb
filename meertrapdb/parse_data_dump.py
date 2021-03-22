@@ -8,7 +8,6 @@ import glob
 
 from astropy import units
 from astropy.coordinates import SkyCoord
-from healpy.visufunc import projscatter
 import katpoint
 import matplotlib.pyplot as plt
 import numpy as np
@@ -240,8 +239,6 @@ def run_pointing():
         #if i > 100:
         #    break
 
-    m.show(coordinates='galactic')
-
     # plot discoveries
     names = [
         'name',
@@ -257,37 +254,18 @@ def run_pointing():
         comment='#'
     )
 
-    types = np.unique(df_sources['type'])
-    colors = ['tab:olive', 'tab:blue', 'tab:red']
-
-    for i, item in enumerate(types):
-        mask = (df_sources['type'] == item)
-        sel = df_sources[mask]
-
-        coords = SkyCoord(
-            ra=sel['ra'],
-            dec=sel['dec'],
-            unit=(units.hourangle, units.deg),
-            frame='icrs'
-        )
-
-        color = colors[i % len(colors)]
-
-        projscatter(
-            coords.galactic.l.deg,
-            coords.galactic.b.deg,
-            lonlat=True,
-            coord='G',
-            marker='*',
-            facecolor=color,
-            edgecolor='black',
-            lw=0.5,
-            s=50,
-            zorder=5
-        )
-
     #m.save_to_file('skymap_from_data_dump.pkl')
     print(m)
+
+    m.show(
+        coordinates='galactic',
+        sources=df_sources
+    )
+
+    m.show(
+        coordinates='equatorial',
+        sources=df_sources
+    )
 
 
 #
