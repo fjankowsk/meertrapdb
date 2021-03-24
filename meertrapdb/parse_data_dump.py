@@ -5,6 +5,7 @@
 #
 
 import glob
+import os.path
 
 from astropy import units
 from astropy.coordinates import SkyCoord
@@ -247,12 +248,15 @@ def run_pointing():
         'type'
     ]
 
-    df_sources = pd.read_csv(
-        'sources.csv',
-        sep=';',
-        names=names,
-        comment='#'
-    )
+    if os.path.isfile('sources.csv'):
+        df_sources = pd.read_csv(
+            'sources.csv',
+            sep=';',
+            names=names,
+            comment='#'
+        )
+    else:
+        df_sources = None
 
     #m.save_to_file('skymap_from_data_dump.pkl')
     print(m)
