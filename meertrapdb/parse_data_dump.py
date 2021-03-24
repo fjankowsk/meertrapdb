@@ -184,18 +184,79 @@ def run_pointing():
     df['ra'] = [item[1] for item in coords]
     df['dec'] = [item[2] for item in coords]
 
+    # add observing time
+    df['tobs'] = df['sample_ts'].diff()
+
+    mask = (df['name'] == '') | \
+           (df['name'] == 'unset') | \
+           (df['ra'] == 0) | \
+           (df['dec'] == 0) | \
+           df['ra'].isnull() | \
+           df['dec'].isnull()
+
+    df.loc[mask, 'tobs'] = np.nan
+
+    # remove short bogus pointings
+    mask = (df['tobs'] < 60.0)
+    df.loc[mask, 'tobs'] = np.nan
+
+    # remove pointings at the end of a session
+    mask = (df['tobs'] > 3600.0)
+    df.loc[mask, 'tobs'] = np.nan
+
+    # truncate (incorrect) long pointings
+    mask = (df['tobs'] > 700.0)
+    df.loc[mask, 'tobs'] = 600.0
+
+    print(df.to_string(columns=['name', 'tobs']))
+
+    # plot tobs
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
     ax.scatter(
         df['date'],
-        [1 for _ in range(len(df))]
+        df['tobs'],
+        marker='.',
+        color='black',
+        s=0.5,
+        zorder=3
     )
 
     ax.grid()
     ax.set_xlabel('MJD')
+    ax.set_ylabel('tobs (s)')
 
     fig.tight_layout()
+
+    fig.savefig(
+        'tobs_timeline.png',
+        dpi=300
+    )
+
+    # histogram of tobs
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+
+    ax.hist(
+        df['tobs'],
+        histtype='step',
+        bins=30,
+        color='black',
+        lw=1.5,
+        zorder=3
+    )
+
+    ax.grid()
+    ax.set_xlabel('tobs (s)')
+    ax.set_ylabel('Number')
+
+    fig.tight_layout()
+
+    fig.savefig(
+        'tobs_hist.png',
+        dpi=300
+    )
 
     # add exposure to sky map
     config = get_config()
@@ -205,40 +266,23 @@ def run_pointing():
 
     m = Skymap(nside=nside, unit=unit)
 
+    mask = np.logical_not(df['tobs'].isnull())
+    sel = df[mask]
+
     coords = SkyCoord(
-        ra=df['ra'],
-        dec=df['dec'],
+        ra=sel['ra'],
+        dec=sel['dec'],
         unit=(units.deg, units.deg),
         frame='icrs'
     )
 
     pb_radius = smconfig['beam_radius']['l_band']['pb']
 
-    for i in range(len(df) - 1):
-        name = df.at[i, 'name']
-        if name in ['', 'unset']:
-            continue
-
-        if np.isnan(coords[i].ra) or np.isnan(coords[i].dec):
-            continue
-
-        tobs = (df.at[i + 1, 'sample_ts'] - df.at[i, 'sample_ts']) / 3600.0
-        #print(name, tobs, coords[i])
-        #print(name, tobs)
-
-        # remove short bogus pointings
-        if tobs < 60.0 / 3600.0:
-            continue
-
-        m.add_exposure(
-           [coords[i]],
-           [pb_radius],
-           [tobs]
-        )
-
-        # XXX: test
-        #if i > 100:
-        #    break
+    m.add_exposure(
+        coords,
+        [pb_radius for _ in range(len(sel))],
+        sel['tobs'] / 3600.0
+    )
 
     # plot discoveries
     names = [
