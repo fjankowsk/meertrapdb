@@ -57,7 +57,7 @@ def run_timeline():
     )
 
     # convert to dates
-    df['date'] = pd.to_datetime(df['value_ts'], unit='s')
+    df['date'] = pd.to_datetime(df['sample_ts'], unit='s')
 
     # add unit field
     df['unit'] = ''
@@ -114,6 +114,57 @@ def run_timeline():
     )
 
 
+def get_cfreq_data():
+    """
+    Get the centre frequency information.
+
+    Returns
+    -------
+    df: ~pandas.DataFrame
+        The centre frequency data.
+    """
+
+    files = glob.glob('fbfuse_sensor_dump/*_centre_frequency_*.csv')
+    files = sorted(files)
+
+    if not len(files) > 0:
+        raise RuntimeError('Need to provide input files.')
+
+    frames = []
+
+    for item in files:
+        names = [
+            'name',
+            'sample_ts',
+            'value_ts',
+            'status',
+            'value'
+        ]
+
+        temp = pd.read_csv(
+            item,
+            names=names,
+            quotechar='"'
+        )
+
+        frames.append(temp)
+
+    df = pd.concat(
+        frames,
+        ignore_index=True,
+        sort=False
+    )
+
+    # sort
+    df = df.sort_values(by='sample_ts')
+    df = df.reindex()
+
+    # convert to dates
+    df['date'] = pd.to_datetime(df['sample_ts'], unit='s')
+
+    return df
+
+
 def run_pointing():
     """
     Run the processing for pointing mode.
@@ -155,7 +206,7 @@ def run_pointing():
     df = df.reindex()
 
     # convert to dates
-    df['date'] = pd.to_datetime(df['value_ts'], unit='s')
+    df['date'] = pd.to_datetime(df['sample_ts'], unit='s')
 
     # parse targets
     df['value'] = df['value'].str.strip('"')
@@ -258,6 +309,44 @@ def run_pointing():
         dpi=300
     )
 
+    # figure out observing band
+    df_cfreq = get_cfreq_data()
+
+    bands = []
+
+    for i in range(len(df)):
+        band = ''
+
+        if np.isnan(df.at[i, 'tobs']):
+            pass
+        else:
+            start = df.at[i, 'date']
+            end = df.at[i, 'date'] + pd.to_timedelta(df.at[i, 'tobs'], unit='s')
+            #print('Start, end: {0}, {1}'.format(start, end))
+
+            mask = (df_cfreq['date'] >= start) & (df_cfreq['date'] <= end)
+            sel = df_cfreq.loc[mask]
+
+            #print(len(sel))
+
+            if len(sel) > 0:
+                # use value in first row
+                # XXX: use a better method
+                cfreq = sel['value'].iat[0]
+
+                if cfreq < 1.0E9:
+                    band = 'u'
+                elif 1.0E9 < cfreq < 2.0E9:
+                    band = 'l'
+                elif cfreq > 2.0E9:
+                    band = 's'
+                else:
+                    raise RuntimeError('Band unknown: {0}'.format(cfreq))
+
+        bands.append(band)
+
+    df['band'] = bands
+
     # add exposure to sky map
     config = get_config()
     smconfig = config['skymap']
@@ -267,7 +356,19 @@ def run_pointing():
     m = Skymap(nside=nside, unit=unit)
 
     mask = np.logical_not(df['tobs'].isnull())
-    sel = df[mask]
+    sel = df[mask].copy()
+
+    print('Total time span: {0:.1f} days'.format(
+        (sel['date'].max() - sel['date'].min()).total_seconds() / 86400.0
+        )
+    )
+
+    print('Total tobs: {0:.1f} days'.format(sel['tobs'].sum() / 86400.0))
+
+    print('Average observing time: {0:.2f} hours / day'.format(
+        24 * sel['tobs'].sum() / (sel['date'].max() - sel['date'].min()).total_seconds()
+        )
+    )
 
     coords = SkyCoord(
         ra=sel['ra'],
@@ -276,11 +377,23 @@ def run_pointing():
         frame='icrs'
     )
 
-    pb_radius = smconfig['beam_radius']['l_band']['pb']
+    # add primary beam radii
+    pb_radius_l = smconfig['beam_radius']['l_band']['pb']
+    # XXX: rename to uhf_band for consistency
+    pb_radius_u = smconfig['beam_radius']['uhf']['pb']
+
+    # use l-band as default
+    sel['radius'] = pb_radius_l
+
+    mask = (sel['band'] == 'l')
+    sel.loc[mask, 'radius'] = pb_radius_l
+
+    mask = (sel['band'] == 'u')
+    sel.loc[mask, 'radius'] = pb_radius_u
 
     m.add_exposure(
         coords,
-        [pb_radius for _ in range(len(sel))],
+        sel['radius'],
         sel['tobs'] / 3600.0
     )
 
