@@ -414,17 +414,19 @@ def run_pointing():
     else:
         df_sources = None
 
-    m.save_to_file('skymap_from_data_dump.pkl')
+    #m.save_to_file('skymap_from_data_dump.pkl')
     print(m)
 
     m.show(
         coordinates='galactic',
-        sources=df_sources
+        sources=df_sources,
+        shownames=True
     )
 
     m.show(
         coordinates='equatorial',
-        sources=df_sources
+        sources=df_sources,
+        shownames=True
     )
 
 
