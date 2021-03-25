@@ -689,8 +689,8 @@ def run_skymap():
                 pb_radius = smconfig['beam_radius']['l_band']['pb']
             elif df.at[0, 'receiver'] == 2:
                 # uhf-band
-                cb_radius = smconfig['beam_radius']['uhf']['cb']
-                pb_radius = smconfig['beam_radius']['uhf']['pb']
+                cb_radius = smconfig['beam_radius']['uhf_band']['cb']
+                pb_radius = smconfig['beam_radius']['uhf_band']['pb']
             else:
                 raise RuntimeError('Receiver number unknown: {0}'.format(df.at[0, 'receiver']))
 

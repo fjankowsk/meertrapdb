@@ -75,7 +75,7 @@ skymap:
       # 43.2 arcsec is typical
       cb: 0.012
     # at 856 MHz
-    uhf:
+    uhf_band:
       pb: 0.88
       # 64.8 arcsec is typical
       cb: 0.018

@@ -379,8 +379,7 @@ def run_pointing():
 
     # add primary beam radii
     pb_radius_l = smconfig['beam_radius']['l_band']['pb']
-    # XXX: rename to uhf_band for consistency
-    pb_radius_u = smconfig['beam_radius']['uhf']['pb']
+    pb_radius_u = smconfig['beam_radius']['uhf_band']['pb']
 
     # use l-band as default
     sel['radius'] = pb_radius_l
