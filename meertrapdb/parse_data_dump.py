@@ -414,7 +414,7 @@ def run_pointing():
     else:
         df_sources = None
 
-    #m.save_to_file('skymap_from_data_dump.pkl')
+    m.save_to_file('skymap_from_data_dump.pkl')
     print(m)
 
     m.show(
