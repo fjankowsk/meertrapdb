@@ -476,7 +476,7 @@ def run_pointing():
     ax.set_xlabel('tobs (h)')
     ax.set_ylabel('Number')
     ax.set_title('Source exposure')
-    ax.legend(loc='best')
+    ax.legend(loc='best', frameon=False)
 
     fig.tight_layout()
 
