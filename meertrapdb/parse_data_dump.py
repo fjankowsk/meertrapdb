@@ -397,19 +397,12 @@ def run_pointing():
     )
 
     # plot discoveries
-    names = [
-        'name',
-        'ra',
-        'dec',
-        'type'
-    ]
-
     if os.path.isfile('sources.csv'):
         df_sources = pd.read_csv(
             'sources.csv',
             sep=';',
-            names=names,
-            comment='#'
+            comment='#',
+            header='infer'
         )
     else:
         df_sources = None
