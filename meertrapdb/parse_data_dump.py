@@ -157,7 +157,7 @@ def get_cfreq_data():
 
     # sort
     df = df.sort_values(by='sample_ts')
-    df = df.reindex()
+    df.index = range(len(df.index))
 
     # convert to dates
     df['date'] = pd.to_datetime(df['sample_ts'], unit='s')
@@ -203,7 +203,7 @@ def run_pointing():
 
     # sort
     df = df.sort_values(by='sample_ts')
-    df = df.reindex()
+    df.index = range(len(df.index))
 
     # convert to dates
     df['date'] = pd.to_datetime(df['sample_ts'], unit='s')
