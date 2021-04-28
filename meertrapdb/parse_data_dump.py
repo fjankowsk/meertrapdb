@@ -4,8 +4,10 @@
 #   Process the sensor data dump.
 #
 
+import argparse
 import glob
 import os.path
+import sys
 
 from astropy import units
 from astropy.coordinates import SkyCoord
@@ -20,6 +22,32 @@ from meertrapdb.skymap import Skymap
 # astropy.units generates members dynamically, pylint therefore fails
 # disable the corresponding pylint test for now
 # pylint: disable=E1101
+
+
+def parse_args():
+    """
+    Parse the commandline arguments.
+
+    Returns
+    -------
+    args: populated namespace
+        The commandline arguments.
+    """
+
+    parser = argparse.ArgumentParser(
+        description='Process the sensor data dump.',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+
+    parser.add_argument(
+        '--enddate',
+        dest='enddate',
+        type=str,
+        metavar=('YYYY-MM-DDThh:mm:ss'),
+        help='Process sensor data until this UTC date in ISOT format.'
+    )
+
+    return parser.parse_args()
 
 
 def run_timeline():
@@ -165,9 +193,14 @@ def get_cfreq_data():
     return df
 
 
-def run_pointing():
+def run_pointing(params):
     """
     Run the processing for pointing mode.
+
+    Parameters
+    ----------
+    params: dict
+        Additional parameters for the processing.
     """
 
     files = glob.glob('fbfuse_sensor_dump/*_phase_reference_*.csv')
@@ -260,6 +293,12 @@ def run_pointing():
     df.loc[mask, 'tobs'] = 600.0
 
     print(df.to_string(columns=['name', 'tobs']))
+
+    # consider only data until end date
+    if 'enddate' in params \
+    and params['enddate'] is not None:
+        mask = (df['date'] <= params['enddate'])
+        df = df[mask]
 
     # plot tobs
     fig = plt.figure()
@@ -484,7 +523,23 @@ def run_pointing():
 #
 
 def main():
-    run_pointing()
+    args = parse_args()
+
+    enddate = None
+
+    if args.enddate is not None:
+        try:
+            enddate = pd.Timestamp(args.enddate)
+        except ValueError as e:
+            sys.exit('Input date is invalid: {0}'.format(e))
+
+    print('End date UTC: {0}'.format(enddate))
+
+    params = {
+        'enddate': enddate
+    }
+
+    run_pointing(params)
 
     plt.show()
 
