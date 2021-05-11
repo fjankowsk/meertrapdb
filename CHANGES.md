@@ -4,6 +4,7 @@
 
 ## 0.8 (2021-05-11) ##
 
+* Bumped `meertrapdb` to version 0.8. `psrmatch` stays at version 0.4.
 * `Sensordump`: Added commandline option to select data up until a certain end date.
 * `Sensordump`: Bugfix. Correctly reset the `pandas` DataFrame index to a range.
 * `Skymap`: In equatorial mode, added markers to the graticule lines. Rotated the spatial data so that the sky map runs from 0 to 24 hours right to left.
