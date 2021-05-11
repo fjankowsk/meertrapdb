@@ -19,7 +19,7 @@
 * `Sensordump`: Added script to parse and visualise the sensor data dump.
 * `Skymap`: Added code to compress the pickled Skymap object using the `bzip2` algorithm. This reduced the size of a sky map dump on disk from about 3 GB to roughly 3.4 MB, a factor of ~900 improvement!
 * Added HPBW beam radii parameters in the configuration file for both L and UHF band. Differentiated between L and UHF band in the exposure time and `Skymap` code. Used the exact area of the tied-array beams if the corresponding parameters are available.
-* Treat corner cases in the exposure time calculation.
+* Treated corner cases in the exposure time calculation.
 * `Skymap`: Allowed both equatorial and Galactic coordinates in visualisation. Output plot to file.
 * Treated case of no detection in the incoherent beam.
 * `Skymap`: Formatting tweaks to the visualisation.
