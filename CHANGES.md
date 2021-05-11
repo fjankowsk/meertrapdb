@@ -2,10 +2,33 @@
 
 ## HEAD ##
 
+## 0.8 (2021-05-11) ##
+
+* `Sensordump`: Added commandline option to select data up until a certain end date.
+* `Sensordump`: Bugfix. Correctly reset the `pandas` DataFrame index to a range.
+* `Skymap`: In equatorial mode, added markers to the graticule lines. Rotated the spatial data so that the sky map runs from 0 to 24 hours right to left.
+* `Sensordump` and `Skymap`: Added function to query the exposure times in a given circle. Added code to query the exposure times for all sources and show histogram plot.
+* `Skymap`: Displayed source names on sky map plot.
+* `Skymap`: Fixed a bug in `python` 3.9's pickle module interacting with the `bzip2` compressor. For now, switch to the default pickle protocol version 4 that does not support out-of-band data.
+* `Sensordump`: Added code to cross-correlate the observations with the centre frequency data to work out the respective observing band.
+* `Sensordump`: Added code to figure out the observing time earlier and more efficiently. Added thresholds to remove bogus or incorrect data. Plotted tobs timeline and histogram. Those changes sped up the processing significantly.
+* `Sensordump`: Added function to process the spatial, i.e. pointing data. Moved source plotting code into the `Skymap` class. Ensured that the source coordinates get converted to the corresponding reference frame correctly.
+* `Skymap`: Docstring cleanup.
+* `Sensordump`: Added script to parse and visualise the sensor data dump.
+* `Skymap`: Added code to compress the pickled Skymap object using the `bzip2` algorithm. This reduced the size of a sky map dump on disk from about 3 GB to roughly 3.4 MB, a factor of ~900 improvement!
+* Added HPBW beam radii parameters in the config file for both L and UHF band. Differentiated between L and UHF band in the exposure time and `Skymap` code. Used the exact area of the tied-array beams if the corresponding parameters are available.
+* Treat corner cases in the exposure time calculation.
+* `Skymap`: Allowed both equatorial and Galactic coordinates in visualisation. Output plot to file.
+* Treated case of no detection in incoherent beam.
+* `Skymap`: Formatting tweaks to the visualisation.
+* Added coverage parameters for the tied-array beams.
+* Reworked the skymap exposure calculation into a two-step process. Retrieve the good observations and their observing times first.
+* Hooked up the healpix `Skymap` code to the data analysis script.
+* Fleshed out the `Tiling` class some more.
 * `Skymap`: Changed saving and loading to use pickle. Added regression test for loading.
 * `Skymap`: Made instance variables private and added properties to access the ones that should be accessable externally. Adjusted the regression tests accordingly and added test to check access of private variables. Similar changes in the `Optimiser` class.
-* Implemented initial functionality in `Skymap`. Added various properties to the map, code to add exposure, visualisation, get basic statistics, saving to file, etc. Added corresponding regression tests, too.
-* Switched healpix maps to float32. This doubled the size of the map (3 GB), but extends their usage significantly in terms of the number of days that can be stored.
+* `Skymap`: Implemented initial functionality. Added various properties to the map, code to add exposure, visualisation, get basic statistics, saving to file, etc. Added corresponding regression tests too.
+* Switched healpix sky maps to float32 data type. This doubled the size of the map (3 GB), but extends their usage significantly in terms of the number of days that can be stored.
 * Added `Tiling` class to encapsulate multi-beam tilings.
 * Added initial design for `Skymap` and `Optimiser` classes.
 
