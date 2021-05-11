@@ -87,7 +87,7 @@ def test_private_access():
 def test_save():
     nside = 2**8
     unit = 'min'
-    filename = 'skymap_save_test.pkl'
+    filename = 'skymap_save_test.pkl.bz2'
 
     m = Skymap(nside=nside, unit=unit)
     print(m)
@@ -104,7 +104,7 @@ def test_save():
 def test_load():
     nside = 2**8
     unit = 'min'
-    filename = 'skymap_save_test.pkl'
+    filename = 'skymap_save_test.pkl.bz2'
 
     m1 = Skymap(nside=nside, unit=unit)
 
