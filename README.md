@@ -1,6 +1,6 @@
 # MeerTRAP Database Backend #
 
-This repository contains the database backend code for the [MeerTRAP project](https://www.meertrap.org/) at the MeerKAT telescope. The code is mainly developed for Python 3 (and in particular version 3.7), but Python 2 (e.g. version 2.7) should work fine.
+This repository contains the database backend code for the [MeerTRAP project](https://www.meertrap.org/) at the MeerKAT telescope. The code is mainly developed for Python 3, but Python 2 from version 2.7 onwards should work fine.
 
 ## Author ##
 
