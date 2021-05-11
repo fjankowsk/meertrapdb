@@ -5,14 +5,14 @@
 ## 0.8 (2021-05-11) ##
 
 * Bumped `meertrapdb` to version 0.8. `psrmatch` stays at version 0.4.
-* `Sensordump`: Added commandline option to select data up until a certain end date.
+* `Sensordump`: Added command-line option to select data up until a certain end date.
 * `Sensordump`: Bugfix. Correctly reset the `pandas` DataFrame index to a range.
 * `Skymap`: In equatorial mode, added markers to the graticule lines. Rotated the spatial data so that the sky map runs from 0 to 24 hours right to left.
 * `Sensordump` and `Skymap`: Added function to query the exposure times in a given circle. Added code to query the exposure times for all sources and show a histogram plot.
 * `Skymap`: Displayed source names on sky map plot.
 * `Skymap`: Fixed a bug in `python` 3.9's pickle module interacting with the `bzip2` compressor. For now, switch to the default pickle protocol (version 4) that does not support out-of-band data.
 * `Sensordump`: Added code to cross-correlate the observations with the centre frequency data to work out the respective observing band.
-* `Sensordump`: Added code to figure out the observing time earlier and more efficiently. Added thresholds to remove bogus or incorrect data. Plotted observing time timeline and histogram. Those changes sped up the processing significantly.
+* `Sensordump`: Added code to figure out the observing time earlier and more efficiently. Added thresholds to remove bogus or incorrect data. Plotted an observing time timeline and histogram. Those changes sped up the processing significantly.
 * `Sensordump`: Added function to process the spatial, i.e. pointing data. Moved source plotting code into the `Skymap` class. Ensured that the source coordinates get converted to the corresponding reference frame correctly.
 * `Skymap`: Docstring cleanup.
 * `Sensordump`: Added script to parse and visualise the sensor data dump.
@@ -20,16 +20,16 @@
 * Added HPBW beam radii parameters in the configuration file for both L and UHF band. Differentiated between L and UHF band in the exposure time and `Skymap` code. Used the exact area of the tied-array beams if the corresponding parameters are available.
 * Treat corner cases in the exposure time calculation.
 * `Skymap`: Allowed both equatorial and Galactic coordinates in visualisation. Output plot to file.
-* Treated case of no detection in incoherent beam.
+* Treated case of no detection in the incoherent beam.
 * `Skymap`: Formatting tweaks to the visualisation.
 * Added coverage parameters for the tied-array beams.
 * Reworked the skymap exposure calculation into a two-step process. Retrieve the good observations and their observing times first.
-* Hooked up the healpix `Skymap` code to the data analysis script.
+* Hooked up the HEALPix `Skymap` code to the data analysis script.
 * Fleshed out the `Tiling` class some more.
 * `Skymap`: Changed saving and loading to use pickle. Added regression test for loading.
-* `Skymap`: Made instance variables private and added properties to access the ones that should be accessable externally. Adjusted the regression tests accordingly and added test to check access of private variables. Similar changes in the `Optimiser` class.
+* `Skymap`: Made instance variables private and added properties to access the ones that should be accessible externally. Adjusted the regression tests accordingly and added test to check the access of private variables. Similar changes in the `Optimiser` class.
 * `Skymap`: Implemented initial functionality. Added various properties to the map, code to add exposure, visualisation, get basic statistics, saving to file, etc. Added corresponding regression tests too.
-* Switched healpix sky maps to float32 data type. This doubled the size of the maps (3 GB), but extends their usage significantly in terms of the number of days that can be stored.
+* Switched HEALPix sky maps to float32 data type. This doubled the size of the maps (3 GB) but extends their usage significantly in terms of the number of days that can be stored.
 * Added `Tiling` class to encapsulate multi-beam tilings.
 * Added initial design for `Skymap` and `Optimiser` classes.
 
@@ -117,7 +117,7 @@ This version of the software was extensively tested over the last three months a
 * Added `make_plots` script to generate statistics plots from the database.
 * Added check to `sift` mode to test whether the requested schedule block is present in the database.
 * Added check to `production` mode that tests whether the requested schedule block is already in the database. This should prevent the user from ingesting candidates from multiple runs into the same schedule block.
-* The schedule block ID is now specified as a commandline option, rather than in the configuration file, to simplify the ingestion process for the user.
+* The schedule block ID is now specified as a command-line option, rather than in the configuration file, to simplify the ingestion process for the user.
 * The results from the multi-beam sifting operation are written into a separate database table. Subsequent sifting runs overwrite the previous results without modifying the candidate data. This allows one to trial different sifting parameters.
 * Added multi-beam clustering (`sift`) code and hooked it up to the database. It is run as part of the ingestion process, but can be invoked separately. A stand-alone script is available as well that works on SPCCL file input.
 
