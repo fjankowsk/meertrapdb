@@ -145,8 +145,6 @@ def test_add_exposure():
     m.add_exposure(coords, radius, length)
     print(m)
 
-    m.show()
-
 
 if __name__ == '__main__':
     import nose2
