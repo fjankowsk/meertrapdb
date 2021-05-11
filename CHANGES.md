@@ -4,6 +4,7 @@
 
 ## 0.8 (2021-05-11) ##
 
+* `Skymap`: Adjusted the regression tests to account for the fact that the sky map dumps are now compressed.
 * Bumped `meertrapdb` to version 0.8. `psrmatch` stays at version 0.4.
 * `Sensordump`: Added command-line option to select data up until a certain end date.
 * `Sensordump`: Bugfix. Correctly reset the `pandas` DataFrame index to a range.
