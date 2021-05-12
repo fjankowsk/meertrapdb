@@ -34,20 +34,20 @@ def main():
 
     # Get the names of sensors matching the patterns
     sensor_names = yield portal_client.sensor_names(args.sensors)
-    print("\nMatching sensor names: {}".format(sensor_names))
+    print("\nMatching sensor names: {0}".format(sensor_names))
 
     # Fetch the details for the sensors found.
     for sensor_name in sensor_names:
         sensor_detail = yield portal_client.sensor_detail(sensor_name)
-        print("\nDetail for sensor {}:".format(sensor_name))
+        print("\nDetail for sensor {0}:".format(sensor_name))
         for key in sorted(sensor_detail):
-            print("    {}: {}".format(key, sensor_detail[key]))
+            print("    {0}: {1}".format(key, sensor_detail[key]))
 
     num_sensors = len(sensor_names)
     if num_sensors == 0:
         print("\nNo matching sensors found - no history to request!")
     else:
-        print("\nRequesting history for {} sensors, from {} to {}"
+        print("\nRequesting history for {0} sensors, from {1} to {2}"
                .format(
                    num_sensors,
                    datetime.utcfromtimestamp(args.start).strftime('%Y-%m-%dT%H:%M:%SZ'),
@@ -83,7 +83,7 @@ def main():
         print("Found {} sensors.".format(len(histories)))
         for sensor_name, history in list(histories.items()):
             num_samples = len(history)
-            print("History for: {} ({} samples)".format(sensor_name, num_samples))
+            print("History for: {0} ({1} samples)".format(sensor_name, num_samples))
             if num_samples > 0:
                 filename = '{0}_{1}_{2}.csv'.format(
                     sensor_name,
@@ -95,15 +95,23 @@ def main():
                 with open(filename, 'w') as fd:
                     for idx in range(0, num_samples, args.decimate):
                         item = history[idx]
-                        if idx == 0:
-                            fd.write('# sensor_name, sample_time, value_time, status, """value"""\n')
+
+                        # wrap values that contain commas
+                        if type(item.value) == str \
+                        and ',' in item.value:
+                            value = '"""{0}"""'.format(item.value)
                         else:
-                            fd.write('{0},{1},{2},{3},"""{4}"""\n'.format(
+                            value = item.value
+
+                        if idx == 0:
+                            fd.write('# sensor_name, sample_time, value_time, status, value\n')
+                        else:
+                            fd.write('{0},{1},{2},{3},{4}\n'.format(
                                 sensor_name,
                                 item.sample_time,
                                 item.value_time,
                                 item.status,
-                                item.value
+                                value
                                 )
                             )
 
@@ -112,9 +120,9 @@ def main():
                     item = history[idx]
 
                     if idx == 0:
-                        print('\t# sensor_name, sample_time, value_time, status, """value"""')
+                        print('\t# sensor_name, sample_time, value_time, status, value')
                     else:
-                        print('\t{0},{1},{2},{3},"""{4}"""'.format(
+                        print('\t{0},{1},{2},{3},{4}'.format(
                             sensor_name,
                             item.sample_time,
                             item.value_time,
