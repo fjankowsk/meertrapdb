@@ -150,13 +150,13 @@ if __name__ == '__main__':
     parser.add_argument(
         '-s', '--start',
         default=time.time() - 3600,
-        type=int,
+        type=float,
         help="start time of sample query [sec since UNIX epoch]"
     )
 
     parser.add_argument(
         '-e', '--end',
-        type=int,
+        type=float,
         default=time.time(),
         help="end time of sample query [sec since UNIX epoch]"
     )
