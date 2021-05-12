@@ -191,6 +191,10 @@ def get_cfreq_data():
     # convert to dates
     df['date'] = pd.to_datetime(df['sample_ts'], unit='s')
 
+    # treat empty values
+    mask = (df['value'] == 0)
+    df.loc[mask, 'value'] = np.nan
+
     return df
 
 
@@ -365,7 +369,7 @@ def run_pointing(params):
             end = df.at[i, 'date'] + pd.to_timedelta(df.at[i, 'tobs'], unit='s')
             #print('Start, end: {0}, {1}'.format(start, end))
 
-            mask = (df_cfreq['date'] >= start) & (df_cfreq['date'] <= end)
+            mask = (df_cfreq['date'] >= start) & (df_cfreq['date'] <= end) & np.isfinite(df_cfreq['value'])
             sel = df_cfreq.loc[mask]
 
             #print(len(sel))
@@ -375,7 +379,7 @@ def run_pointing(params):
                 # XXX: use a better method
                 cfreq = sel['value'].iat[0]
 
-                if cfreq < 1.0E9:
+                if 0 < cfreq < 1.0E9:
                     band = 'u'
                 elif 1.0E9 < cfreq < 2.0E9:
                     band = 'l'
