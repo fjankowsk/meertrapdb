@@ -692,11 +692,6 @@ def run_production(schedule_block, test_run):
     -------
     sb_utc_start: datetime.datetime
         The UTC start time of the schedule block.
-
-    Raises
-    ------
-    RuntimeError
-        If summary file does not exist.
     """
 
     log = logging.getLogger('meertrapdb.populate_db')
@@ -766,10 +761,18 @@ def run_production(schedule_block, test_run):
 
         log.info('Summary filename: {0}'.format(summary_file))
 
+        # sanity check summary file
         if not os.path.isfile(summary_file):
-            raise RuntimeError('Summary file does not exist: {0}'.format(summary_file))
+            log.error('Summary file does not exist: {0}'.format(summary_file))
+            log.warning('Skipping SPCCL file: {0}'.format(filename))
+            continue
 
-        summary = load_summary_file(summary_file)
+        try:
+            summary = load_summary_file(summary_file)
+        except json.decoder.JSONDecodeError as err:
+            log.error('Could not parse summary file: {0}, {1}'.format(summary_file, err))
+            log.warning('Skipping SPCCL file: {0}'.format(filename))
+            continue
 
         # sanity check
         assert utc_start_str == summary['utc_start']
