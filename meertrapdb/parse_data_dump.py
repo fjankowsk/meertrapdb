@@ -71,6 +71,7 @@ def run_timeline():
 
         temp = pd.read_csv(
             item,
+            comment='#',
             names=names,
             quotechar='"'
         )
@@ -170,6 +171,7 @@ def get_cfreq_data():
 
         temp = pd.read_csv(
             item,
+            comment='#',
             names=names,
             quotechar='"'
         )
@@ -221,6 +223,7 @@ def run_pointing(params):
 
         temp = pd.read_csv(
             item,
+            comment='#',
             names=names,
             quotechar='"'
         )
