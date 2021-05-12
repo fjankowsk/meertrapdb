@@ -65,14 +65,13 @@ def run_timeline():
             'name',
             'sample_ts',
             'value_ts',
-            'value',
-            'status'
+            'status',
+            'value'
         ]
 
         temp = pd.read_csv(
             item,
             names=names,
-            na_values='0',
             quotechar='"'
         )
 
