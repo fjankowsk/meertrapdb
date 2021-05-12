@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Copyright (c) 2016 National Research Foundation (South African Radio Astronomy Observatory)
 # BSD license - see LICENSE for details
 """Simple example demonstrating sensor information and history queries.
@@ -126,6 +125,17 @@ def main():
 
 
 if __name__ == '__main__':
+    default_sensors = [
+        'fbfuse_1_fbfmc_array_1_phase_reference',
+        'fbfuse_1_fbfmc_array_2_phase_reference',
+        'fbfuse_2_fbfmc_array_1_phase_reference',
+        'fbfuse_2_fbfmc_array_2_phase_reference',
+        'fbfuse_1_fbfmc_array_1_centre_frequency',
+        'fbfuse_1_fbfmc_array_2_centre_frequency',
+        'fbfuse_2_fbfmc_array_1_centre_frequency',
+        'fbfuse_2_fbfmc_array_2_centre_frequency'
+    ]
+
     parser = argparse.ArgumentParser(
         description='Download sensor history data.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
@@ -160,7 +170,9 @@ if __name__ == '__main__':
     )
 
     parser.add_argument(
-        'sensors',
+        '--sensors',
+        default=default_sensors,
+        dest='sensors',
         metavar='sensor',
         nargs='+',
         help="list of sensor names or filter strings to request data for"
@@ -168,14 +180,16 @@ if __name__ == '__main__':
 
     parser.add_argument(
         '-v', '--verbose',
-        dest='verbose', action="store_true",
+        dest='verbose',
+        action="store_true",
         default=False,
         help="provide extremely verbose output"
     )
 
     parser.add_argument(
         '-i', '--include-value-time',
-        dest="include_value_time", action="store_false",
+        dest="include_value_time",
+        action="store_true",
         help="include value timestamp"
     )
 
