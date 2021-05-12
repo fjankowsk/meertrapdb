@@ -62,8 +62,10 @@ def main():
             #        include_value_time=True
             #    result is then sample_time, value_time, value, status
             history = yield portal_client.sensor_history(
-                sensor_names[0], args.start, args.end,
-                include_value_ts=value_time)
+                sensor_names[0],
+                args.start, args.end,
+                include_value_ts=value_time
+            )
             histories = {sensor_names[0]: history}
         else:
             # Request history for all the sensors - result is sample_time, value, status
@@ -79,11 +81,43 @@ def main():
             num_samples = len(history)
             print("History for: {} ({} samples)".format(sensor_name, num_samples))
             if num_samples > 0:
-                for count in range(0, num_samples, args.decimate):
-                    item = history[count]
-                    if count == 0:
-                        print("\tindex,{}".format(",".join(item._fields)))
-                    print("\t{},{}".format(count, item.csv()))
+                filename = '{0}_{1}_{2}.csv'.format(
+                    sensor_name,
+                    datetime.utcfromtimestamp(args.start).strftime('%Y_%m_%d'),
+                    datetime.utcfromtimestamp(args.end).strftime('%Y_%m_%d'),
+                )
+                print('Writing to file: {0}'.format(filename))
+
+                with open(filename, 'w') as fd:
+                    for idx in range(0, num_samples, args.decimate):
+                        item = history[idx]
+                        if idx == 0:
+                            fd.write('# sensor_name, sample_time, value_time, status, """value"""')
+                        else:
+                            fd.write('{0},{1},{2},{3},"""{4}"""\n'.format(
+                                sensor_name,
+                                item.sample_time,
+                                item.value_time,
+                                item.status,
+                                item.value
+                                )
+                            )
+
+                # print to stdout
+                for idx in range(0, num_samples, args.decimate):
+                    item = history[idx]
+
+                    if idx == 0:
+                        print('\t# sensor_name, sample_time, value_time, status, """value"""')
+                    else:
+                        print('\t{0},{1},{2},{3},"""{4}"""'.format(
+                            sensor_name,
+                            item.sample_time,
+                            item.value_time,
+                            item.status,
+                            item.value
+                            )
+                        )
 
     # Example: ./get_sensor_history.py -s 1522756324 -e 1522759924 sys_watchdogs_sys
     # Matching sensor names: [u'sys_watchdogs_sys']
@@ -115,7 +149,7 @@ if __name__ == '__main__':
 
     parser.add_argument(
         '--host',
-        default='127.0.0.1',
+        default='10.97.1.14',
         help="hostname or IP of the portal server."
     )
 
