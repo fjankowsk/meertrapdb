@@ -140,13 +140,21 @@ def test_load():
 
     m1.save_to_file(filename)
 
+    # from instance
     m2 = m1.load_from_file(filename)
 
-    assert (m2.coordinate == m1.coordinate)
-    assert (m2.nside == m1.nside)
-    assert (m2.quantity == m1.quantity)
-    assert (m2.unit == m1.unit)
-    assert (np.all(m2.data == m1.data))
+    for param in ['arrangement', 'coordinate', 'dtype', 'nside', 'quantity', 'unit']:
+        assert (getattr(m2, param) == getattr(m1, param))
+
+    assert_equal(m2.data, m1.data)
+
+    # using the class method
+    m3 = Skymap.load_from_file(filename)
+
+    for param in ['arrangement', 'coordinate', 'dtype', 'nside', 'quantity', 'unit']:
+        assert (getattr(m3, param) == getattr(m1, param))
+
+    assert_equal(m3.data, m1.data)
 
 
 def test_save_to_fits():
