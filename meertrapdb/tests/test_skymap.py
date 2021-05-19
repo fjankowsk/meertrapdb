@@ -19,26 +19,28 @@ from meertrapdb.skymap import Skymap
 
 def test_creation():
     nside = 2**8
+    quantity = 'time'
     unit = 'min'
 
-    m = Skymap(nside=nside, unit=unit)
+    m = Skymap(nside=nside, quantity=quantity, unit=unit)
     print(m)
 
 
 def test_addition_success():
     nside = 2**8
+    quantity = 'time'
     unit = 'min'
 
-    m1 = Skymap(nside=nside, unit=unit)
+    m1 = Skymap(nside=nside, quantity=quantity, unit=unit)
     print(m1)
 
-    m2 = Skymap(nside=nside, unit=unit)
+    m2 = Skymap(nside=nside, quantity=quantity, unit=unit)
     print(m2)
 
     mtot = m1 + m2
     print(mtot)
 
-    for param in ['arrangement', 'coordinate', 'dtype', 'nside', 'unit']:
+    for param in ['arrangement', 'coordinate', 'dtype', 'nside', 'quantity', 'unit']:
         assert (getattr(mtot, param) == getattr(m1, param))
         assert (getattr(mtot, param) == getattr(m2, param))
 
@@ -47,35 +49,61 @@ def test_addition_success():
 
 def test_addition_fail():
     nside = 2**8
+    quantity = 'time'
     unit = 'min'
 
-    m1 = Skymap(nside=nside, unit=unit)
+    m1 = Skymap(nside=nside, quantity=quantity, unit=unit)
     print(m1)
 
-    m2 = Skymap(nside=2**4, unit=unit)
+    # nside
+    m2 = Skymap(nside=2**4, quantity=quantity, unit=unit)
     print(m2)
 
     with assert_raises(RuntimeError):
         m1 + m2
 
-    m3 = Skymap(nside=nside, unit='bla')
+    # quantity
+    m3 = Skymap(nside=nside, quantity='bla', unit=unit)
     print(m3)
 
     with assert_raises(RuntimeError):
         m1 + m3
 
-    m4 = Skymap(nside=2**4, unit='bla')
+    # unit
+    m4 = Skymap(nside=nside, quantity=quantity, unit='bla')
     print(m4)
 
     with assert_raises(RuntimeError):
         m1 + m4
 
+    # nside and quantity
+    m5 = Skymap(nside=2**4, quantity='bla', unit=unit)
+    print(m5)
+
+    with assert_raises(RuntimeError):
+        m1 + m5
+
+    # quantity and unit
+    m6 = Skymap(nside=nside, quantity='bla', unit='bla')
+    print(m6)
+
+    with assert_raises(RuntimeError):
+        m1 + m6
+
+    # nside, quantity and unit
+    m7 = Skymap(nside=2**4, quantity='bla', unit='bla')
+    print(m7)
+
+    with assert_raises(RuntimeError):
+        m1 + m7
+
 
 def test_private_access():
     nside = 2**8
+    quantity = 'time'
     unit = 'min'
 
-    m = Skymap(nside=nside, unit=unit)
+    m = Skymap(nside=nside, quantity=quantity, unit=unit)
 
     with assert_raises(AttributeError):
         m.__data
@@ -86,10 +114,11 @@ def test_private_access():
 
 def test_save():
     nside = 2**8
+    quantity = 'time'
     unit = 'min'
     filename = 'skymap_save_test.pkl.bz2'
 
-    m = Skymap(nside=nside, unit=unit)
+    m = Skymap(nside=nside, quantity=quantity, unit=unit)
     print(m)
 
     m.save_to_file(filename)
@@ -103,10 +132,11 @@ def test_save():
 
 def test_load():
     nside = 2**8
+    quantity = 'time'
     unit = 'min'
     filename = 'skymap_save_test.pkl.bz2'
 
-    m1 = Skymap(nside=nside, unit=unit)
+    m1 = Skymap(nside=nside, quantity=quantity, unit=unit)
 
     m1.save_to_file(filename)
 
@@ -114,16 +144,18 @@ def test_load():
 
     assert (m2.coordinate == m1.coordinate)
     assert (m2.nside == m1.nside)
+    assert (m2.quantity == m1.quantity)
     assert (m2.unit == m1.unit)
     assert (np.all(m2.data == m1.data))
 
 
 def test_save_to_fits():
     nside = 2**8
+    quantity = 'time'
     unit = 'min'
     filename = 'skymap_save_test.fits'
 
-    m = Skymap(nside=nside, unit=unit)
+    m = Skymap(nside=nside, quantity=quantity, unit=unit)
     print(m)
 
     m.save_to_fits(filename)
@@ -137,17 +169,19 @@ def test_save_to_fits():
 
 def test_size():
     nside = 2**10
+    quantity = 'time'
     unit = 'min'
 
-    m = Skymap(nside=nside, unit=unit)
+    m = Skymap(nside=nside, quantity=quantity, unit=unit)
     print(m.size)
 
 
 def test_add_exposure():
     nside = 2**10
+    quantity = 'time'
     unit = 'min'
 
-    m = Skymap(nside=nside, unit=unit)
+    m = Skymap(nside=nside, quantity=quantity, unit=unit)
 
     coords = SkyCoord(
         ra=['04:37:15.8961737', '05:34:31.973', '08:35:20.61149', '16:44:49.273'],
