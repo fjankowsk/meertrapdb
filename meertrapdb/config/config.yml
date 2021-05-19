@@ -64,6 +64,7 @@ notifier:
 skymap:
   # 2^13, which corresponds to 25.8 arcsec resolution
   nside: 8192
+  quantity: 'time'
   unit: 'hour'
   # beam hpbw radii in degrees
   # at the centre frequencies of the sampled bands

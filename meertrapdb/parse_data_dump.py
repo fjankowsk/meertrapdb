@@ -396,9 +396,10 @@ def run_pointing(params):
     config = get_config()
     smconfig = config['skymap']
     nside = smconfig['nside']
+    quantity = smconfig['quantity']
     unit = smconfig['unit']
 
-    m = Skymap(nside=nside, unit=unit)
+    m = Skymap(nside=nside, quantity=quantity, unit=unit)
 
     mask = np.logical_not(df['tobs'].isnull())
     sel = df[mask].copy()

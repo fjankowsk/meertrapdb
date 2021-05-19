@@ -633,9 +633,10 @@ def run_skymap():
     config = get_config()
     smconfig = config['skymap']
     nside = smconfig['nside']
+    quantity = smconfig['quantity']
     unit = smconfig['unit']
 
-    m = Skymap(nside=nside, unit=unit)
+    m = Skymap(nside=nside, quantity=quantity, unit=unit)
 
     # 3) retrieve the beam information and fill in the exposure
     with db_session:
