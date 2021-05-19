@@ -118,6 +118,23 @@ def test_load():
     assert (np.all(m2.data == m1.data))
 
 
+def test_save_to_fits():
+    nside = 2**8
+    unit = 'min'
+    filename = 'skymap_save_test.fits'
+
+    m = Skymap(nside=nside, unit=unit)
+    print(m)
+
+    m.save_to_fits(filename)
+
+    if not os.path.isfile(filename):
+        raise RuntimeError('File does not exist.')
+    else:
+        # remove test file
+        os.remove(filename)
+
+
 def test_size():
     nside = 2**10
     unit = 'min'
