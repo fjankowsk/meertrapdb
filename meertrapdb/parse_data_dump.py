@@ -524,6 +524,71 @@ def run_pointing(params):
         dpi=300
     )
 
+    # work out exposure in galactic latitude bins
+    mask = np.logical_not(df['tobs'].isnull())
+    sel = df[mask].copy()
+
+    coords = SkyCoord(
+        ra=sel['ra'],
+        dec=sel['dec'],
+        unit=(units.deg, units.deg),
+        frame='icrs'
+    )
+
+    gbs = coords.galactic.b.value
+
+    # galactic latitude thresholds
+    lats = np.linspace(-90, 90, num=26)
+    step = np.diff(lats)[0]
+
+    print('Latitudes: {0}'.format(lats))
+    print('Step: {0:.2f} deg'.format(step))
+
+    df_lat = pd.DataFrame(columns=['lat_lo', 'lat_hi', 'lat_mid', 'tobs', 'pointings'])
+
+    for i in range(len(lats) - 1):
+        lat_lo = lats[i]
+        lat_hi = lats[i + 1]
+
+        mask = (gbs >= lat_lo) & (gbs < lat_hi)
+
+        df_lat.at[i, 'lat_lo'] = lat_lo
+        df_lat.at[i, 'lat_hi'] = lat_hi
+        df_lat.at[i, 'lat_mid'] = 0.5 * (lat_lo + lat_hi)
+        df_lat.at[i, 'tobs'] = sel.loc[mask, 'tobs'].sum()
+        df_lat.at[i, 'pointings'] = len(sel[mask])
+
+    print(df_lat.info())
+    print(df_lat.to_string())
+
+    # sanity check
+    assert (df_lat['tobs'].sum() == sel['tobs'].sum())
+
+    df_lat.to_pickle('tobs_vs_gb.pkl')
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+
+    ax.errorbar(
+        x=df_lat['lat_mid'],
+        y=df_lat['tobs'] / 86400.0,
+        xerr=np.abs(df_lat['lat_hi'] - df_lat['lat_mid']),
+        color='black',
+        marker='o',
+        zorder=3
+    )
+
+    ax.grid()
+    ax.set_xlabel('Gb (deg)')
+    ax.set_ylabel('Observing time (d)')
+
+    fig.tight_layout()
+
+    fig.savefig(
+        'tobs_vs_gb.pdf',
+        dpi=300
+    )
+
 
 #
 # MAIN
