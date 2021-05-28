@@ -442,6 +442,15 @@ def run_pointing(params):
         sel['tobs'] / 3600.0
     )
 
+    # add start/end time meta data
+    m.add_comment(
+        'Start UTC: {0}'.format(sel['date'].min())
+    )
+
+    m.add_comment(
+        'End UTC: {0}'.format(sel['date'].max())
+    )
+
     # plot discoveries
     if os.path.isfile('sources.csv'):
         df_sources = pd.read_csv(
