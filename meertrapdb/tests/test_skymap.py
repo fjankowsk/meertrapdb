@@ -205,6 +205,46 @@ def test_add_exposure():
     print(m)
 
 
+def test_comments():
+    nside = 2**8
+    quantity = 'time'
+    unit = 'min'
+    comments = ['Hello, test!', 'Bla', 'blub']
+
+    m = Skymap(nside=nside, quantity=quantity, unit=unit)
+
+    for item in comments:
+        m.add_comment(item)
+
+    assert (len(m.comments) == len(comments))
+    assert (m.comments == comments)
+
+
+def test_save_comments():
+    nside = 2**8
+    quantity = 'time'
+    unit = 'min'
+    filename = 'skymap_save_test.fits'
+    comments = ['Hello', 'Bla', 'Test']
+
+    m = Skymap(nside=nside, quantity=quantity, unit=unit)
+    print(m)
+
+    for item in comments:
+        m.add_comment(item)
+
+    assert (len(m.comments) == len(comments))
+    assert (m.comments == comments)
+
+    m.save_to_fits(filename)
+
+    if not os.path.isfile(filename):
+        raise RuntimeError('File does not exist.')
+    else:
+        # remove test file
+        os.remove(filename)
+
+
 if __name__ == '__main__':
     import nose2
     nose2.main()
