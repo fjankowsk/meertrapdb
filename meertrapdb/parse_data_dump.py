@@ -451,6 +451,12 @@ def run_pointing(params):
         'End UTC: {0}'.format(sel['date'].max())
     )
 
+    print('Start UTC: {0}'.format(sel['date'].min()))
+    print('End UTC: {0}'.format(sel['date'].max()))
+
+    print('Start Unix epoch: {0}'.format(sel['sample_ts'].min()))
+    print('End Unix epoch: {0}'.format(sel['sample_ts'].max()))
+
     # plot discoveries
     if os.path.isfile('sources.csv'):
         df_sources = pd.read_csv(
