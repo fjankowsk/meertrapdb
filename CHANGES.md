@@ -2,6 +2,17 @@
 
 ## HEAD ##
 
+* `Skymap`: Labelled the axes in the case of Galactic coordinates. Tweaked the labels for both the equatorial and Galactic case. Output a PDF file too.
+* `Sensordump`: Added output of start and end UTCs and Unix epochs to allow for easier data syncing.
+* `Skymap`: Added comments to the `Skymap` class to keep track of start/end UTC for example, or other meta data. Added regression tests too. Added the start/end UTCs of the exposure data to the sky map as comments. These are written to the FITS file and the compressed `pickle` dump.
+* `Sensordump`: Binned the exposure in Galactic latitude bins. Dumped them to file for further processing.
+* `Skymap`: Converted the `load_from_file` function to a class method. This allows us to load a `Skymap` without having to instanciate it first, thus simplifying its use. Adjusted the regression tests and simplified them.
+* `Skymap`: Explicitly stated the quantity that is stored in the `Skymap`, rather than assuming that it is time. Prepared for different quantities. Adjusted the regression tests too.
+* `Skymap`: Added function to save the `Skymap` data to a FITS file. Added regression test too.
+* `Sensordump`: Treated empty frequency values and other problems in the sensor data.
+* `Sensordump`: Added script to download sensor data incrementally to keep our local copy in sync. Provided a set of default sensor names.
+* Database ingest code: Do not fail hard if a summary JSON file does not exist. Simply skip ingesting the corresponding SPCCL file.
+
 ## 0.8 (2021-05-11) ##
 
 * `Skymap`: Adjusted the regression tests to work without a running X server, i.e. in a Docker container.
