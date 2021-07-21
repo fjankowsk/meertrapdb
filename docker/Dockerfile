@@ -7,6 +7,7 @@ LABEL description="Docker image for MeerTRAP database."
 RUN apt-get update && apt-get install -y \
     curl \
     default-libmysqlclient-dev \
+    f2c \
     gcc \
     gfortran \
     git \
