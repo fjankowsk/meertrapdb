@@ -2,6 +2,9 @@
 
 ## HEAD ##
 
+## 0.8.1 (2021-07-21) ##
+
+* Bumped `meertrapdb` to version 0.8.1. `psrmatch` stays at version 0.4.
 * `Skymap`: Labelled the axes in the case of Galactic coordinates. Tweaked the labels for both the equatorial and Galactic case. Output a PDF file too.
 * `Sensordump`: Added output of start and end UTCs and Unix epochs to allow for easier data syncing.
 * `Skymap`: Added comments to the `Skymap` class to keep track of start/end UTC for example, or other meta data. Added regression tests too. Added the start/end UTCs of the exposure data to the sky map as comments. These are written to the FITS file and the compressed `pickle` dump.
