@@ -4,6 +4,7 @@
 
 ## 0.8.1 (2021-07-21) ##
 
+* Added the `f2c` package to the docker file to make the most recent version of `pygedm` happy.
 * Bumped `meertrapdb` to version 0.8.1. `psrmatch` stays at version 0.4.
 * `Skymap`: Labelled the axes in the case of Galactic coordinates. Tweaked the labels for both the equatorial and Galactic case. Output a PDF file too.
 * `Sensordump`: Added output of start and end UTCs and Unix epochs to allow for easier data syncing.
