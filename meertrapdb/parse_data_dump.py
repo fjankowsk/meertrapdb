@@ -298,7 +298,7 @@ def run_pointing(params):
     mask = (df['tobs'] > 700.0)
     df.loc[mask, 'tobs'] = 600.0
 
-    print(df.to_string(columns=['name', 'tobs']))
+    print(df.to_string(columns=['name', 'ra', 'dec', 'tobs']))
 
     # consider only data until end date
     if 'enddate' in params \
@@ -410,6 +410,16 @@ def run_pointing(params):
     )
 
     print('Total tobs: {0:.1f} days'.format(sel['tobs'].sum() / 86400.0))
+
+    for band in sel['band'].unique():
+        mask = (sel['band'] == band)
+        sel2 = sel[mask]
+
+        print('Fraction {0}-band: {1:.2f} %'.format(
+            band.upper(),
+            100 * sel2['tobs'].sum() / sel['tobs'].sum()
+            )
+        )
 
     print('Average observing time: {0:.2f} hours / day'.format(
         24 * sel['tobs'].sum() / (sel['date'].max() - sel['date'].min()).total_seconds()
