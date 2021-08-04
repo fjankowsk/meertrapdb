@@ -59,13 +59,18 @@ def parse_psrcat(filename):
     coords = SkyCoord(
         ra=temp['ra_str'],
         dec=temp['dec_str'],
-        frame='icrs', unit=(u.hourangle, u.deg)
+        frame='icrs',
+        unit=(u.hourangle, u.deg)
     )
 
-    # add equatorial degree fields
+    # add equatorial coordinates in degrees
+    # and cartesian representation
     data = np.copy(temp)
     data = append_fields(data, 'ra', coords.ra.deg)
     data = append_fields(data, 'dec', coords.dec.deg)
+    data = append_fields(data, 'x', coords.cartesian.x.value)
+    data = append_fields(data, 'y', coords.cartesian.y.value)
+    data = append_fields(data, 'z', coords.cartesian.z.value)
 
     # add catalogue field
     catalogue = np.zeros(len(data), dtype='|U32')
