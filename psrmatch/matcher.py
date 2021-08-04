@@ -230,10 +230,14 @@ class Matcher(object):
             The cartesian chord lengths or distances and indices of the nearest neighbors.
         """
 
+        max_chord = 2 * np.sin(0.5 * self.dist_thresh * np.pi / 180.0)
+        self.__log.debug('Maximum chord length: {0}'.format(max_chord))
+
         chord, idx = self.__tree.query(
             x=[source.cartesian.x, source.cartesian.y, source.cartesian.z],
             p=2,
-            k=self.__max_neighbors
+            k=self.__max_neighbors,
+            distance_upper_bound=max_chord
         )
 
         # consider only those neighbors that are within the distance threshold
