@@ -76,6 +76,14 @@ class Matcher(object):
         return info_str
 
     @property
+    def catalogue(self):
+        """
+        The loaded catalogue data.
+        """
+
+        return self.__catalogue
+
+    @property
     def dist_thresh(self):
         """
         Distance threshold in degrees.
@@ -86,7 +94,7 @@ class Matcher(object):
     @dist_thresh.setter
     def dist_thresh(self, dist):
         """
-        Set the Distance threshold in degrees.
+        Set the distance threshold in degrees.
 
         Raises
         ------
@@ -202,7 +210,7 @@ class Matcher(object):
         """
 
         self.__tree = KDTree(
-            list(zip(self.__catalogue['ra'], self.__catalogue['dec']))
+            list(zip(self.catalogue['ra'], self.catalogue['dec']))
         )
 
     def query_search_tree(self, source):
@@ -238,10 +246,10 @@ class Matcher(object):
         for d, i in zip(dist, idx):
             info_str = '{0:.3f}: {1:10} {2:17} {3:17} {4:.3f}'.format(
                 d,
-                self.__catalogue[i]['psrj'],
-                self.__catalogue[i]['ra_str'],
-                self.__catalogue[i]['dec_str'],
-                self.__catalogue[i]['dm']
+                self.catalogue[i]['psrj'],
+                self.catalogue[i]['ra_str'],
+                self.catalogue[i]['dec_str'],
+                self.catalogue[i]['dm']
             )
 
             self.__log.info(info_str)
@@ -280,8 +288,8 @@ class Matcher(object):
 
         for d, i in zip(dist, idx):
             if d < self.dist_thresh \
-            and abs(dm - self.__catalogue[i]['dm']) / dm < self.dm_thresh:
-                match = self.__catalogue[i]
+            and abs(dm - self.catalogue[i]['dm']) / dm < self.dm_thresh:
+                match = self.catalogue[i]
                 self.__log.info('Match found with distance: {0:.3f} deg'.format(d))
                 break
 
@@ -297,3 +305,38 @@ class Matcher(object):
             )
 
         return match
+
+    def plot_catalogue(self):
+        """
+        Visualise the loaded catalogue data.
+        """
+
+        import matplotlib.pyplot as plt
+        from matplotlib.colors import LogNorm
+
+        fig = plt.figure()
+        ax = fig.add_subplot(111, aspect='equal')
+
+        sc = ax.scatter(
+            self.catalogue['ra'],
+            self.catalogue['dec'],
+            c=self.catalogue['dm'],
+            s=6,
+            marker='.',
+            norm=LogNorm(),
+            zorder=5
+        )
+
+        cbar = fig.colorbar(
+            sc,
+            ax=ax,
+            label='DM (pc $\mathrm{cm}^{-3}$)',
+            aspect=15,
+            shrink=0.75
+        )
+
+        ax.grid()
+        ax.set_xlabel('RA (deg)')
+        ax.set_ylabel('Dec (deg)')
+
+        fig.tight_layout()
