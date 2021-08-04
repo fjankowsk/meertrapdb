@@ -138,6 +138,29 @@ def test_psrcat_matches():
             )
 
 
+def test_psrcat_trivial_matches():
+    # trivially match psrcat pulsars against themselves
+
+    # prepare matcher
+    m = Matcher()
+    m.load_catalogue('psrcat')
+    m.create_search_tree()
+
+    # parse coordinates
+    coords = SkyCoord(
+        ra=m.catalogue['ra'],
+        dec=m.catalogue['dec'],
+        unit=(units.degree, units.degree),
+        frame='icrs'
+    )
+
+    for psrj, coord, dm in zip(m.catalogue['psrj'], coords, m.catalogue['dm']):
+        match = m.find_matches(coord, dm)
+        # we cannot be more specific here because of the double pulsar
+        # and pulsars in globular clusters
+        assert(match is not None)
+
+
 def test_ib_candidates():
     candidates_str = """ra,dec,dm
 14h59m54.01s,-64d27m06.3s,71.22400
