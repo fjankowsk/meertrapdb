@@ -7,7 +7,7 @@ from io import StringIO
 import os.path
 import pickle
 
-from astropy.coordinates import SkyCoord
+from astropy.coordinates import (Angle, SkyCoord)
 import astropy.units as units
 import numpy as np
 from numpy.testing import assert_raises
@@ -154,10 +154,65 @@ def test_psrcat_trivial_matches():
         frame='icrs'
     )
 
-    for psrj, coord, dm in zip(m.catalogue['psrj'], coords, m.catalogue['dm']):
+    for dm, coord in zip(m.catalogue['dm'], coords):
         match = m.find_matches(coord, dm)
         # we cannot be more specific here because of the double pulsar
         # and pulsars in globular clusters
+        assert(match is not None)
+
+
+def test_psrcat_spatial_offsets():
+    # match psrcat pulsars shifted in position against psrcat
+    # no shift in catalogue dms is performed though
+
+    # prepare matcher
+    m = Matcher()
+    m.load_catalogue('psrcat')
+    m.create_search_tree()
+
+    offset = Angle(m.dist_thresh - 0.01, unit=units.degree)
+
+    for item in m.catalogue:
+        # 1) negative dec
+        coord = SkyCoord(
+            ra=item['ra'],
+            dec=(Angle(item['dec'], unit=units.degree) - offset).deg,
+            unit=(units.degree, units.degree),
+            frame='icrs'
+        )
+        match = m.find_matches(coord, item['dm'])
+        # we cannot be more specific here because of the double pulsar
+        # and pulsars in globular clusters
+        assert(match is not None)
+
+        # 2) positive dec
+        coord = SkyCoord(
+            ra=item['ra'],
+            dec=(Angle(item['dec'], unit=units.degree) + offset).deg,
+            unit=(units.degree, units.degree),
+            frame='icrs'
+        )
+        match = m.find_matches(coord, item['dm'])
+        assert(match is not None)
+
+        # 3) negative ra
+        coord = SkyCoord(
+            ra=(Angle(item['ra'], unit=units.degree) - offset).deg,
+            dec=item['dec'],
+            unit=(units.degree, units.degree),
+            frame='icrs'
+        )
+        match = m.find_matches(coord, item['dm'])
+        assert(match is not None)
+
+        # 4) positive ra
+        coord = SkyCoord(
+            ra=(Angle(item['ra'], unit=units.degree) + offset).deg,
+            dec=item['dec'],
+            unit=(units.degree, units.degree),
+            frame='icrs'
+        )
+        match = m.find_matches(coord, item['dm'])
         assert(match is not None)
 
 
