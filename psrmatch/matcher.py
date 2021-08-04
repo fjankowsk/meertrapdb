@@ -7,6 +7,8 @@
 import logging
 import os.path
 
+from astropy.coordinates import SkyCoord
+import astropy.units as u
 import numpy as np
 from scipy.spatial import KDTree
 
@@ -210,7 +212,7 @@ class Matcher(object):
         """
 
         self.__tree = KDTree(
-            list(zip(self.catalogue['ra'], self.catalogue['dec']))
+            list(zip(self.catalogue['x'], self.catalogue['y'], self.catalogue['z']))
         )
 
     def query_search_tree(self, source):
@@ -224,28 +226,27 @@ class Matcher(object):
 
         Returns
         -------
-        dist, idx: (~np.array, ~np.array)
-            The distances and indices of the nearest neighbors.
+        chord, idx: ~np.array of float, ~np.array of int
+            The cartesian chord lengths or distances and indices of the nearest neighbors.
         """
 
-        dist, idx = self.__tree.query(
-            x=[source.ra.deg, source.dec.deg],
+        chord, idx = self.__tree.query(
+            x=[source.cartesian.x, source.cartesian.y, source.cartesian.z],
             p=2,
-            k=self.__max_neighbors,
-            distance_upper_bound=self.__dist_thresh
+            k=self.__max_neighbors
         )
 
         # consider only those neighbors that are within the distance threshold
         # and remove the other neighbors
-        mask = np.isfinite(dist)
+        mask = np.isfinite(chord)
 
-        dist = dist[mask]
+        chord = chord[mask]
         idx = idx[mask]
 
         self.__log.info('Nearest neighbors:')
-        for d, i in zip(dist, idx):
+        for c, i in zip(chord, idx):
             info_str = '{0:.3f}: {1:10} {2:17} {3:17} {4:.3f}'.format(
-                d,
+                c,
                 self.catalogue[i]['psrj'],
                 self.catalogue[i]['ra_str'],
                 self.catalogue[i]['dec_str'],
@@ -254,7 +255,7 @@ class Matcher(object):
 
             self.__log.info(info_str)
 
-        return dist, idx
+        return chord, idx
 
     def find_matches(self, source, dm):
         """
@@ -277,7 +278,7 @@ class Matcher(object):
         or self.__tree == None:
             raise RuntimeError('The known-source matcher is not prepared')
 
-        dist, idx  = self.query_search_tree(source)
+        chord, idx  = self.query_search_tree(source)
 
         self.__log.debug('Using distance threshold: {0} deg'.format(self.dist_thresh))
         self.__log.debug('Using DM threshold: {0}'.format(self.dm_thresh))
@@ -286,11 +287,15 @@ class Matcher(object):
 
         match = None
 
-        for d, i in zip(dist, idx):
-            if d < self.dist_thresh \
+        for c, i in zip(chord, idx):
+            # compute the central angle (separation) from the
+            # cartesian chord length and convert from radians to degrees
+            sep = 2 * np.arcsin(0.5 * c) * 180 / np.pi
+
+            if sep < self.dist_thresh \
             and abs(dm - self.catalogue[i]['dm']) / dm < self.dm_thresh:
                 match = self.catalogue[i]
-                self.__log.info('Match found with distance: {0:.3f} deg'.format(d))
+                self.__log.info('Match found with angular separation: {0:.3f} deg'.format(sep))
                 break
 
         if match is None:
