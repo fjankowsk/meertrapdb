@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 #
-#   2020 Fabian Jankowski
+#   2020 - 2021 Fabian Jankowski
 #
 
+from io import StringIO
 import os.path
 import pickle
 
@@ -10,6 +11,7 @@ from astropy.coordinates import SkyCoord
 import astropy.units as units
 import numpy as np
 from numpy.testing import assert_raises
+import pandas as pd
 
 from psrmatch.matcher import Matcher
 
@@ -134,6 +136,41 @@ def test_psrcat_matches():
                 fd,
                 pickle.DEFAULT_PROTOCOL
             )
+
+
+def test_ib_candidates():
+    candidates_str = """ra,dec,dm
+14h59m54.01s,-64d27m06.3s,71.22400
+14h59m54.01s,-64d27m06.3s,70.91700
+14h59m54.01s,-64d27m06.3s,70.61000
+14h59m54.01s,-64d27m06.3s,71.53100
+14h59m54.01s,-64d27m06.3s,71.83800
+14h59m54.01s,-64d27m06.3s,72.14500
+"""
+
+    df = pd.read_csv(
+        StringIO(candidates_str),
+        header='infer'
+    )
+
+    m = Matcher()
+    m.load_catalogue('psrcat')
+    m.create_search_tree()
+
+    for i in range(len(df.index)):
+        item = df.loc[i]
+
+        coord = SkyCoord(
+            ra=item['ra'],
+            dec=item['dec'],
+            frame='icrs',
+            unit=(units.hourangle, units.deg)
+        )
+
+        matches = m.find_matches(coord, item['dm'])
+
+        assert (matches is not None)
+        assert (matches['psrj'] == 'J1453-6413')
 
 
 def test_private_access():
