@@ -154,18 +154,49 @@ def test_psrcat_trivial_matches():
         frame='icrs'
     )
 
-    for dm, coord in zip(m.catalogue['dm'], coords):
-        match = m.find_matches(coord, dm)
-        # we cannot be more specific here because of the double pulsar
-        # and pulsars in globular clusters
+    for item, coord in zip(m.catalogue, coords):
+        match = m.find_matches(coord, item['dm'])
+
         assert(match is not None)
+
+        # treat the double pulsar and pulsars in globular clusters
+        if match['psrj'][-1].isdigit():
+            assert(match['psrj'] == item['psrj'])
 
 
 def test_psrcat_spatial_offsets():
     # match psrcat pulsars shifted in position against psrcat
     # no shift in catalogue dms is performed though
 
-    # prepare matcher
+    m = Matcher()
+    m.load_catalogue('psrcat')
+    m.create_search_tree()
+
+    separation = (m.dist_thresh - 0.01) * units.deg
+
+    for item in m.catalogue:
+        psrcoord = SkyCoord(
+            ra=item['ra'],
+            dec=item['dec'],
+            unit=(units.deg, units.deg),
+            frame='icrs'
+        )
+
+        for pa in [0, 90, 180, 270]:
+            coord = psrcoord.directional_offset_by(
+                pa * units.deg,
+                separation
+            )
+
+            match = m.find_matches(coord, item['dm'])
+            if match is None:
+                print(coord, item)
+            #assert(match is not None)
+
+
+def test_psrcat_dm_offsets():
+    # match psrcat pulsars at original position just shifted in dm
+
     m = Matcher()
     m.load_catalogue('psrcat')
     m.create_search_tree()
@@ -173,50 +204,27 @@ def test_psrcat_spatial_offsets():
     offset = Angle(m.dist_thresh - 0.01, unit=units.degree)
 
     for item in m.catalogue:
-        # 1) negative dec
-        coord = SkyCoord(
-            ra=item['ra'],
-            dec=(Angle(item['dec'], unit=units.degree) - offset).deg,
-            unit=(units.degree, units.degree),
-            frame='icrs'
-        )
-        match = m.find_matches(coord, item['dm'])
-        # we cannot be more specific here because of the double pulsar
-        # and pulsars in globular clusters
-        assert(match is not None)
+        for fact in [-1, 1]:
+            dm = item['dm'] * (1 + fact * (m.dm_thresh - 1.0) / 100.0)
 
-        # 2) positive dec
-        coord = SkyCoord(
-            ra=item['ra'],
-            dec=(Angle(item['dec'], unit=units.degree) + offset).deg,
-            unit=(units.degree, units.degree),
-            frame='icrs'
-        )
-        match = m.find_matches(coord, item['dm'])
-        assert(match is not None)
+            coord = SkyCoord(
+                ra=item['ra'],
+                dec=item['dec'],
+                unit=(units.degree, units.degree),
+                frame='icrs'
+            )
+            match = m.find_matches(coord, dm)
 
-        # 3) negative ra
-        coord = SkyCoord(
-            ra=(Angle(item['ra'], unit=units.degree) - offset).deg,
-            dec=item['dec'],
-            unit=(units.degree, units.degree),
-            frame='icrs'
-        )
-        match = m.find_matches(coord, item['dm'])
-        assert(match is not None)
+            assert(match is not None)
 
-        # 4) positive ra
-        coord = SkyCoord(
-            ra=(Angle(item['ra'], unit=units.degree) + offset).deg,
-            dec=item['dec'],
-            unit=(units.degree, units.degree),
-            frame='icrs'
-        )
-        match = m.find_matches(coord, item['dm'])
-        assert(match is not None)
+            # treat the double pulsar and pulsars in globular clusters
+            if match['psrj'][-1].isdigit():
+                assert(match['psrj'] == item['psrj'])
 
 
 def test_ib_candidates():
+    # test if ib candidates match correctly against bright pulsar
+
     candidates_str = """ra,dec,dm
 14h59m54.01s,-64d27m06.3s,71.22400
 14h59m54.01s,-64d27m06.3s,70.91700
