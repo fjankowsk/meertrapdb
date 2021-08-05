@@ -141,12 +141,10 @@ def test_psrcat_matches():
 def test_psrcat_trivial_matches():
     # trivially match psrcat pulsars against themselves
 
-    # prepare matcher
     m = Matcher()
     m.load_catalogue('psrcat')
     m.create_search_tree()
 
-    # parse coordinates
     coords = SkyCoord(
         ra=m.catalogue['ra'],
         dec=m.catalogue['dec'],
@@ -190,7 +188,11 @@ def test_psrcat_spatial_offsets():
 
             match = m.find_matches(coord, item['dm'])
             if match is None:
-                print(coord, item)
+                print(coord, item, psrcoord.separation(coord).deg)
+            else:
+                if match['psrj'] != item['psrj']:
+                    print(item['psrj'], match['psrj'])
+            #assert(match['psrj'] == item['psrj'])
             #assert(match is not None)
 
 
