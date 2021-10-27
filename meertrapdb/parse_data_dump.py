@@ -446,6 +446,10 @@ def run_pointing(params):
     mask = (sel['band'] == 'u')
     sel.loc[mask, 'radius'] = pb_radius_u
 
+    # survey coverage, i.e. sum area x tobs
+    coverage = np.sum((sel['tobs'] / 3600.0) * np.pi * sel['radius']**2)
+    print('Survey coverage: {0:.2f} deg^2 hr'.format(coverage))
+
     m.add_exposure(
         coords,
         sel['radius'],
@@ -466,6 +470,8 @@ def run_pointing(params):
 
     print('Start Unix epoch: {0}'.format(sel['sample_ts'].min()))
     print('End Unix epoch: {0}'.format(sel['sample_ts'].max()))
+
+    print('Fraction of the map covered: {0:.4f}'.format(m.fraction_covered))
 
     # plot discoveries
     if os.path.isfile('sources.csv'):
