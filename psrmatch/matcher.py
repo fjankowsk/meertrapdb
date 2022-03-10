@@ -20,10 +20,10 @@ class Matcher(object):
     Match sources to catalogues of known sources.
     """
 
-    name = 'Matcher'
+    name = "Matcher"
 
     # list of supported catalogues
-    __supported_catalogues = ['psrcat']
+    __supported_catalogues = ["psrcat"]
 
     def __init__(self, dist_thresh=1.5, dm_thresh=5.0):
         """
@@ -41,7 +41,7 @@ class Matcher(object):
         self.__dm_thresh = None
         self.__catalogue = None
         self.__tree = None
-        self.__log = logging.getLogger('psrmatch.matcher')
+        self.__log = logging.getLogger("psrmatch.matcher")
 
         # list of loaded catalogues
         self.__loaded_catalogues = []
@@ -59,12 +59,12 @@ class Matcher(object):
         """
 
         info_dict = {
-            'dist_thresh': self.dist_thresh,
-            'dm_thresh': self.dm_thresh,
-            'loaded_catalogues': self.loaded_catalogues
+            "dist_thresh": self.dist_thresh,
+            "dm_thresh": self.dm_thresh,
+            "loaded_catalogues": self.loaded_catalogues,
         }
 
-        info_str = '{0}'.format(info_dict)
+        info_str = "{0}".format(info_dict)
 
         return info_str
 
@@ -73,7 +73,7 @@ class Matcher(object):
         String representation of the object.
         """
 
-        info_str = '{0}: {1}'.format(self.name, repr(self))
+        info_str = "{0}: {1}".format(self.name, repr(self))
 
         return info_str
 
@@ -104,11 +104,10 @@ class Matcher(object):
             If dist threshold is invalid.
         """
 
-        if type(dist) == float \
-        and dist > 0:
+        if type(dist) == float and dist > 0:
             self.__dist_thresh = dist
         else:
-            raise RuntimeError('Distance threshold is invalid: {0}'.format(dist))
+            raise RuntimeError("Distance threshold is invalid: {0}".format(dist))
 
     @property
     def dm_thresh(self):
@@ -129,11 +128,10 @@ class Matcher(object):
             If DM threshold is invalid.
         """
 
-        if type(thresh) == float \
-        and thresh > 0:
+        if type(thresh) == float and thresh > 0:
             self.__dm_thresh = thresh / 100.0
         else:
-            raise RuntimeError('DM threshold is invalid: {0}'.format(thresh))
+            raise RuntimeError("DM threshold is invalid: {0}".format(thresh))
 
     @property
     def loaded_catalogues(self):
@@ -179,17 +177,19 @@ class Matcher(object):
         """
 
         if catalogue_name not in self.supported_catalogues:
-            raise NotImplementedError('The catalogue is not supported: {0}'.format(catalogue_name))
+            raise NotImplementedError(
+                "The catalogue is not supported: {0}".format(catalogue_name)
+            )
 
         if catalogue_name in self.loaded_catalogues:
-            raise RuntimeError('Catalogue is already loaded: {0}'.format(catalogue_name))
+            raise RuntimeError(
+                "Catalogue is already loaded: {0}".format(catalogue_name)
+            )
 
-        if catalogue_name == 'psrcat':
+        if catalogue_name == "psrcat":
             catalogue = parse_psrcat(
                 os.path.join(
-                    os.path.dirname(__file__),
-                    'catalogues',
-                    'psrcat_v164_beta.txt'
+                    os.path.dirname(__file__), "catalogues", "psrcat_v164_beta.txt"
                 )
             )
 
@@ -212,7 +212,7 @@ class Matcher(object):
         """
 
         self.__tree = KDTree(
-            list(zip(self.catalogue['x'], self.catalogue['y'], self.catalogue['z']))
+            list(zip(self.catalogue["x"], self.catalogue["y"], self.catalogue["z"]))
         )
 
     def query_search_tree(self, source):
@@ -231,13 +231,13 @@ class Matcher(object):
         """
 
         max_chord = 2 * np.sin(0.5 * self.dist_thresh * np.pi / 180.0)
-        self.__log.debug('Maximum chord length: {0}'.format(max_chord))
+        self.__log.debug("Maximum chord length: {0}".format(max_chord))
 
         chord, idx = self.__tree.query(
             x=[source.cartesian.x, source.cartesian.y, source.cartesian.z],
             p=2,
             k=self.__max_neighbors,
-            distance_upper_bound=max_chord
+            distance_upper_bound=max_chord,
         )
 
         # consider only those neighbors that are within the distance threshold
@@ -247,14 +247,14 @@ class Matcher(object):
         chord = chord[mask]
         idx = idx[mask]
 
-        self.__log.info('Nearest neighbors:')
+        self.__log.info("Nearest neighbors:")
         for c, i in zip(chord, idx):
-            info_str = '{0:.3f}: {1:10} {2:17} {3:17} {4:.3f}'.format(
+            info_str = "{0:.3f}: {1:10} {2:17} {3:17} {4:.3f}".format(
                 c,
-                self.catalogue[i]['psrj'],
-                self.catalogue[i]['ra_str'],
-                self.catalogue[i]['dec_str'],
-                self.catalogue[i]['dm']
+                self.catalogue[i]["psrj"],
+                self.catalogue[i]["ra_str"],
+                self.catalogue[i]["dec_str"],
+                self.catalogue[i]["dm"],
             )
 
             self.__log.info(info_str)
@@ -278,16 +278,15 @@ class Matcher(object):
             If the matcher is not prepared.
         """
 
-        if self.loaded_catalogues == [] \
-        or self.__tree == None:
-            raise RuntimeError('The known-source matcher is not prepared')
+        if self.loaded_catalogues == [] or self.__tree == None:
+            raise RuntimeError("The known-source matcher is not prepared")
 
-        chord, idx  = self.query_search_tree(source)
+        chord, idx = self.query_search_tree(source)
 
-        self.__log.debug('Using distance threshold: {0} deg'.format(self.dist_thresh))
-        self.__log.debug('Using DM threshold: {0}'.format(self.dm_thresh))
+        self.__log.debug("Using distance threshold: {0} deg".format(self.dist_thresh))
+        self.__log.debug("Using DM threshold: {0}".format(self.dm_thresh))
 
-        self.__log.info('Source: {0}'.format(source.to_string('hmsdms')))
+        self.__log.info("Source: {0}".format(source.to_string("hmsdms")))
 
         match = None
 
@@ -296,20 +295,22 @@ class Matcher(object):
             # cartesian chord length and convert from radians to degrees
             sep = 2 * np.arcsin(0.5 * c) * 180 / np.pi
 
-            if sep < self.dist_thresh \
-            and abs(dm - self.catalogue[i]['dm']) / dm < self.dm_thresh:
+            if (
+                sep < self.dist_thresh
+                and abs(dm - self.catalogue[i]["dm"]) / dm < self.dm_thresh
+            ):
                 match = self.catalogue[i]
-                self.__log.info('Match found with angular separation: {0:.3f} deg'.format(sep))
+                self.__log.info(
+                    "Match found with angular separation: {0:.3f} deg".format(sep)
+                )
                 break
 
         if match is None:
-            self.__log.info('No match found.')
+            self.__log.info("No match found.")
         else:
-            self.__log.info('Found match: {0}, {1}, {2}, {3}'.format(
-                match['psrj'],
-                match['ra'],
-                match['dec'],
-                match['dm']
+            self.__log.info(
+                "Found match: {0}, {1}, {2}, {3}".format(
+                    match["psrj"], match["ra"], match["dec"], match["dm"]
                 )
             )
 
@@ -324,28 +325,24 @@ class Matcher(object):
         from matplotlib.colors import LogNorm
 
         fig = plt.figure()
-        ax = fig.add_subplot(111, aspect='equal')
+        ax = fig.add_subplot(111, aspect="equal")
 
         sc = ax.scatter(
-            self.catalogue['ra'],
-            self.catalogue['dec'],
-            c=self.catalogue['dm'],
+            self.catalogue["ra"],
+            self.catalogue["dec"],
+            c=self.catalogue["dm"],
             s=6,
-            marker='.',
+            marker=".",
             norm=LogNorm(),
-            zorder=5
+            zorder=5,
         )
 
         cbar = fig.colorbar(
-            sc,
-            ax=ax,
-            label='DM (pc $\mathrm{cm}^{-3}$)',
-            aspect=15,
-            shrink=0.75
+            sc, ax=ax, label="DM (pc $\mathrm{cm}^{-3}$)", aspect=15, shrink=0.75
         )
 
         ax.grid()
-        ax.set_xlabel('RA (deg)')
-        ax.set_ylabel('Dec (deg)')
+        ax.set_xlabel("RA (deg)")
+        ax.set_ylabel("Dec (deg)")
 
         fig.tight_layout()

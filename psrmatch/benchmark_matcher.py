@@ -17,7 +17,7 @@ from psrmatch.matcher import Matcher
 # pylint: disable=E1101
 
 
-class MyTimer():
+class MyTimer:
     def __init__(self):
         """
         A simple timing context manager for benchmarking purposes.
@@ -31,7 +31,7 @@ class MyTimer():
         end = time.time()
         self.runtime = end - self.start
 
-        msg = 'The function took: {0:.3f} s.'.format(self.runtime)
+        msg = "The function took: {0:.3f} s.".format(self.runtime)
         print(msg)
 
 
@@ -55,6 +55,7 @@ def run_matcher(m, coords, dms):
 # MAIN
 #
 
+
 def main():
     # generate fake sources
     nsource = 20000
@@ -65,31 +66,23 @@ def main():
     dms = np.random.uniform(3, 1000, size=nsource)
 
     # parse coordinates
-    coords = SkyCoord(
-        ra=ras,
-        dec=decs,
-        unit=(units.degree, units.degree),
-        frame='icrs'
-    )
+    coords = SkyCoord(ra=ras, dec=decs, unit=(units.degree, units.degree), frame="icrs")
 
-    print('Generated sources.')
+    print("Generated sources.")
 
     # prepare matcher
     m = Matcher()
-    m.load_catalogue('psrcat')
+    m.load_catalogue("psrcat")
     m.create_search_tree()
 
-    print('Prepared matcher.')
+    print("Prepared matcher.")
 
     with MyTimer() as timer:
         imatch = run_matcher(m, coords, dms)
 
-    print('Runtime: {0:.1f} s'.format(timer.runtime))
-    print('Number of at least one matches: {0}'.format(imatch))
-    print('Matching rate: {0:.1f} sources/s'.format(
-        nsource / timer.runtime
-        )
-    )
+    print("Runtime: {0:.1f} s".format(timer.runtime))
+    print("Number of at least one matches: {0}".format(imatch))
+    print("Matching rate: {0:.1f} sources/s".format(nsource / timer.runtime))
 
 
 if __name__ == "__main__":

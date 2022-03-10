@@ -12,7 +12,7 @@ def setup_logging(level=logging.INFO):
     Setup the logging configuration.
     """
 
-    log = logging.getLogger('meertrapdb')
+    log = logging.getLogger("meertrapdb")
 
     log.setLevel(logging.DEBUG)
     log.propagate = False
@@ -20,7 +20,9 @@ def setup_logging(level=logging.INFO):
     # log to console
     console = logging.StreamHandler()
     console.setLevel(level)
-    fmt = "%(asctime)s, %(processName)s, %(name)s, %(module)s, %(levelname)s: %(message)s"
+    fmt = (
+        "%(asctime)s, %(processName)s, %(name)s, %(module)s, %(levelname)s: %(message)s"
+    )
     console_formatter = logging.Formatter(fmt)
     console.setFormatter(console_formatter)
     log.addHandler(console)

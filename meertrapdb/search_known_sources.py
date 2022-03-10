@@ -4,7 +4,7 @@
 #   Search for detections of known sources.
 #
 
-from pony.orm import (db_session, select, count, desc)
+from pony.orm import db_session, select, count, desc
 
 from meertrapdb import schema
 from meertrapdb.schema import db
@@ -15,17 +15,18 @@ from meertrapdb.config_helpers import get_config
 # MAIN
 #
 
+
 def main():
     config = get_config()
-    dbconf = config['db']
+    dbconf = config["db"]
 
     db.bind(
-        provider=dbconf['provider'],
-        host=dbconf['host'],
-        port=dbconf['port'],
-        user=dbconf['user']['name'],
-        passwd=dbconf['user']['password'],
-        db=dbconf['database']
+        provider=dbconf["provider"],
+        host=dbconf["host"],
+        port=dbconf["port"],
+        user=dbconf["user"]["name"],
+        passwd=dbconf["user"]["password"],
+        db=dbconf["database"],
     )
     db.generate_mapping(create_tables=False)
 
@@ -35,7 +36,7 @@ def main():
             for ks in schema.KnownSource
             for c in ks.sps_candidate
             for sr in c.sift_result
-            if 'RRAT' in ks.source_type
+            if "RRAT" in ks.source_type
             and c.snr > 8.0
             and c.width > 1.0
             and c.width < 50.0

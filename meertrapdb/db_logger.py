@@ -22,5 +22,5 @@ class DBHandler(logging.Handler):
                 logger="{!s}".format(record.name),
                 module="{!s}".format(record.module),
                 level=record.levelno,
-                message="{!s}".format(record.msg)
+                message="{!s}".format(record.msg),
             )

@@ -38,53 +38,54 @@ def parse_psrcat(filename):
     """
 
     if not os.path.isfile(filename):
-        raise RuntimeError('The file does not exist: {0}'.format(filename))
+        raise RuntimeError("The file does not exist: {0}".format(filename))
 
     dtype = [
-        ('psrj','|U32'), ('ref_psrj','|U32'),
-        ('ra_str','|U64'), ('err_ra',float), ('ref_ra','|U32'),
-        ('dec_str','|U64'), ('err_dec',float), ('ref_dec','|U32'),
-        ('p0',float), ('err_p0',float), ('ref_p0','|U32'),
-        ('dm',float), ('err_dm',float), ('ref_dm','|U32'),
-        ('type','|U32')
+        ("psrj", "|U32"),
+        ("ref_psrj", "|U32"),
+        ("ra_str", "|U64"),
+        ("err_ra", float),
+        ("ref_ra", "|U32"),
+        ("dec_str", "|U64"),
+        ("err_dec", float),
+        ("ref_dec", "|U32"),
+        ("p0", float),
+        ("err_p0", float),
+        ("ref_p0", "|U32"),
+        ("dm", float),
+        ("err_dm", float),
+        ("ref_dm", "|U32"),
+        ("type", "|U32"),
     ]
 
-    temp = np.genfromtxt(
-        filename,
-        delimiter=';',
-        dtype=dtype,
-        encoding='ascii'
-    )
+    temp = np.genfromtxt(filename, delimiter=";", dtype=dtype, encoding="ascii")
 
     coords = SkyCoord(
-        ra=temp['ra_str'],
-        dec=temp['dec_str'],
-        frame='icrs',
-        unit=(u.hourangle, u.deg)
+        ra=temp["ra_str"], dec=temp["dec_str"], frame="icrs", unit=(u.hourangle, u.deg)
     )
 
     # add equatorial coordinates in degrees
     # and cartesian representation
     data = np.copy(temp)
-    data = append_fields(data, 'ra', coords.ra.deg)
-    data = append_fields(data, 'dec', coords.dec.deg)
-    data = append_fields(data, 'x', coords.cartesian.x.value)
-    data = append_fields(data, 'y', coords.cartesian.y.value)
-    data = append_fields(data, 'z', coords.cartesian.z.value)
+    data = append_fields(data, "ra", coords.ra.deg)
+    data = append_fields(data, "dec", coords.dec.deg)
+    data = append_fields(data, "x", coords.cartesian.x.value)
+    data = append_fields(data, "y", coords.cartesian.y.value)
+    data = append_fields(data, "z", coords.cartesian.z.value)
 
     # add catalogue field
-    catalogue = np.zeros(len(data), dtype='|U32')
-    catalogue[:] = u'psrcat'
-    data = append_fields(data, 'catalogue', catalogue)
+    catalogue = np.zeros(len(data), dtype="|U32")
+    catalogue[:] = "psrcat"
+    data = append_fields(data, "catalogue", catalogue)
 
     # fill default type
-    data['type'][data['type'] == '*'] = 'pulsar'
+    data["type"][data["type"] == "*"] = "pulsar"
 
     # remove non-radio pulsars
-    data = data[np.isfinite(data['dm'])]
+    data = data[np.isfinite(data["dm"])]
 
     # sanity check
     if len(data) == 0:
-        raise RuntimeError('No catalogue data loaded.')
+        raise RuntimeError("No catalogue data loaded.")
 
     return data

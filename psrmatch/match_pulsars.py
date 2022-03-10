@@ -24,35 +24,22 @@ from psrmatch.version import __version__
 def parse_args():
     # treat negative arguments
     for i, arg in enumerate(sys.argv):
-        if (arg[0] == '-') and arg[1].isdigit(): sys.argv[i] = ' ' + arg
+        if (arg[0] == "-") and arg[1].isdigit():
+            sys.argv[i] = " " + arg
 
-    parser = argparse.ArgumentParser(
-        description="Find matching pulsars."
-    )
-    
+    parser = argparse.ArgumentParser(description="Find matching pulsars.")
+
     parser.add_argument(
-        'ra',
-        type=str,
-        help='Right ascension in ICRS frame and in hh:mm:ss notation.'
+        "ra", type=str, help="Right ascension in ICRS frame and in hh:mm:ss notation."
     )
 
     parser.add_argument(
-        'dec',
-        type=str,
-        help='Declination in ICRS frame and in hh:mm:ss notation.'
+        "dec", type=str, help="Declination in ICRS frame and in hh:mm:ss notation."
     )
 
-    parser.add_argument(
-        'dm',
-        type=float,
-        help='Dispersion measure.'
-    )
+    parser.add_argument("dm", type=float, help="Dispersion measure.")
 
-    parser.add_argument(
-        "--version",
-        action="version",
-        version=__version__
-    )
+    parser.add_argument("--version", action="version", version=__version__)
 
     return parser.parse_args()
 
@@ -62,7 +49,7 @@ def setup_logging(level=logging.INFO):
     Setup the logging configuration.
     """
 
-    log = logging.getLogger('psrmatch')
+    log = logging.getLogger("psrmatch")
 
     log.setLevel(logging.DEBUG)
     log.propagate = False
@@ -70,7 +57,9 @@ def setup_logging(level=logging.INFO):
     # log to console
     console = logging.StreamHandler()
     console.setLevel(level)
-    fmt = "%(asctime)s, %(processName)s, %(name)s, %(module)s, %(levelname)s: %(message)s"
+    fmt = (
+        "%(asctime)s, %(processName)s, %(name)s, %(module)s, %(levelname)s: %(message)s"
+    )
     console_formatter = logging.Formatter(fmt)
     console.setFormatter(console_formatter)
     log.addHandler(console)
@@ -80,22 +69,18 @@ def setup_logging(level=logging.INFO):
 # MAIN
 #
 
+
 def main():
     args = parse_args()
     setup_logging()
 
-    source = SkyCoord(
-        ra=args.ra,
-        dec=args.dec,
-        frame='icrs',
-        unit=(u.hourangle, u.deg)
-    )
+    source = SkyCoord(ra=args.ra, dec=args.dec, frame="icrs", unit=(u.hourangle, u.deg))
 
-    print('Source: {0}'.format(source.to_string('hmsdms')))
-    print('DM: {0}'.format(args.dm))
+    print("Source: {0}".format(source.to_string("hmsdms")))
+    print("DM: {0}".format(args.dm))
 
     m = Matcher()
-    m.load_catalogue('psrcat')
+    m.load_catalogue("psrcat")
     m.create_search_tree()
 
     m.find_matches(source, args.dm)

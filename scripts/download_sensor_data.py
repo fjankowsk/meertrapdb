@@ -16,7 +16,7 @@ from katportalclient import KATPortalClient
 import tornado.gen
 
 
-logger = logging.getLogger('katportalclient.example')
+logger = logging.getLogger("katportalclient.example")
 
 
 @tornado.gen.coroutine
@@ -27,9 +27,9 @@ def main():
     # Note: if on_update_callback is set to None, then we cannot use the
     #       KATPortalClient.connect() and subscribe() methods here.
     portal_client = KATPortalClient(
-        'http://{host}/api/client'.format(**vars(args)),
+        "http://{host}/api/client".format(**vars(args)),
         on_update_callback=None,
-        logger=logger
+        logger=logger,
     )
 
     # Get the names of sensors matching the patterns
@@ -47,12 +47,12 @@ def main():
     if num_sensors == 0:
         print("\nNo matching sensors found - no history to request!")
     else:
-        print("\nRequesting history for {0} sensors, from {1} to {2}"
-               .format(
-                   num_sensors,
-                   datetime.utcfromtimestamp(args.start).strftime('%Y-%m-%dT%H:%M:%SZ'),
-                   datetime.utcfromtimestamp(args.end).strftime('%Y-%m-%dT%H:%M:%SZ')
-                )
+        print(
+            "\nRequesting history for {0} sensors, from {1} to {2}".format(
+                num_sensors,
+                datetime.utcfromtimestamp(args.start).strftime("%Y-%m-%dT%H:%M:%SZ"),
+                datetime.utcfromtimestamp(args.end).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            )
         )
 
         if len(sensor_names) == 1:
@@ -63,8 +63,9 @@ def main():
             #    result is then sample_time, value_time, value, status
             history = yield portal_client.sensor_history(
                 sensor_names[0],
-                args.start, args.end,
-                include_value_ts=args.include_value_time
+                args.start,
+                args.end,
+                include_value_ts=args.include_value_time,
             )
             histories = {sensor_names[0]: history}
 
@@ -77,7 +78,7 @@ def main():
                 sensor_names,
                 args.start,
                 args.end,
-                include_value_ts=args.include_value_time
+                include_value_ts=args.include_value_time,
             )
 
         print("Found {} sensors.".format(len(histories)))
@@ -85,33 +86,35 @@ def main():
             num_samples = len(history)
             print("History for: {0} ({1} samples)".format(sensor_name, num_samples))
             if num_samples > 0:
-                filename = '{0}_{1}_{2}.csv'.format(
+                filename = "{0}_{1}_{2}.csv".format(
                     sensor_name,
-                    datetime.utcfromtimestamp(args.start).strftime('%Y_%m_%d'),
-                    datetime.utcfromtimestamp(args.end).strftime('%Y_%m_%d'),
+                    datetime.utcfromtimestamp(args.start).strftime("%Y_%m_%d"),
+                    datetime.utcfromtimestamp(args.end).strftime("%Y_%m_%d"),
                 )
-                print('Writing to file: {0}'.format(filename))
+                print("Writing to file: {0}".format(filename))
 
-                with open(filename, 'w') as fd:
+                with open(filename, "w") as fd:
                     for idx in range(0, num_samples, args.decimate):
                         item = history[idx]
 
                         # wrap values that contain commas
-                        if type(item.value) == str \
-                        and ',' in item.value:
+                        if type(item.value) == str and "," in item.value:
                             value = '"""{0}"""'.format(item.value)
                         else:
                             value = item.value
 
                         if idx == 0:
-                            fd.write('# sensor_name, sample_time, value_time, status, value\n')
+                            fd.write(
+                                "# sensor_name, sample_time, value_time, status, value\n"
+                            )
                         else:
-                            fd.write('{0},{1},{2},{3},{4}\n'.format(
-                                sensor_name,
-                                item.sample_time,
-                                item.value_time,
-                                item.status,
-                                value
+                            fd.write(
+                                "{0},{1},{2},{3},{4}\n".format(
+                                    sensor_name,
+                                    item.sample_time,
+                                    item.value_time,
+                                    item.status,
+                                    value,
                                 )
                             )
 
@@ -120,85 +123,89 @@ def main():
                     item = history[idx]
 
                     if idx == 0:
-                        print('\t# sensor_name, sample_time, value_time, status, value')
+                        print("\t# sensor_name, sample_time, value_time, status, value")
                     else:
-                        print('\t{0},{1},{2},{3},{4}'.format(
-                            sensor_name,
-                            item.sample_time,
-                            item.value_time,
-                            item.status,
-                            item.value
+                        print(
+                            "\t{0},{1},{2},{3},{4}".format(
+                                sensor_name,
+                                item.sample_time,
+                                item.value_time,
+                                item.status,
+                                item.value,
                             )
                         )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     default_sensors = [
-        'fbfuse_1_fbfmc_array_1_phase_reference',
-        'fbfuse_1_fbfmc_array_2_phase_reference',
-        'fbfuse_2_fbfmc_array_1_phase_reference',
-        'fbfuse_2_fbfmc_array_2_phase_reference',
-        'fbfuse_1_fbfmc_array_1_centre_frequency',
-        'fbfuse_1_fbfmc_array_2_centre_frequency',
-        'fbfuse_2_fbfmc_array_1_centre_frequency',
-        'fbfuse_2_fbfmc_array_2_centre_frequency'
+        "fbfuse_1_fbfmc_array_1_phase_reference",
+        "fbfuse_1_fbfmc_array_2_phase_reference",
+        "fbfuse_2_fbfmc_array_1_phase_reference",
+        "fbfuse_2_fbfmc_array_2_phase_reference",
+        "fbfuse_1_fbfmc_array_1_centre_frequency",
+        "fbfuse_1_fbfmc_array_2_centre_frequency",
+        "fbfuse_2_fbfmc_array_1_centre_frequency",
+        "fbfuse_2_fbfmc_array_2_centre_frequency",
     ]
 
     parser = argparse.ArgumentParser(
-        description='Download sensor history data.',
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+        description="Download sensor history data.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
 
     parser.add_argument(
-        '--host',
-        default='10.97.1.14',
-        help="hostname or IP of the portal server."
+        "--host", default="10.97.1.14", help="hostname or IP of the portal server."
     )
 
     parser.add_argument(
-        '-s', '--start',
+        "-s",
+        "--start",
         default=time.time() - 3600,
         type=float,
-        help="start time of sample query [sec since UNIX epoch]"
+        help="start time of sample query [sec since UNIX epoch]",
     )
 
     parser.add_argument(
-        '-e', '--end',
+        "-e",
+        "--end",
         type=float,
         default=time.time(),
-        help="end time of sample query [sec since UNIX epoch]"
+        help="end time of sample query [sec since UNIX epoch]",
     )
 
     parser.add_argument(
-        '-d', '--decimate',
+        "-d",
+        "--decimate",
         type=int,
-        metavar='N',
+        metavar="N",
         default=1,
-        help="decimation level - only every Nth sample is output."
+        help="decimation level - only every Nth sample is output.",
     )
 
     parser.add_argument(
-        '--sensors',
+        "--sensors",
         default=default_sensors,
-        dest='sensors',
-        metavar='sensor',
-        nargs='+',
-        help="list of sensor names or filter strings to request data for"
+        dest="sensors",
+        metavar="sensor",
+        nargs="+",
+        help="list of sensor names or filter strings to request data for",
     )
 
     parser.add_argument(
-        '-v', '--verbose',
-        dest='verbose',
+        "-v",
+        "--verbose",
+        dest="verbose",
         action="store_true",
         default=False,
-        help="provide extremely verbose output"
+        help="provide extremely verbose output",
     )
 
     parser.add_argument(
-        '-i', '--include-value-time',
+        "-i",
+        "--include-value-time",
         dest="include_value_time",
         action="store_true",
-        help="include value timestamp"
+        help="include value timestamp",
     )
 
     args = parser.parse_args()
