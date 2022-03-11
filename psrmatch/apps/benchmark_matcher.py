@@ -1,4 +1,3 @@
-# coding: utf-8
 #
 #   Benchmark the known source matcher.
 #   2020 Fabian Jankowski

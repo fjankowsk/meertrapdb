@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #   2020 Fabian Jankowski
 #   Cluster single-pulse candidates in various ways.

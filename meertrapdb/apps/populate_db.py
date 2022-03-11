@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #   2019 - 2020 Fabian Jankowski
 #   Populate the database.

@@ -1,4 +1,3 @@
-# coding: utf-8
 #
 #   Test healpy functionality.
 #   2020 Fabian Jankowski

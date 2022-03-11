@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #   2021 Fabian Jankowski
 #   Process the sensor data dump.

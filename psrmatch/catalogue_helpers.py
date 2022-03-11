@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #   2019 Fabian Jankowski
 #   Catalogue related helper functions.

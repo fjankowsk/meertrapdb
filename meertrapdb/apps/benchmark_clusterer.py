@@ -1,4 +1,3 @@
-# coding: utf-8
 #
 #   Benchmark the multi-beam clusterer.
 #   2020 Fabian Jankowski

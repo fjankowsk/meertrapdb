@@ -1,4 +1,3 @@
-# coding: utf-8
 #
 #   2020 Fabian Jankowski
 #   Search for detections of known sources.

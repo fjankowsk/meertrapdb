@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #   2018 - 2019 Fabian Jankowski
 #   Database related helper functions.
