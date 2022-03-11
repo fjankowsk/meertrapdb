@@ -47,6 +47,18 @@ setup(
         "requests",
         "scipy",
     ],
+    entry_points={
+        "console_scripts": [
+            "meertrapdb-benchmark_clusterer = meertrapdb.apps.benchmark_clusterer:main",
+            "meertrapdb-cluster_multibeam = meertrapdb.apps.cluster_multibeam:main",
+            "meertrapdb-make_plots = meertrapdb.apps.make_plots:main",
+            "meertrapdb-parse_datadump = meertrapdb.apps.parse_data_dump:main",
+            "meertrapdb-populate_db = meertrapdb.apps.populate_db:main",
+            "meertrapdb-search_knownsources = meertrapdb.apps.search_known_sources:main",
+            "psrmatch-benchmark = psrmatch.apps.benchmark_matcher:main",
+            "psrmatch-match_pulsars = psrmatch.apps.match_pulsars:main",
+        ],
+    },
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: MIT License",
