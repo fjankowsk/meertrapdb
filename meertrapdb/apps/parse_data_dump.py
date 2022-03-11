@@ -17,6 +17,7 @@ import pandas as pd
 
 from meertrapdb.config_helpers import get_config
 from meertrapdb.skymap import Skymap
+from meertrapdb import plotting
 
 # astropy.units generates members dynamically, pylint therefore fails
 # disable the corresponding pylint test for now
@@ -506,6 +507,9 @@ def run_pointing(params):
         df_lat.at[i, "tobs"] = sel.loc[mask, "tobs"].sum()
         df_lat.at[i, "pointings"] = len(sel[mask])
 
+    # convert object to numeric
+    df_lat = df_lat.apply(pd.to_numeric)
+
     print(df_lat.info())
     print(df_lat.to_string())
 
@@ -517,13 +521,17 @@ def run_pointing(params):
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
-    ax.errorbar(
-        x=df_lat["lat_mid"],
-        y=df_lat["tobs"] / 86400.0,
-        xerr=np.abs(df_lat["lat_hi"] - df_lat["lat_mid"]),
+    edges = np.append(
+        df_lat["lat_lo"].to_numpy(),
+        df_lat["lat_hi"].iloc[-1],
+    )
+
+    ax.stairs(
+        values=df_lat["tobs"] / 86400.0,
+        edges=edges,
         color="black",
-        marker="o",
-        zorder=3,
+        lw=2.0,
+        zorder=4,
     )
 
     ax.grid()
@@ -542,6 +550,8 @@ def run_pointing(params):
 
 def main():
     args = parse_args()
+
+    plotting.use_custom_matplotlib_formatting()
 
     enddate = None
 
