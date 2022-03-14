@@ -503,7 +503,7 @@ def run_pointing(params):
 
     # figure out observing band
     df = match_observing_bands(df)
-    print(df.to_string(columns=["name", "date", "tobs", "band", "status", "value"]))
+    # print(df.to_string(columns=["name", "date", "tobs", "band", "status", "value"]))
 
     # add exposure to sky map
     config = get_config()
@@ -568,12 +568,10 @@ def run_pointing(params):
 
     # add start/end time meta data
     m.add_comment("Start UTC: {0}".format(sel["date"].min()))
-
     m.add_comment("End UTC: {0}".format(sel["date"].max()))
 
     print("Start UTC: {0}".format(sel["date"].min()))
     print("End UTC: {0}".format(sel["date"].max()))
-
     print("Start Unix epoch: {0}".format(sel["sample_ts"].min()))
     print("End Unix epoch: {0}".format(sel["sample_ts"].max()))
 
@@ -590,7 +588,6 @@ def run_pointing(params):
         df_sources = None
 
     m.show(coordinates="galactic", sources=df_sources, shownames=True)
-
     m.show(coordinates="equatorial", sources=df_sources, shownames=True)
 
     plot_galactic_latitude_bins(df)
