@@ -1,5 +1,6 @@
+BLK         =   black
+DCK         =   docker
 PY3         =   python3
-DCK	    	=   docker
 
 BASEDIR     =   $(CURDIR)
 SRCDIR      =   ${BASEDIR}/meertrapdb
@@ -15,6 +16,7 @@ USERID      =   $(shell id -u)
 help:
 	@echo 'Makefile for Meertrap DB'
 	@echo 'Usage:'
+	@echo 'make black           reformat the python files using black code formatter'
 	@echo 'make clean           remove temporary files'
 	@echo 'make init_db         initialise database'
 	@echo 'make install         install the module locally'
@@ -22,6 +24,9 @@ help:
 	@echo 'make production      build docker image for production use'
 	@echo 'make run_db          start the database'
 	@echo 'make tests           run the regression tests'
+
+black:
+	${BLK} *.py */*.py */*/*.py
 
 clean:
 	rm -f ${SRCDIR}/*.pyc
@@ -62,4 +67,4 @@ run_db:
 tests:
 	${DCK} run -it --rm meertrapdb nose2
 
-.PHONY: help clean init_db install interactive production run_db tests
+.PHONY: help black clean init_db install interactive production run_db tests
