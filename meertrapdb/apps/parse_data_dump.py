@@ -156,6 +156,66 @@ def get_cfreq_data():
     return df
 
 
+def match_observing_bands(df):
+    """
+    Match the observations to observing bands.
+
+    Parameters
+    ----------
+    df: ~pd.DataFrame
+        The observation data.
+
+    Returns
+    -------
+    df: ~pd.DataFrame
+        The observation data with bands included.
+    """
+
+    df_cfreq = get_cfreq_data()
+
+    bands = []
+
+    for i in range(len(df)):
+        band = ""
+
+        if np.isnan(df.at[i, "tobs"]):
+            pass
+        else:
+            start = df.at[i, "date"]
+            end = start + pd.to_timedelta(df.at[i, "tobs"], unit="s")
+            # print('Start, end: {0}, {1}'.format(start, end))
+
+            mask = (
+                (df_cfreq["date"] >= start)
+                & (df_cfreq["date"] <= end)
+                & np.isfinite(df_cfreq["value"])
+            )
+            sel = df_cfreq.loc[mask]
+
+            # print(len(sel))
+
+            if len(sel) > 0:
+                # use value in first row
+                # XXX: use a better method
+                # convert to ghz
+                cfreq = sel["value"].iat[0] / 1.0e9
+
+                if 0 < cfreq < 1.0:
+                    band = "u"
+                elif 1.0 < cfreq < 2.0:
+                    band = "l"
+                elif cfreq > 2.0:
+                    band = "s"
+                else:
+                    raise RuntimeError("Band unknown: {0}".format(cfreq))
+
+        bands.append(band)
+
+    df["band"] = bands
+
+    return df
+
+
 def query_source_exposure(m, t_df):
     """
     Query and plot the exposure of sources.
@@ -442,47 +502,8 @@ def run_pointing(params):
     fig.savefig("tobs_hist.png", dpi=300)
 
     # figure out observing band
-    df_cfreq = get_cfreq_data()
-
-    bands = []
-
-    for i in range(len(df)):
-        band = ""
-
-        if np.isnan(df.at[i, "tobs"]):
-            pass
-        else:
-            start = df.at[i, "date"]
-            end = df.at[i, "date"] + pd.to_timedelta(df.at[i, "tobs"], unit="s")
-            # print('Start, end: {0}, {1}'.format(start, end))
-
-            mask = (
-                (df_cfreq["date"] >= start)
-                & (df_cfreq["date"] <= end)
-                & np.isfinite(df_cfreq["value"])
-            )
-            sel = df_cfreq.loc[mask]
-
-            # print(len(sel))
-
-            if len(sel) > 0:
-                # use value in first row
-                # XXX: use a better method
-                cfreq = sel["value"].iat[0]
-
-                if 0 < cfreq < 1.0e9:
-                    band = "u"
-                elif 1.0e9 < cfreq < 2.0e9:
-                    band = "l"
-                elif cfreq > 2.0e9:
-                    band = "s"
-                else:
-                    raise RuntimeError("Band unknown: {0}".format(cfreq))
-
-        bands.append(band)
-
-    df["band"] = bands
-    print(df.to_string(columns=["name", "tobs", "band", "status", "value"]))
+    df = match_observing_bands(df)
+    print(df.to_string(columns=["name", "date", "tobs", "band", "status", "value"]))
 
     # add exposure to sky map
     config = get_config()
