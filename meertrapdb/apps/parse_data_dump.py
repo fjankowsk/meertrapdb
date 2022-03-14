@@ -156,6 +156,59 @@ def get_cfreq_data():
     return df
 
 
+def query_source_exposure(m, t_df):
+    """
+    Query and plot the exposure of sources.
+
+    Parameters
+    ----------
+    m: ~meetrapdb.Skymap
+        The skymap to query.
+    t_df: ~pd.DataFrame
+        The source data.
+    """
+
+    df_sources = t_df.copy()
+
+    # query the exposure of the detections
+    coords = SkyCoord(
+        ra=df_sources["ra"],
+        dec=df_sources["dec"],
+        unit=(units.hourangle, units.deg),
+        frame="icrs",
+    )
+
+    exposures = m.query(coords, [0.1 for _ in range(len(coords))])
+
+    df_sources["tobs"] = exposures
+
+    print(df_sources.to_string(columns=["name", "tobs"]))
+
+    # exposure time histogram
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+
+    _, bins, _ = ax.hist(
+        df_sources["tobs"], histtype="step", bins=40, color="black", lw=1.5, zorder=3
+    )
+
+    for item in np.unique(df_sources["type"]):
+        mask = df_sources["type"] == item
+        sel = df_sources.loc[mask]
+
+        ax.hist(sel["tobs"], histtype="step", bins=bins, lw=2, zorder=4, label=item)
+
+    ax.grid()
+    ax.set_xlabel("tobs (h)")
+    ax.set_ylabel("Number")
+    ax.set_title("Source exposure")
+    ax.legend(loc="best", frameon=False)
+
+    fig.tight_layout()
+
+    fig.savefig("exposure_hist.png", dpi=300)
+
+
 def plot_galactic_latitude_bins(t_df):
     """
     Plot the exposure in Galactic latitude bins.
@@ -429,6 +482,7 @@ def run_pointing(params):
         bands.append(band)
 
     df["band"] = bands
+    print(df.to_string(columns=["name", "tobs", "band", "status", "value"]))
 
     # add exposure to sky map
     config = get_config()
@@ -504,56 +558,19 @@ def run_pointing(params):
 
     print("Fraction of the map covered: {0:.4f}".format(m.fraction_covered))
 
+    # m.save_to_file('skymap_from_data_dump.pkl')
+    print(m)
+
     # plot discoveries
     if os.path.isfile("sources.csv"):
         df_sources = pd.read_csv("sources.csv", sep=";", comment="#", header="infer")
+        query_source_exposure(m, df_sources)
     else:
         df_sources = None
-
-    # m.save_to_file('skymap_from_data_dump.pkl')
-    print(m)
 
     m.show(coordinates="galactic", sources=df_sources, shownames=True)
 
     m.show(coordinates="equatorial", sources=df_sources, shownames=True)
-
-    # query the exposure of the detections
-    coords = SkyCoord(
-        ra=df_sources["ra"],
-        dec=df_sources["dec"],
-        unit=(units.hourangle, units.deg),
-        frame="icrs",
-    )
-
-    exposures = m.query(coords, [0.1 for _ in range(len(coords))])
-
-    df_sources["tobs"] = exposures
-
-    print(df_sources.to_string(columns=["name", "tobs"]))
-
-    # exposure time histogram
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-
-    _, bins, _ = ax.hist(
-        df_sources["tobs"], histtype="step", bins=40, color="black", lw=1.5, zorder=3
-    )
-
-    for item in np.unique(df_sources["type"]):
-        mask = df_sources["type"] == item
-        sel = df_sources.loc[mask]
-
-        ax.hist(sel["tobs"], histtype="step", bins=bins, lw=2, zorder=4, label=item)
-
-    ax.grid()
-    ax.set_xlabel("tobs (h)")
-    ax.set_ylabel("Number")
-    ax.set_title("Source exposure")
-    ax.legend(loc="best", frameon=False)
-
-    fig.tight_layout()
-
-    fig.savefig("exposure_hist.png", dpi=300)
 
     plot_galactic_latitude_bins(df)
 
