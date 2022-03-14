@@ -173,6 +173,7 @@ def match_observing_bands(df):
 
     df_cfreq = get_cfreq_data()
 
+    fudge = pd.to_timedelta(600.0, unit="s")
     bands = []
 
     for i in range(len(df)):
@@ -181,8 +182,9 @@ def match_observing_bands(df):
         if np.isnan(df.at[i, "tobs"]):
             pass
         else:
-            start = df.at[i, "date"]
-            end = start + pd.to_timedelta(df.at[i, "tobs"], unit="s")
+            # search in a window of +- 10 min around the obs including tobs
+            start = df.at[i, "date"] - fudge
+            end = df.at[i, "date"] + pd.to_timedelta(df.at[i, "tobs"], unit="s") + fudge
             # print('Start, end: {0}, {1}'.format(start, end))
 
             mask = (
@@ -195,10 +197,8 @@ def match_observing_bands(df):
             # print(len(sel))
 
             if len(sel) > 0:
-                # use value in first row
-                # XXX: use a better method
-                # convert to ghz
-                cfreq = sel["value"].iat[0] / 1.0e9
+                # use the most common value and convert to ghz
+                cfreq = sel["value"].mode().iat[0] / 1.0e9
 
                 if 0 < cfreq < 1.0:
                     band = "u"
