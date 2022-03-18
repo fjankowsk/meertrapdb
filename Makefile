@@ -1,6 +1,6 @@
 BLK         =   black
 DCK         =   docker
-PY3         =   python3
+PIP         =   pip
 
 BASEDIR     =   $(CURDIR)
 SRCDIR      =   ${BASEDIR}/meertrapdb
@@ -42,7 +42,7 @@ init_db:
 	${PRODDIR}/scripts/init_database.sh
 
 install:
-	${PY3} setup.py install
+	${PIP} install .
 
 interactive:
 	${DCK} run -it --network=host \
