@@ -560,10 +560,6 @@ def run_pointing(params):
     mask = sel["band"] == "u"
     sel.loc[mask, "radius"] = pb_radius_u
 
-    # survey coverage, i.e. sum area x tobs
-    coverage = np.sum((sel["tobs"] / 3600.0) * np.pi * sel["radius"] ** 2)
-    print("Survey coverage: {0:.2f} deg^2 hr".format(coverage))
-
     m.add_exposure(coords, sel["radius"], sel["tobs"] / 3600.0)
 
     # add start/end time meta data
@@ -576,6 +572,16 @@ def run_pointing(params):
     print("End Unix epoch: {0}".format(sel["sample_ts"].max()))
 
     print("Fraction of the map covered: {0:.4f}".format(m.fraction_covered))
+
+    # compute l-band survey coverage, i.e. sum area x tobs
+    mask = sel["band"] == "l"
+    sel2 = sel[mask].copy()
+
+    tot_tobs = np.sum((sel2["tobs"] / 3600.0))
+    inco_cover = tot_tobs * smconfig["beam_area"]["l_band"]["pb"]
+    co_cover = tot_tobs * smconfig["beam_area"]["l_band"]["cb"]
+    print("L-band Incoherent survey coverage: {0:.2f} deg^2 hr".format(inco_cover))
+    print("L-band Coherent survey coverage: {0:.2f} deg^2 hr".format(co_cover))
 
     # m.save_to_file('skymap_from_data_dump.pkl')
     print(m)

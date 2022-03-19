@@ -66,7 +66,18 @@ skymap:
   nside: 8192
   quantity: 'time'
   unit: 'hour'
+  # half-power beam areas in square degrees
+  # at the centre frequencies of the sampled bands
+  # and for the core antennas tied together
+  beam_area:
+    # at 1284 MHz
+    l_band:
+      pb: 0.97
+      # mean value for 768 beams maximum
+      cb: 0.39
   # beam hpbw radii in degrees
+  # XXX: retire the radii in preference of the beam area above
+  # XXX: compute the effective circle radii from the area
   # at the centre frequencies of the sampled bands
   # and for the core antennas tied together
   beam_radius:
