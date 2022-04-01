@@ -588,8 +588,9 @@ def run_pointing(params):
     print(m)
 
     # plot discoveries
-    if os.path.isfile("sources.csv"):
-        df_sources = pd.read_csv("sources.csv", sep=";", comment="#", header="infer")
+    source_file = "sources.csv"
+    if os.path.isfile(source_file):
+        df_sources = pd.read_csv(source_file, sep=";", comment="#", header="infer")
         query_source_exposure(m, df_sources)
     else:
         df_sources = None
