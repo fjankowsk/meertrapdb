@@ -681,11 +681,11 @@ def run_skymap():
             if df.at[0, "receiver"] == 1:
                 # l-band
                 cb_radius = smconfig["beam_radius"]["l_band"]["cb"]
-                pb_radius = smconfig["beam_radius"]["l_band"]["pb"]
+                pb_radius = np.sqrt(smconfig["beam_area"]["l_band"]["pb"] / np.pi)
             elif df.at[0, "receiver"] == 2:
                 # uhf-band
                 cb_radius = smconfig["beam_radius"]["uhf_band"]["cb"]
-                pb_radius = smconfig["beam_radius"]["uhf_band"]["pb"]
+                pb_radius = np.sqrt(smconfig["beam_area"]["uhf_band"]["pb"] / np.pi)
             else:
                 raise RuntimeError(
                     "Receiver number unknown: {0}".format(df.at[0, "receiver"])
