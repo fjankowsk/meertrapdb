@@ -550,7 +550,7 @@ def run_pointing(params):
     # add primary beam radii
     # use the circle equivalent ones for given area
     pb_radius_l = np.sqrt(smconfig["beam_area"]["l_band"]["pb"] / np.pi)
-    pb_radius_u = smconfig["beam_radius"]["uhf_band"]["pb"]
+    pb_radius_u = np.sqrt(smconfig["beam_area"]["uhf_band"]["pb"] / np.pi)
 
     # use l-band as default
     sel["radius"] = pb_radius_l

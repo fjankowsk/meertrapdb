@@ -75,6 +75,9 @@ skymap:
       pb: 0.97
       # mean value for 768 beams maximum
       cb: 0.39
+    # at 816 MHz
+    uhf_band:
+      pb: 2.46
   # beam hpbw radii in degrees
   # XXX: retire the radii in preference of the beam area above
   # XXX: compute the effective circle radii from the area
