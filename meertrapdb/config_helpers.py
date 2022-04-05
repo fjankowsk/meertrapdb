@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #   2018 - 2019 Fabian Jankowski
 #   Configuration file related helper functions.
@@ -25,16 +24,16 @@ def get_config():
         If `filename` does not exist.
     """
 
-    filename = os.path.join(os.path.dirname(__file__), 'config', 'config.yml')
+    filename = os.path.join(os.path.dirname(__file__), "config", "config.yml")
     filename = os.path.abspath(filename)
 
-    log = logging.getLogger('meertrapdb.config_helpers')
+    log = logging.getLogger("meertrapdb.config_helpers")
     log.debug("Configuration file: {0}".format(filename))
 
     if not os.path.isfile(filename):
         raise RuntimeError("Config file does not exist: {0}".format(filename))
-    
-    with open(filename, 'r') as f:
+
+    with open(filename, "r") as f:
         config = yaml.full_load(f)
 
     return config

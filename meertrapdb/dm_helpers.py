@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #   2020 Fabian Jankowski
 #   Milky Way DM related helper functions.
@@ -30,8 +29,8 @@ def get_mw_dm(gl, gb):
     # 30 kpc
     dist = 30 * 1000
 
-    dm_ne2001, _ = pygedm.dist_to_dm(gl, gb, dist, mode='gal', method='ne2001')
-    dm_ymw16, _ = pygedm.dist_to_dm(gl, gb, dist, mode='gal', method='ymw16')
+    dm_ne2001, _ = pygedm.dist_to_dm(gl, gb, dist, mode="gal", method="ne2001")
+    dm_ymw16, _ = pygedm.dist_to_dm(gl, gb, dist, mode="gal", method="ymw16")
 
     mean_dm = 0.5 * (dm_ne2001 + dm_ymw16)
 

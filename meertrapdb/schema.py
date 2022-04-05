@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #   2018 - 2019 Fabian Jankowski
 #   Database schema classes.
@@ -7,7 +6,7 @@
 from datetime import datetime
 from decimal import Decimal
 
-from pony.orm import (Database, Optional, PrimaryKey, Required, Set)
+from pony.orm import Database, Optional, PrimaryKey, Required, Set
 
 
 db = Database()
@@ -25,12 +24,12 @@ class ScheduleBlock(db.Entity):
     sub_array = Required(int, size=8, unsigned=True)
     observer = Optional(str, max_len=16)
     description = Optional(str, max_len=128)
-    observation = Set('Observation')
+    observation = Set("Observation")
 
 
 class Observation(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
-    schedule_block = Set('ScheduleBlock')
+    schedule_block = Set("ScheduleBlock")
     field_name = Required(str, max_len=32)
     boresight_ra = Required(str, max_len=32)
     boresight_dec = Required(str, max_len=32)
@@ -47,9 +46,9 @@ class Observation(db.Entity):
     nchan = Required(int, size=16, unsigned=True)
     npol = Required(int, size=8, unsigned=True)
     tsamp = Required(float)
-    beam_config = Set('BeamConfig')
-    sps_candidate = Set('SpsCandidate')
-    logs = Set('Logs')
+    beam_config = Set("BeamConfig")
+    sps_candidate = Set("SpsCandidate")
+    logs = Set("Logs")
     notes = Optional(str, max_len=256)
 
 
@@ -58,8 +57,8 @@ class BeamConfig(db.Entity):
     cb_angle = Required(float)
     cb_x = Required(float)
     cb_y = Required(float)
-    observation = Set('Observation')
-    tiling = Set('Tiling')
+    observation = Set("Observation")
+    tiling = Set("Tiling")
 
 
 class Tiling(db.Entity):
@@ -70,7 +69,7 @@ class Tiling(db.Entity):
     ref_freq = Required(float)
     target = Required(str, max_len=128)
     tiling_mode = Required(str, max_len=32)
-    beam_config = Set('BeamConfig')
+    beam_config = Set("BeamConfig")
 
 
 class Beam(db.Entity):
@@ -83,7 +82,7 @@ class Beam(db.Entity):
     gl = Optional(float)
     gb = Optional(float)
     mw_dm = Optional(float)
-    sps_candidate = Set('SpsCandidate')
+    sps_candidate = Set("SpsCandidate")
 
 
 """ class PeriodCandidate(db.Entity):
@@ -114,34 +113,34 @@ class SpsCandidate(db.Entity):
     utc = Required(str, max_len=32)
     utc_added = Required(datetime, precision=0, default=datetime.utcnow())
     mjd = Required(Decimal, precision=15, scale=10)
-    observation = Set('Observation')
-    beam = Set('Beam')
+    observation = Set("Observation")
+    beam = Set("Beam")
     snr = Required(float)
     dm = Required(float)
     dm_ex = Optional(float)
     width = Required(float)
-    node = Set('Node')
+    node = Set("Node")
     dynamic_spectrum = Optional(str, max_len=2048)
     profile = Optional(str, max_len=2048)
     heimdall_plot = Optional(str, max_len=2048)
     mtc_plot = Optional(str, max_len=2048)
     fetch_plot = Optional(str, max_len=2048)
-    #score = Required(float)
+    # score = Required(float)
     viewed = Optional(int, size=16, unsigned=True, default=0)
-    pipeline_config = Set('PipelineConfig')
-    #classifierconfig = Set('ClassifierConfig')
-    sift_result = Set('SiftResult')
-    head_of = Set('SiftResult')
-    known_source = Set('KnownSource')
+    pipeline_config = Set("PipelineConfig")
+    # classifierconfig = Set('ClassifierConfig')
+    sift_result = Set("SiftResult")
+    head_of = Set("SiftResult")
+    known_source = Set("KnownSource")
 
 
 class Node(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
     number = Required(int, size=8, unsigned=True)
     hostname = Required(str, max_len=64)
-    #periodcandidate = Set('PeriodCandidate')
-    sps_candidate = Set('SpsCandidate')
-    logs = Set('Logs')
+    # periodcandidate = Set('PeriodCandidate')
+    sps_candidate = Set("SpsCandidate")
+    logs = Set("Logs")
 
 
 class PipelineConfig(db.Entity):
@@ -153,8 +152,8 @@ class PipelineConfig(db.Entity):
     snr_threshold = Required(float)
     width_threshold = Required(float)
     zerodm_zapping = Required(bool)
-    #period_candidate = Set('PeriodCandidate')
-    sps_candidate = Set('SpsCandidate')
+    # period_candidate = Set('PeriodCandidate')
+    sps_candidate = Set("SpsCandidate")
 
 
 """ class ClassifierConfig(db.Entity):
@@ -167,9 +166,9 @@ class PipelineConfig(db.Entity):
 
 class SiftResult(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
-    sps_candidate = Set('SpsCandidate')
+    sps_candidate = Set("SpsCandidate")
     cluster_id = Required(int, size=32)
-    head = Set('SpsCandidate', reverse='head_of')
+    head = Set("SpsCandidate", reverse="head_of")
     is_head = Required(bool)
     members = Required(int, size=32)
     beams = Optional(int, size=16)
@@ -182,7 +181,7 @@ class SiftResult(db.Entity):
 
 class KnownSource(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
-    sps_candidate = Set('SpsCandidate')
+    sps_candidate = Set("SpsCandidate")
     name = Required(str, max_len=32, unique=True)
     catalogue = Required(str, max_len=32)
     dm = Optional(float)
@@ -191,14 +190,14 @@ class KnownSource(db.Entity):
 
 class Logs(db.Entity):
     id = PrimaryKey(int, auto=True, size=64, unsigned=True)
-    #utc = Required(datetime, precision=6)
+    # utc = Required(datetime, precision=6)
     utc = Required(datetime, precision=0)
     utc_added = Required(datetime, precision=0, default=datetime.utcnow())
-    obs = Set('Observation')
+    obs = Set("Observation")
     program = Required(str, max_len=32)
     process = Required(str, max_len=32)
     logger = Required(str, max_len=32)
     module = Required(str, max_len=32)
     level = Required(int, size=8, unsigned=True)
     message = Required(str, max_len=512)
-    node = Set('Node')
+    node = Set("Node")

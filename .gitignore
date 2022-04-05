@@ -4,3 +4,12 @@ __pycache__
 *.swp
 # macos preview directories
 .DS_Store
+# output image files
+*.pdf
+*.png
+# pickle files
+*.pkl
+# text data files
+*.csv
+# pointing database dump
+/fbfuse_sensor_dump
