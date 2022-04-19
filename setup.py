@@ -32,7 +32,7 @@ setup(
     url="https://bitbucket.org/jankowsk/meertrapdb",
     license="MIT",
     packages=find_packages(),
-    package_data={"meertrapdb": ["config/*"], "psrmatch": ["catalogues/*.txt"]},
+    package_data={"meertrapdb": ["config/*"]},
     install_requires=[
         "astropy",
         "healpy",
@@ -41,6 +41,7 @@ setup(
         "numpy",
         "pandas",
         "pony",
+        "psrmatch @ git+https://bitbucket.org/jankowsk/psrmatch.git@master",
         "pygedm",
         "pytz",
         "pyyaml",
@@ -55,8 +56,6 @@ setup(
             "meertrapdb-parse_datadump = meertrapdb.apps.parse_data_dump:main",
             "meertrapdb-populate_db = meertrapdb.apps.populate_db:main",
             "meertrapdb-search_knownsources = meertrapdb.apps.search_known_sources:main",
-            "psrmatch-benchmark = psrmatch.apps.benchmark_matcher:main",
-            "psrmatch-match_pulsars = psrmatch.apps.match_pulsars:main",
         ],
     },
     classifiers=[
