@@ -18,20 +18,7 @@ The easiest and recommended way to install the software is through `pip` directl
 
 ## Known source matching ##
 
-The repository contains a sub-module called `psrmatch` to efficiently cross-match large numbers of single-pulse candidates with known sources from the ATNF pulsar catalogue or other source catalogues. The cross-matching is based on their detected locations and dispersion measures.
-
-The cross-matcher operates on Astropy SkyCoord objects and input dispersion measures like this:
-
-```python
-from psrmatch import Matcher
-
-m = Matcher()
-m.load_catalogue('psrcat')
-m.create_search_tree()
-m.find_matches(source, dm)
-```
-
-The list of supported catalogues can be queried using the `m.supported_catalogues` property that returns a list of catalogue names.
+The `psrmatch` known source matching code has been moved into a [separate repository](https://bitbucket.org/jankowsk/psrmatch/).
 
 ## Multi-beam clustering ##
 
