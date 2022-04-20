@@ -149,7 +149,7 @@ def get_cfreq_data():
     df["date"] = pd.to_datetime(df["sample_ts"], unit="s")
 
     # convert to numeric
-    df['value'] = df['value'].apply(pd.to_numeric)
+    df["value"] = df["value"].apply(pd.to_numeric)
 
     # treat empty values
     mask = df["value"] == 0
