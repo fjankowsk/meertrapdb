@@ -35,7 +35,6 @@ setup(
     package_data={"meertrapdb": ["config/*"]},
     install_requires=[
         "astropy",
-        "healpy",
         "matplotlib",
         "nose2",
         "numpy",
@@ -46,7 +45,7 @@ setup(
         "pytz",
         "pyyaml",
         "requests",
-        "scipy",
+        "skymap @ git+https://bitbucket.org/jankowsk/skymap.git@master",
     ],
     entry_points={
         "console_scripts": [
