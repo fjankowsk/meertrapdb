@@ -27,8 +27,8 @@ from meertrapdb.db_helpers import setup_db
 from meertrapdb.general_helpers import setup_logging
 from meertrapdb import schema
 from meertrapdb.schema import db
-from meertrapdb.skymap import Skymap
 from meertrapdb.version import __version__
+from skymap import Skymap
 
 # astropy.units generates members dynamically, pylint therefore fails
 # disable the corresponding pylint test for now

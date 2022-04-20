@@ -16,8 +16,8 @@ import numpy as np
 import pandas as pd
 
 from meertrapdb.config_helpers import get_config
-from meertrapdb.skymap import Skymap
 from meertrapdb import plotting
+from skymap import Skymap
 
 # astropy.units generates members dynamically, pylint therefore fails
 # disable the corresponding pylint test for now
