@@ -137,7 +137,6 @@ def get_cfreq_data():
         names = ["name", "sample_ts", "value_ts", "status", "value"]
 
         temp = pd.read_csv(item, comment="#", names=names, quotechar='"')
-
         frames.append(temp)
 
     df = pd.concat(frames, ignore_index=True, sort=False)
@@ -148,6 +147,9 @@ def get_cfreq_data():
 
     # convert to dates
     df["date"] = pd.to_datetime(df["sample_ts"], unit="s")
+
+    # convert to numeric
+    df['value'] = df['value'].apply(pd.to_numeric)
 
     # treat empty values
     mask = df["value"] == 0
