@@ -20,6 +20,10 @@ The easiest and recommended way to install the software is through `pip` directl
 
 The `psrmatch` known source matching code has been moved into a [separate repository](https://bitbucket.org/jankowsk/psrmatch/).
 
+## Sky map data handling ##
+
+The `skymap` code to create, handle, and visualise sky map (e.g. HEALPix) data has been moved into a [separate repository](https://bitbucket.org/jankowsk/skymap/).
+
 ## Multi-beam clustering ##
 
 The repository contains a module to cluster (or sift) single-pulse candidates detected in multiple beams, based on their proximity in time and fractional dispersion measure. The parameters of the temporal width of the matching box and the fractional DM threshold can be tweaked as required. Example usage is like this:
