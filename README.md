@@ -34,3 +34,76 @@ from meertrapdb.clustering import Clusterer
 clust = Clusterer()
 info = clust.match_candidates(candidates)
 ```
+
+## Usage ##
+
+```bash
+$ meertrapdb-benchmark_clusterer
+```
+
+```bash
+$ meertrapdb-cluster_multibeam -h
+usage: meertrapdb-cluster_multibeam [-h] [--dm DM] [--time TIME] [--spccl_version SPCCL_VERSION] filename
+
+Perform multi-beam candidate clustering.
+
+positional arguments:
+  filename
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --dm DM               Fractional DM tolerance. (default: 0.02)
+  --time TIME           Time tolerance for matching in milliseconds. (default: 10.0)
+  --spccl_version SPCCL_VERSION
+                        The version of the input SPCCL file. (default: 2)
+```
+
+```bash
+$ meertrapdb-make_plots -h
+usage: meertrapdb-make_plots [-h] [--version] {heimdall,knownsources,sifting,skymap,timeline,timeonsky}
+
+Make plots from database.
+
+positional arguments:
+  {heimdall,knownsources,sifting,skymap,timeline,timeonsky}
+                        Mode of operation.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --version             show program's version number and exit
+```
+
+```bash
+$ meertrapdb-parse_datadump -h
+usage: meertrapdb-parse_datadump [-h] [--enddate YYYY-MM-DDThh:mm:ss]
+
+Process the sensor data dump.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --enddate YYYY-MM-DDThh:mm:ss
+                        Process sensor data until this UTC date in ISOT format. (default: None)
+```
+
+```bash
+$ meertrapdb-populate_db -h
+usage: meertrapdb-populate_db [-h] [-s SCHEDULE_BLOCK] [-t] [-v] [--version] {fake,init_tables,known_sources,production,sift,parameters}
+
+Populate the database.
+
+positional arguments:
+  {fake,init_tables,known_sources,production,sift,parameters}
+                        Mode of operation.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -s SCHEDULE_BLOCK, --schedule_block SCHEDULE_BLOCK
+                        The schedule block ID to use. (default: None)
+  -t, --test_run        Do neither move, nor copy files. This flag works with "production" mode only. (default: False)
+  -v, --verbose         Get verbose program output. This switches on the display of debug messages. (default: False)
+  --version             show program's version number and exit
+```
+
+```bash
+$ meertrapdb-search_knownsources
+```
