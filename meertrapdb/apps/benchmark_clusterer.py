@@ -75,7 +75,7 @@ def plot_runtime_scaling(df):
 
 def main():
     test_file = os.path.join(
-        os.path.dirname(__file__), "tests", "test_clusterer_candidates.spccl.log"
+        os.path.dirname(__file__), "..", "tests", "test_clusterer_candidates.spccl.log"
     )
 
     example_cands = parse_spccl_file(test_file, 1)
@@ -105,9 +105,9 @@ def main():
         print("Runtime: {0:.1f} s".format(timer.runtime))
         print("Clustering rate: {0:.1f} candidates/s".format(ncands / timer.runtime))
 
-        temp = {"ncands": ncands, "runtime": timer.runtime}
+        df_temp = pd.DataFrame({"ncands": ncands, "runtime": timer.runtime}, index=[0])
 
-        df = df.append(temp, ignore_index=True)
+        df = pd.concat([df, df_temp], ignore_index=True)
 
     print(df.to_string())
 
