@@ -676,6 +676,9 @@ def load_summary_file(filename):
     with open(filename, "r") as fd:
         data = json.load(fd)
 
+    if "utc_start_time" not in data["sb_details"]:
+        data["sb_details"] = json.loads(data["sb_details"])
+
     return data
 
 
