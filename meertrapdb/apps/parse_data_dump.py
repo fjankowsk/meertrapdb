@@ -368,6 +368,108 @@ def run_ib_pointing(params):
     survey.plot_galactic_latitude_bins(df)
 
 
+def run_cb_pointing(params):
+    """
+    Run the processing for CB pointing mode.
+
+    Parameters
+    ----------
+    params: dict
+        Additional parameters for the processing.
+    """
+
+    # create sky map
+    config = get_config()
+    smconfig = config["skymap"]
+
+    m = Skymap(
+        nside=smconfig["nside"], quantity=smconfig["quantity"], unit=smconfig["unit"]
+    )
+
+    files = glob.glob("fbfuse_sensor_dump/*_array_1_coherent_beam_cfbf00[0-7]??_*.csv")
+    files = sorted(files)
+
+    if not len(files) > 0:
+        raise RuntimeError("Need to provide input files.")
+
+    # use the circle equivalent ones for given area
+    cb_radius_l = np.sqrt(smconfig["beam_area"]["l_band"]["cb"] / (768.0 * np.pi))
+    print("Half-power CB radius: {0:.4f} deg".format(cb_radius_l))
+
+    names = ["name", "sample_ts", "value_ts", "status", "value"]
+
+    for item in files[0:10]:
+        print(item)
+        df = pd.read_csv(item, comment="#", names=names, quotechar='"')
+
+        # convert to dates
+        df["date"] = pd.to_datetime(df["sample_ts"], unit="s")
+
+        # parse targets
+        df["value"] = df["value"].str.strip('"')
+
+        coords = []
+
+        for i in range(len(df)):
+            raw = df.at[i, "value"]
+
+            name = ""
+            ra = np.nan
+            dec = np.nan
+
+            try:
+                target = katpoint.Target(raw)
+                name = target.name
+                result = target.astrometric_radec()
+                ra = np.degrees(result[0])
+                dec = np.degrees(result[1])
+            except Exception:
+                pass
+
+            coords.append([name, ra, dec])
+
+        df["name"] = [item[0] for item in coords]
+        df["ra"] = [item[1] for item in coords]
+        df["dec"] = [item[2] for item in coords]
+
+        # add observing time
+        df["tobs"] = df["sample_ts"].diff()
+
+        mask = (
+            (df["name"] == "")
+            | (df["name"] == "unset")
+            | (df["ra"] == 0)
+            | (df["dec"] == 0)
+            | df["ra"].isnull()
+            | df["dec"].isnull()
+        )
+
+        df.loc[mask, "tobs"] = np.nan
+
+        mask = np.logical_not(df["tobs"].isnull())
+        df = df[mask]
+
+        # add primary beam radii
+        df["radius"] = cb_radius_l
+
+        # df.info()
+        # print(df.to_string(columns=["name", "ra", "dec", "tobs"]))
+
+        coords = SkyCoord(
+            ra=df["ra"], dec=df["dec"], unit=(units.deg, units.deg), frame="icrs"
+        )
+
+        m.add_exposure(coords, df["radius"], df["tobs"] / 3600.0)
+        del df
+        del coords
+
+    # m.save_to_file("skymap_coherent.pkl")
+    print(m)
+
+    m.show(coordinates="galactic")
+    m.show(coordinates="equatorial")
+
+
 #
 # MAIN
 #
@@ -390,7 +492,8 @@ def main():
 
     params = {"enddate": enddate}
 
-    run_ib_pointing(params)
+    # run_ib_pointing(params)
+    run_cb_pointing(params)
 
     plt.show()
 
