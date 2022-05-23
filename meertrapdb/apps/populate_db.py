@@ -374,8 +374,11 @@ def insert_candidates(data, sb_id, summary, obs_utc_start, node_name):
 
             if 1000 < cfreq < 2000:
                 receiver = 1
-            elif cfreq < 1000:
+            elif cfreq <= 1000:
                 receiver = 2
+            elif cfreq >= 2000:
+                receiver = 3
+            # Is that even needed now?
             else:
                 raise NotImplementedError("Unknown receiver: {0}".format(cfreq))
 
