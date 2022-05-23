@@ -603,6 +603,8 @@ def insert_candidates(data, sb_id, summary, obs_utc_start, node_name):
                 snr=item["snr"],
                 dm=item["dm"],
                 width=item["width"],
+                label=item["label"],
+                probability=item["probability"],
                 node=node,
                 dynamic_spectrum=ds_web,
                 profile="",
