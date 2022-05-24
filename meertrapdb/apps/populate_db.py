@@ -453,10 +453,27 @@ def insert_candidates(data, sb_id, summary, obs_utc_start, node_name):
         )[:]
 
         if len(pc_queried) == 0:
+
+            ddplan_str = None
+
+            if (isinstance(summary["pipeline"]["cheetah"]["ddplan_str"], str)):
+                ddplan_str = summary["pipeline"]["cheetah"]["ddplan_str"]
+            elif (isinstance(summary["pipeline"]["cheetah"]["ddplan_str"], dict)):
+                bw_str = str(int(summary["data"]["bw"] * 1e-06))
+                cstr = "c" + bw_str
+                
+                try:
+                    ddplan_str = summary["pipeline"]["cheetah"]["ddplan_str"][cstr]
+                except KeyError:
+                    raise RuntimeError("Unrecognised ddplan option {0}".format(cstr))
+
+            else:
+                raise RuntimeError("Unrecognised ddplan_str type!")
+
             pipeline_config = schema.PipelineConfig(
                 name=summary["pipeline"]["mode"],
                 version=summary["version_info"]["control"],
-                dd_plan=summary["pipeline"]["cheetah"]["ddplan_str"],
+                dd_plan=ddplan_str,
                 dm_threshold=summary["pipeline"]["cheetah"]["spsift"]["dm_thresh"],
                 snr_threshold=summary["pipeline"]["cheetah"]["spsift"]["sigma_thresh"],
                 width_threshold=summary["pipeline"]["cheetah"]["spsift"][
