@@ -64,6 +64,22 @@ def parse_spccl_file(filename, version):
             "fil_file",
             "plot_file",
         ]
+    elif version == 3:
+        names = [
+            "index",
+            "mjd",
+            "dm",
+            "width",
+            "snr",
+            "beam",
+            "beam_mode",
+            "ra",
+            "dec",
+            "label",
+            "probability",
+            "fil_file",
+            "plot_file",
+        ]
     else:
         raise NotImplementedError(
             "The requested SPCCL version is not implemented: {0}".format(version)
@@ -82,7 +98,8 @@ def parse_spccl_file(filename, version):
     temp = np.atleast_1d(temp)
 
     # sanity check that the version is correct
-    if version == 2:
+    # Need checks for label and probability?
+    if (version == 2) or (version == 3):
         if np.unique(temp["beam_mode"]) in ["C", "I"]:
             pass
         else:
