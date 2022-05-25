@@ -382,9 +382,7 @@ def run_cb_pointing(params):
     config = get_config()
     smconfig = config["skymap"]
 
-    m = Skymap(
-        nside=smconfig["nside"], quantity=smconfig["quantity"], unit=smconfig["unit"]
-    )
+    m = Skymap(nside=smconfig["nside"], quantity=smconfig["quantity"], unit="a.u.")
 
     files = glob.glob("fbfuse_sensor_dump/*_array_1_coherent_beam_cfbf00[0-7]??_*.csv")
     files = sorted(files)
@@ -392,14 +390,16 @@ def run_cb_pointing(params):
     if not len(files) > 0:
         raise RuntimeError("Need to provide input files.")
 
+    print("Number of files to process: {0}".format(len(files)))
+
     # use the circle equivalent ones for given area
     cb_radius_l = np.sqrt(smconfig["beam_area"]["l_band"]["cb"] / (768.0 * np.pi))
     print("Half-power CB radius: {0:.4f} deg".format(cb_radius_l))
 
     names = ["name", "sample_ts", "value_ts", "status", "value"]
 
-    for item in files[0:10]:
-        print(item)
+    for ifile, item in enumerate(files):
+        print("{0:<8} {1}".format(ifile, item))
         df = pd.read_csv(item, comment="#", names=names, quotechar='"')
 
         # convert to dates
@@ -448,6 +448,7 @@ def run_cb_pointing(params):
 
         mask = np.logical_not(df["tobs"].isnull())
         df = df[mask]
+        df.index = range(len(df.index))
 
         # add primary beam radii
         df["radius"] = cb_radius_l
@@ -463,7 +464,7 @@ def run_cb_pointing(params):
         del df
         del coords
 
-    # m.save_to_file("skymap_coherent.pkl")
+    m.save_to_file("skymap_coherent.pkl")
     print(m)
 
     m.show(coordinates="galactic")
