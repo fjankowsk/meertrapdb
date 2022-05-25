@@ -456,12 +456,12 @@ def insert_candidates(data, sb_id, summary, obs_utc_start, node_name):
 
             ddplan_str = None
 
-            if (isinstance(summary["pipeline"]["cheetah"]["ddplan_str"], str)):
+            if isinstance(summary["pipeline"]["cheetah"]["ddplan_str"], str):
                 ddplan_str = summary["pipeline"]["cheetah"]["ddplan_str"]
-            elif (isinstance(summary["pipeline"]["cheetah"]["ddplan_str"], dict)):
+            elif isinstance(summary["pipeline"]["cheetah"]["ddplan_str"], dict):
                 bw_str = str(int(summary["data"]["bw"] * 1e-06))
                 cstr = "c" + bw_str
-                
+
                 try:
                     ddplan_str = summary["pipeline"]["cheetah"]["ddplan_str"][cstr]
                 except KeyError:
