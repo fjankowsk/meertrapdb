@@ -374,8 +374,11 @@ def insert_candidates(data, sb_id, summary, obs_utc_start, node_name):
 
             if 1000 < cfreq < 2000:
                 receiver = 1
-            elif cfreq < 1000:
+            elif cfreq <= 1000:
                 receiver = 2
+            elif cfreq >= 2000:
+                receiver = 3
+            # Is that even needed now?
             else:
                 raise NotImplementedError("Unknown receiver: {0}".format(cfreq))
 
@@ -450,10 +453,27 @@ def insert_candidates(data, sb_id, summary, obs_utc_start, node_name):
         )[:]
 
         if len(pc_queried) == 0:
+
+            ddplan_str = None
+
+            if (isinstance(summary["pipeline"]["cheetah"]["ddplan_str"], str)):
+                ddplan_str = summary["pipeline"]["cheetah"]["ddplan_str"]
+            elif (isinstance(summary["pipeline"]["cheetah"]["ddplan_str"], dict)):
+                bw_str = str(int(summary["data"]["bw"] * 1e-06))
+                cstr = "c" + bw_str
+                
+                try:
+                    ddplan_str = summary["pipeline"]["cheetah"]["ddplan_str"][cstr]
+                except KeyError:
+                    raise RuntimeError("Unrecognised ddplan option {0}".format(cstr))
+
+            else:
+                raise RuntimeError("Unrecognised ddplan_str type!")
+
             pipeline_config = schema.PipelineConfig(
                 name=summary["pipeline"]["mode"],
                 version=summary["version_info"]["control"],
-                dd_plan=summary["pipeline"]["cheetah"]["ddplan_str"],
+                dd_plan=ddplan_str,
                 dm_threshold=summary["pipeline"]["cheetah"]["spsift"]["dm_thresh"],
                 snr_threshold=summary["pipeline"]["cheetah"]["spsift"]["sigma_thresh"],
                 width_threshold=summary["pipeline"]["cheetah"]["spsift"][
@@ -603,6 +623,8 @@ def insert_candidates(data, sb_id, summary, obs_utc_start, node_name):
                 snr=item["snr"],
                 dm=item["dm"],
                 width=item["width"],
+                label=item["label"],
+                probability=item["probability"],
                 node=node,
                 dynamic_spectrum=ds_web,
                 profile="",
@@ -676,7 +698,7 @@ def load_summary_file(filename):
     with open(filename, "r") as fd:
         data = json.load(fd)
 
-    if "utc_start_time" not in data["sb_details"]:
+    if "actual_start_time" not in data["sb_details"]:
         data["sb_details"] = json.loads(data["sb_details"])
 
     return data

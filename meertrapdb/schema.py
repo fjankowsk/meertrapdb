@@ -119,6 +119,8 @@ class SpsCandidate(db.Entity):
     dm = Required(float)
     dm_ex = Optional(float)
     width = Required(float)
+    label = Optional(int)
+    probability = Optional(float)
     node = Set("Node")
     dynamic_spectrum = Optional(str, max_len=2048)
     profile = Optional(str, max_len=2048)

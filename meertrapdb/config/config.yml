@@ -39,7 +39,7 @@ filesystem:
 
 # candidate file related options
 candidates:
-  version: 2
+  version: 3
 
 # multibeam sifter related options
 sifter:
