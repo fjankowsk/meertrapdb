@@ -362,8 +362,10 @@ def run_ib_pointing(params):
     else:
         df_sources = None
 
-    m.show(coordinates="galactic", sources=df_sources, shownames=True)
-    m.show(coordinates="equatorial", sources=df_sources, shownames=True)
+    params = {"shownames": True, "fontsize": "small", "markersize": 80}
+
+    m.show(coordinates="galactic", sources=df_sources, params=params)
+    m.show(coordinates="equatorial", sources=df_sources, params=params)
 
     survey.plot_galactic_latitude_bins(df)
 
