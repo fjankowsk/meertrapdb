@@ -493,8 +493,8 @@ def main():
 
     params = {"enddate": enddate}
 
-    # run_ib_pointing(params)
-    run_cb_pointing(params)
+    run_ib_pointing(params)
+    # run_cb_pointing(params)
 
     plt.show()
 
