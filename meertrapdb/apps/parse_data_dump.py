@@ -357,7 +357,7 @@ def run_ib_pointing(params):
     # plot discoveries
     source_file = "sources.csv"
     if os.path.isfile(source_file):
-        df_sources = pd.read_csv(source_file, sep=";", comment="#", header="infer")
+        df_sources = pd.read_csv(source_file, sep=",", comment="#", header="infer")
         survey.query_source_exposure(m, df_sources)
     else:
         df_sources = None
