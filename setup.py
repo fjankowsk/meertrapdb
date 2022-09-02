@@ -35,6 +35,7 @@ setup(
     package_data={"meertrapdb": ["config/*"]},
     install_requires=[
         "astropy",
+        "katpoint",
         "matplotlib",
         "nose2",
         "numpy",
