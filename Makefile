@@ -1,6 +1,6 @@
 BLK         =   black
 DCK         =   docker
-PIP         =   pip
+PIP         =   pip3
 
 BASEDIR     =   $(CURDIR)
 SRCDIR      =   ${BASEDIR}/meertrapdb
