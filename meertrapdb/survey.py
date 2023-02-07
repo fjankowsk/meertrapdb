@@ -6,7 +6,8 @@
 import glob
 
 from astropy import units
-from astropy.coordinates import SkyCoord
+from astropy.coordinates import Angle, SkyCoord
+import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -245,3 +246,58 @@ def query_source_exposure(m, t_df):
     fig.tight_layout()
 
     fig.savefig("exposure_hist.png", dpi=300)
+
+
+def plot_exposure_timeline(t_df_sources, t_df, coords, radius=0.75):
+    """
+    Plot an exposure timeline for a given source.
+
+    Parameters
+    ----------
+    t_df_sources: ~pd.DataFrame
+        The source data.
+    t_df: ~pd.DataFrame
+        The exposure data.
+    coords: ~astropy.SkyCoord
+        The coordinates of the pointing centres.
+    radius: float
+        The separation radius to consider for matches.
+    """
+
+    df_sources = t_df_sources.copy()
+    df = t_df.copy()
+
+    coords_sources = SkyCoord(
+        ra=df_sources["ra"],
+        dec=df_sources["dec"],
+        unit=(units.hourangle, units.deg),
+        frame="icrs",
+    )
+
+    for i in range(len(df_sources)):
+        mask = coords.separation(coords_sources[i]) < Angle(radius * units.deg)
+
+        sel = df[mask].copy()
+        sel.index = range(len(sel))
+
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+
+        ax.scatter(
+            sel["date"],
+            np.ones(len(sel.index)),
+            marker="o",
+            color="C0",
+            zorder=4,
+        )
+
+        ax.grid()
+        ax.set_xlabel("Date")
+
+        ax.xaxis.set_major_locator(mdates.MonthLocator(bymonth=(1, 7)))
+        ax.xaxis.set_minor_locator(mdates.MonthLocator())
+        ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%b"))
+
+        ax.set_title(df_sources["name"].iat[i])
+
+        fig.tight_layout()

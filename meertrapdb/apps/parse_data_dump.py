@@ -135,9 +135,7 @@ def run_ib_pointing(params):
 
     for item in files:
         names = ["name", "sample_ts", "value_ts", "status", "value"]
-
         temp = pd.read_csv(item, comment="#", names=names, quotechar='"')
-
         frames.append(temp)
 
     df = pd.concat(frames, ignore_index=True, sort=False)
@@ -247,7 +245,7 @@ def run_ib_pointing(params):
     ax.scatter(df["date"], df["tobs"], marker=".", color="black", s=0.5, zorder=3)
 
     ax.grid()
-    ax.set_xlabel("MJD")
+    ax.set_xlabel("Date")
     ax.set_ylabel("tobs (s)")
 
     fig.tight_layout()
@@ -359,6 +357,7 @@ def run_ib_pointing(params):
     if os.path.isfile(source_file):
         df_sources = pd.read_csv(source_file, sep=",", comment="#", header="infer")
         survey.query_source_exposure(m, df_sources)
+        survey.plot_exposure_timeline(df_sources, sel, coords)
     else:
         df_sources = None
 
