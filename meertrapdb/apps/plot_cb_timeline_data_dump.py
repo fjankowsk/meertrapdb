@@ -153,8 +153,23 @@ def main():
     for i in range(len(df_ibants.index)):
         df_ibants.loc[i, "nant_ib"] = len(df_ibants.loc[i, "value"].split(","))
 
-    fig, (ax1, ax2, ax3, ax4) = plt.subplots(
-        nrows=4, ncols=1, figsize=(12, 6), sharex=True, sharey=False
+    # compute total area
+    df["tot_area"] = np.nan
+
+    for i in range(len(df) - 1):
+        mask = (df.loc[i, "date"] <= df_beams["date"]) & (
+            df_beams["date"] < df.loc[i + 1, "date"]
+        )
+        if len(df_beams[mask]) > 0:
+            nbeam = df_beams.loc[mask, "nbeam"].iat[0]
+        else:
+            nbeam = np.nan
+
+        df.loc[i, "tot_area"] = df.loc[i, "area"] * nbeam / 3600.0
+
+    # make plots
+    fig, (ax1, ax2, ax3, ax4, ax5) = plt.subplots(
+        nrows=5, ncols=1, figsize=(12, 7), sharex=True, sharey=False
     )
 
     ax1.scatter(df["date"], df["area"], color="black", marker=".", zorder=4)
@@ -182,17 +197,23 @@ def main():
 
     ax4.grid()
     ax4.set_ylabel("Nant_ib")
-    ax3.set_xlabel("Date")
+
+    ax5.scatter(df["date"], df["tot_area"], color="black", marker=".", zorder=4)
+
+    ax5.grid()
+    ax5.set_ylabel("Tot_area (deg2)")
+    ax5.set_xlabel("Date")
 
     fig.tight_layout()
 
     # area histogram
+    mask = df["area"] > 0.01
     fig, (ax1, ax2) = plt.subplots(
         nrows=2, ncols=1, figsize=(6.4, 6.4), sharex=True, sharey=False
     )
 
     ax1.hist(
-        df["area"],
+        df.loc[mask, "area"],
         color="black",
         bins=71,
         density=True,
@@ -201,13 +222,17 @@ def main():
         zorder=4,
     )
 
-    ax1.axvline(x=np.median(df["area"]), color="gray", ls="dashed", lw=2, zorder=6)
+    ax1.axvline(
+        x=np.median(df.loc[mask, "area"]), color="gray", ls="dashed", lw=2, zorder=6
+    )
 
-    ax1.axvline(x=np.mean(df["area"]), color="C0", ls="dotted", lw=2, zorder=6)
+    ax1.axvline(
+        x=np.mean(df.loc[mask, "area"]), color="C0", ls="dotted", lw=2, zorder=6
+    )
 
     print(
         "Mean, median: {0:.2f} {1:.2f} arcmin2".format(
-            np.mean(df["area"]), np.median(df["area"])
+            np.mean(df.loc[mask, "area"]), np.median(df.loc[mask, "area"])
         )
     )
 
@@ -215,7 +240,7 @@ def main():
     ax1.set_ylabel("PDF")
 
     ax2.hist(
-        df["area"],
+        df.loc[mask, "area"],
         color="black",
         bins=71,
         density=True,
@@ -231,6 +256,57 @@ def main():
 
     fig.tight_layout()
 
+    # total area histogram
+    mask = df["tot_area"] > 0.05
+    fig, (ax1, ax2) = plt.subplots(
+        nrows=2, ncols=1, figsize=(6.4, 6.4), sharex=True, sharey=False
+    )
+
+    ax1.hist(
+        df.loc[mask, "tot_area"],
+        color="black",
+        bins=71,
+        density=True,
+        histtype="step",
+        lw=2,
+        zorder=4,
+    )
+
+    ax1.axvline(
+        x=np.median(df.loc[mask, "tot_area"]), color="gray", ls="dashed", lw=2, zorder=6
+    )
+
+    ax1.axvline(
+        x=np.mean(df.loc[mask, "tot_area"]), color="C0", ls="dotted", lw=2, zorder=6
+    )
+
+    print(
+        "Mean, median: {0:.2f} {1:.2f} deg2".format(
+            np.nanmean(df.loc[mask, "tot_area"]), np.nanmedian(df.loc[mask, "tot_area"])
+        )
+    )
+
+    ax1.grid()
+    ax1.set_ylabel("PDF")
+
+    ax2.hist(
+        df.loc[mask, "tot_area"],
+        color="black",
+        bins=71,
+        density=True,
+        cumulative=True,
+        histtype="step",
+        lw=2,
+        zorder=4,
+    )
+
+    ax2.grid()
+    ax2.set_ylabel("CDF")
+    ax2.set_xlabel("Area (deg2)")
+
+    fig.tight_layout()
+
+    # nbeam histogram
     fig = plt.figure()
     ax = fig.add_subplot()
 
