@@ -24,15 +24,20 @@ def main():
 
     names = ["name", "sample_ts", "value_ts", "status", "value"]
 
+    frames = []
+
     for ifile, item in enumerate(files):
         print("{0:<8} {1}".format(ifile, item))
-        df = pd.read_csv(item, comment="#", names=names, quotechar='"')
+        temp_df = pd.read_csv(item, comment="#", names=names, quotechar='"')
+        frames.append(temp_df)
 
-        # convert to dates
-        df["date"] = pd.to_datetime(df["sample_ts"], unit="s")
+    df = pd.concat(frames, ignore_index=True, sort=False)
 
-        df["value"] = df["value"].str.strip('"')
-        df["value"] = df["value"].str.replace(r'\\"', '"', regex=True)
+    # convert to dates
+    df["date"] = pd.to_datetime(df["sample_ts"], unit="s")
+
+    df["value"] = df["value"].str.strip('"')
+    df["value"] = df["value"].str.replace(r'\\"', '"', regex=True)
 
     mask = df["value"] != ""
     df = df[mask]
@@ -70,12 +75,17 @@ def main():
 
     names = ["name", "sample_ts", "value_ts", "status", "value"]
 
+    frames = []
+
     for ifile, item in enumerate(files):
         print("{0:<8} {1}".format(ifile, item))
-        df_beams = pd.read_csv(item, comment="#", names=names, quotechar='"')
+        temp_df = pd.read_csv(item, comment="#", names=names, quotechar='"')
+        frames.append(temp_df)
 
-        # convert to dates
-        df_beams["date"] = pd.to_datetime(df_beams["sample_ts"], unit="s")
+    df_beams = pd.concat(frames, ignore_index=True, sort=False)
+
+    # convert to dates
+    df_beams["date"] = pd.to_datetime(df_beams["sample_ts"], unit="s")
 
     df_beams["nbeam"] = df_beams["value"]
 
@@ -92,14 +102,19 @@ def main():
 
     names = ["name", "sample_ts", "value_ts", "status", "value"]
 
+    frames = []
+
     for ifile, item in enumerate(files):
         print("{0:<8} {1}".format(ifile, item))
-        df_cbants = pd.read_csv(item, comment="#", names=names, quotechar='"')
+        temp_df = pd.read_csv(item, comment="#", names=names, quotechar='"')
+        frames.append(temp_df)
 
-        # convert to dates
-        df_cbants["date"] = pd.to_datetime(df_cbants["sample_ts"], unit="s")
+    df_cbants = pd.concat(frames, ignore_index=True, sort=False)
 
-        df_cbants["value"] = df_cbants["value"].str.strip('"')
+    # convert to dates
+    df_cbants["date"] = pd.to_datetime(df_cbants["sample_ts"], unit="s")
+
+    df_cbants["value"] = df_cbants["value"].str.strip('"')
 
     df_cbants["nant_cb"] = np.nan
 
@@ -119,14 +134,19 @@ def main():
 
     names = ["name", "sample_ts", "value_ts", "status", "value"]
 
+    frames = []
+
     for ifile, item in enumerate(files):
         print("{0:<8} {1}".format(ifile, item))
-        df_ibants = pd.read_csv(item, comment="#", names=names, quotechar='"')
+        temp_df = pd.read_csv(item, comment="#", names=names, quotechar='"')
+        frames.append(temp_df)
 
-        # convert to dates
-        df_ibants["date"] = pd.to_datetime(df_ibants["sample_ts"], unit="s")
+    df_ibants = pd.concat(frames, ignore_index=True, sort=False)
 
-        df_ibants["value"] = df_ibants["value"].str.strip('"')
+    # convert to dates
+    df_ibants["date"] = pd.to_datetime(df_ibants["sample_ts"], unit="s")
+
+    df_ibants["value"] = df_ibants["value"].str.strip('"')
 
     df_ibants["nant_ib"] = np.nan
 
