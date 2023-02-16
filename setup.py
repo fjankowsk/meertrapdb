@@ -46,7 +46,7 @@ setup(
         "pytz",
         "pyyaml",
         "requests",
-        "skymap @ git+https://bitbucket.org/jankowsk/skymap.git@master",
+        "skymap @ git+https://github.com/fjankowsk/skymap.git@master",
     ],
     entry_points={
         "console_scripts": [

@@ -22,7 +22,7 @@ The `psrmatch` known source matching code has been moved into a [separate reposi
 
 ## Sky map data handling ##
 
-The `skymap` code to create, handle, and visualise sky map (e.g. HEALPix) data has been moved into a [separate repository](https://bitbucket.org/jankowsk/skymap/).
+The `skymap` code to create, handle, and visualise sky map (e.g. HEALPix) data has been moved into a [separate repository](https://github.com/fjankowsk/skymap/).
 
 ## Multi-beam clustering ##
 
