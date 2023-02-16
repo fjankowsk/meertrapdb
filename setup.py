@@ -41,7 +41,7 @@ setup(
         "numpy",
         "pandas",
         "pony",
-        "psrmatch @ git+https://bitbucket.org/jankowsk/psrmatch.git@master",
+        "psrmatch @ git+https://github.com/fjankowsk/psrmatch.git",
         "pygedm",
         "pytz",
         "pyyaml",

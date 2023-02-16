@@ -18,7 +18,7 @@ The easiest and recommended way to install the software is through `pip` directl
 
 ## Known source matching ##
 
-The `psrmatch` known source matching code has been moved into a [separate repository](https://bitbucket.org/jankowsk/psrmatch/).
+The `psrmatch` known source matching code has been moved into a [separate repository](https://github.com/fjankowsk/psrmatch/).
 
 ## Sky map data handling ##
 
