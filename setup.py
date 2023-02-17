@@ -29,7 +29,7 @@ setup(
     description="Database code for MeerTRAP.",
     long_description=get_long_description(),
     long_description_content_type="text/markdown",
-    url="https://bitbucket.org/jankowsk/meertrapdb",
+    url="https://github.com/fjankowsk/meertrapdb",
     license="MIT",
     packages=find_packages(),
     package_data={"meertrapdb": ["config/*"]},
