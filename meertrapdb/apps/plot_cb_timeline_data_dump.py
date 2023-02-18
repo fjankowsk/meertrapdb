@@ -62,16 +62,10 @@ def plot_area_histogram(t_df, field):
     fig.tight_layout()
 
 
-#
-# MAIN
-#
-
-
-def main():
-    files = glob.glob(
-        "fbfuse_sensor_dump/fbfuse_1_fbfmc_array_1_coherent_beam_shape_*.csv"
-    )
-    files = sorted(files)
+def load_data(files):
+    """
+    Load the CSV data from the files.
+    """
 
     if not len(files) > 0:
         raise RuntimeError("Need to provide input files.")
@@ -91,6 +85,23 @@ def main():
 
     # convert to dates
     df["date"] = pd.to_datetime(df["sample_ts"], unit="s")
+
+    return df
+
+
+#
+# MAIN
+#
+
+
+def main():
+    # cb beam shape
+    files = glob.glob(
+        "fbfuse_sensor_dump/fbfuse_1_fbfmc_array_1_coherent_beam_shape_*.csv"
+    )
+    files = sorted(files)
+
+    df = load_data(files)
 
     df["value"] = df["value"].str.strip('"')
     df["value"] = df["value"].str.replace(r'\\"', '"', regex=True)
@@ -117,29 +128,13 @@ def main():
     df = df[mask]
     df.index = range(len(df.index))
 
+    # nbeam
     files = glob.glob(
         "fbfuse_sensor_dump/fbfuse_1_fbfmc_array_1_coherent_beam_count_2*.csv"
     )
     files = sorted(files)
 
-    if not len(files) > 0:
-        raise RuntimeError("Need to provide input files.")
-
-    print("Number of files to process: {0}".format(len(files)))
-
-    names = ["name", "sample_ts", "value_ts", "status", "value"]
-
-    frames = []
-
-    for ifile, item in enumerate(files):
-        print("{0:<8} {1}".format(ifile, item))
-        temp_df = pd.read_csv(item, comment="#", names=names, quotechar='"')
-        frames.append(temp_df)
-
-    df_beams = pd.concat(frames, ignore_index=True, sort=False)
-
-    # convert to dates
-    df_beams["date"] = pd.to_datetime(df_beams["sample_ts"], unit="s")
+    df_beams = load_data(files)
 
     df_beams["nbeam"] = df_beams["value"]
 
@@ -154,24 +149,7 @@ def main():
     )
     files = sorted(files)
 
-    if not len(files) > 0:
-        raise RuntimeError("Need to provide input files.")
-
-    print("Number of files to process: {0}".format(len(files)))
-
-    names = ["name", "sample_ts", "value_ts", "status", "value"]
-
-    frames = []
-
-    for ifile, item in enumerate(files):
-        print("{0:<8} {1}".format(ifile, item))
-        temp_df = pd.read_csv(item, comment="#", names=names, quotechar='"')
-        frames.append(temp_df)
-
-    df_cbants = pd.concat(frames, ignore_index=True, sort=False)
-
-    # convert to dates
-    df_cbants["date"] = pd.to_datetime(df_cbants["sample_ts"], unit="s")
+    df_cbants = load_data(files)
 
     # remove nans
     mask = df_cbants["value"].notna()
@@ -196,24 +174,7 @@ def main():
     )
     files = sorted(files)
 
-    if not len(files) > 0:
-        raise RuntimeError("Need to provide input files.")
-
-    print("Number of files to process: {0}".format(len(files)))
-
-    names = ["name", "sample_ts", "value_ts", "status", "value"]
-
-    frames = []
-
-    for ifile, item in enumerate(files):
-        print("{0:<8} {1}".format(ifile, item))
-        temp_df = pd.read_csv(item, comment="#", names=names, quotechar='"')
-        frames.append(temp_df)
-
-    df_ibants = pd.concat(frames, ignore_index=True, sort=False)
-
-    # convert to dates
-    df_ibants["date"] = pd.to_datetime(df_ibants["sample_ts"], unit="s")
+    df_ibants = load_data(files)
 
     # remove nans
     mask = df_ibants["value"].notna()
@@ -353,7 +314,7 @@ def main():
 
     ax2.grid()
     ax2.set_ylabel("CDF")
-    ax2.set_xlabel("Area (arcmin2)")
+    ax2.set_xlabel("Area ($\mathrm{arcmin}^2$)")
     ax2.set_title("Single CB area")
 
     fig.tight_layout()
