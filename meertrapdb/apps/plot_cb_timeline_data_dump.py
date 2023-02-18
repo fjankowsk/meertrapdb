@@ -57,11 +57,9 @@ def main():
     df["area"] = np.pi * df["x"] * df["y"] * 3600.0
 
     # sanitise
-    mask = (df["area"] > 0.1) & (df["area"] <= 10.0)
+    mask = (df["area"] > 0) & (df["area"] <= 10.0)
     df = df[mask]
     df.index = range(len(df.index))
-
-    # print(df.to_string(columns=['x', 'y', 'angle', 'area']))
 
     files = glob.glob(
         "fbfuse_sensor_dump/fbfuse_1_fbfmc_array_1_coherent_beam_count_2*.csv"
@@ -88,6 +86,11 @@ def main():
     df_beams["date"] = pd.to_datetime(df_beams["sample_ts"], unit="s")
 
     df_beams["nbeam"] = df_beams["value"]
+
+    # sanitise
+    mask = df_beams["nbeam"] > 0
+    df_beams = df_beams[mask]
+    df_beams.index = range(len(df_beams.index))
 
     # coherent beam antennas
     files = glob.glob(
@@ -121,6 +124,11 @@ def main():
     for i in range(len(df_cbants.index)):
         df_cbants.loc[i, "nant_cb"] = len(df_cbants.loc[i, "value"].split(","))
 
+    # sanitise
+    mask = df_cbants["nant_cb"] > 1
+    df_cbants = df_cbants[mask]
+    df_cbants.index = range(len(df_cbants.index))
+
     # incoherent beam antennas
     files = glob.glob(
         "fbfuse_sensor_dump/fbfuse_1_fbfmc_array_1_incoherent_beam_antennas_*.csv"
@@ -153,6 +161,11 @@ def main():
     for i in range(len(df_ibants.index)):
         df_ibants.loc[i, "nant_ib"] = len(df_ibants.loc[i, "value"].split(","))
 
+    # sanitise
+    mask = df_ibants["nant_ib"] > 1
+    df_ibants = df_ibants[mask]
+    df_ibants.index = range(len(df_ibants.index))
+
     # compute total area
     df["tot_area"] = np.nan
 
@@ -175,7 +188,7 @@ def main():
     ax1.scatter(df["date"], df["area"], color="black", marker=".", zorder=4)
 
     ax1.grid()
-    ax1.set_ylabel("Area (arcmin2)")
+    ax1.set_ylabel("Area ($\mathrm{arcmin}^2$)")
 
     ax2.scatter(
         df_beams["date"], df_beams["nbeam"], color="black", marker=".", zorder=4
@@ -189,19 +202,19 @@ def main():
     )
 
     ax3.grid()
-    ax3.set_ylabel("Nant_cb")
+    ax3.set_ylabel("$\mathrm{Nant}_\mathrm{cb}$")
 
     ax4.scatter(
         df_ibants["date"], df_ibants["nant_ib"], color="black", marker=".", zorder=4
     )
 
     ax4.grid()
-    ax4.set_ylabel("Nant_ib")
+    ax4.set_ylabel("$\mathrm{Nant}_\mathrm{ib}$")
 
     ax5.scatter(df["date"], df["tot_area"], color="black", marker=".", zorder=4)
 
     ax5.grid()
-    ax5.set_ylabel("Tot_area (deg2)")
+    ax5.set_ylabel("Tot_area ($\mathrm{deg}^2$)")
     ax5.set_xlabel("Date")
 
     fig.tight_layout()
