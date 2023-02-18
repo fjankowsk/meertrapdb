@@ -6,6 +6,62 @@ import numpy as np
 import pandas as pd
 
 
+def plot_area_histogram(t_df, field):
+    """
+    Plot an area histogram.
+    """
+
+    df = t_df.copy()
+
+    mask = df[field] > 0.05
+    fig, (ax1, ax2) = plt.subplots(
+        nrows=2, ncols=1, figsize=(6.4, 6.4), sharex=True, sharey=False
+    )
+
+    ax1.hist(
+        df.loc[mask, field],
+        color="black",
+        bins=71,
+        density=True,
+        histtype="step",
+        lw=2,
+        zorder=4,
+    )
+
+    ax1.axvline(
+        x=np.median(df.loc[mask, field]), color="gray", ls="dashed", lw=2, zorder=6
+    )
+
+    ax1.axvline(x=np.mean(df.loc[mask, field]), color="C0", ls="dotted", lw=2, zorder=6)
+
+    print(
+        "Mean, median: {0:.2f} {1:.2f} deg2".format(
+            np.nanmean(df.loc[mask, field]), np.nanmedian(df.loc[mask, field])
+        )
+    )
+
+    ax1.grid()
+    ax1.set_ylabel("PDF")
+
+    ax2.hist(
+        df.loc[mask, field],
+        color="black",
+        bins=71,
+        density=True,
+        cumulative=True,
+        histtype="step",
+        lw=2,
+        zorder=4,
+    )
+
+    ax2.grid()
+    ax2.set_ylabel("CDF")
+    ax2.set_xlabel("Area (deg2)")
+    ax2.set_title("{0} area".format(field))
+
+    fig.tight_layout()
+
+
 #
 # MAIN
 #
@@ -39,7 +95,7 @@ def main():
     df["value"] = df["value"].str.strip('"')
     df["value"] = df["value"].str.replace(r'\\"', '"', regex=True)
 
-    mask = df["value"] != ""
+    mask = (df["value"] != "") & df["value"].notna()
     df = df[mask]
     df.index = range(len(df.index))
 
@@ -117,6 +173,11 @@ def main():
     # convert to dates
     df_cbants["date"] = pd.to_datetime(df_cbants["sample_ts"], unit="s")
 
+    # remove nans
+    mask = df_cbants["value"].notna()
+    df_cbants = df_cbants[mask]
+    df_cbants.index = range(len(df_cbants.index))
+
     df_cbants["value"] = df_cbants["value"].str.strip('"')
 
     df_cbants["nant_cb"] = np.nan
@@ -154,6 +215,11 @@ def main():
     # convert to dates
     df_ibants["date"] = pd.to_datetime(df_ibants["sample_ts"], unit="s")
 
+    # remove nans
+    mask = df_ibants["value"].notna()
+    df_ibants = df_ibants[mask]
+    df_ibants.index = range(len(df_ibants.index))
+
     df_ibants["value"] = df_ibants["value"].str.strip('"')
 
     df_ibants["nant_ib"] = np.nan
@@ -167,6 +233,7 @@ def main():
     df_ibants.index = range(len(df_ibants.index))
 
     # compute total area
+    df["nbeam"] = np.nan
     df["tot_area"] = np.nan
 
     for i in range(len(df) - 1):
@@ -178,7 +245,28 @@ def main():
         else:
             nbeam = np.nan
 
+        df.loc[i, "nbeam"] = nbeam
         df.loc[i, "tot_area"] = df.loc[i, "area"] * nbeam / 3600.0
+
+    # survey coverage
+    df["survey_nbeam"] = df["nbeam"]
+    mask = df["survey_nbeam"] > 768
+    df.loc[mask, "survey_nbeam"] = 768
+    df["survey_area"] = df["area"] * df["survey_nbeam"] / 3600.0
+
+    survey_coverage = df["survey_area"].sum() * 10.0 / 60.0
+    # add to that the data before we had beam sizes
+    mask = df_beams["date"] < pd.Timestamp("2020-04-16T10:00:00")
+    add = df_beams[mask].copy()
+    add["area"] = 1.2
+
+    add["survey_nbeam"] = add["nbeam"]
+    mask = add["survey_nbeam"] > 768
+    add.loc[mask, "survey_nbeam"] = 768
+    add["survey_area"] = add["area"] * add["survey_nbeam"] / 3600.0
+
+    survey_coverage += add["survey_area"].sum() * 10.0 / 60.0
+    print("CB survey coverage: {0:.1f} deg2 h".format(survey_coverage))
 
     # make plots
     fig, (ax1, ax2, ax3, ax4, ax5) = plt.subplots(
@@ -266,58 +354,13 @@ def main():
     ax2.grid()
     ax2.set_ylabel("CDF")
     ax2.set_xlabel("Area (arcmin2)")
+    ax2.set_title("Single CB area")
 
     fig.tight_layout()
 
-    # total area histogram
-    mask = df["tot_area"] > 0.05
-    fig, (ax1, ax2) = plt.subplots(
-        nrows=2, ncols=1, figsize=(6.4, 6.4), sharex=True, sharey=False
-    )
-
-    ax1.hist(
-        df.loc[mask, "tot_area"],
-        color="black",
-        bins=71,
-        density=True,
-        histtype="step",
-        lw=2,
-        zorder=4,
-    )
-
-    ax1.axvline(
-        x=np.median(df.loc[mask, "tot_area"]), color="gray", ls="dashed", lw=2, zorder=6
-    )
-
-    ax1.axvline(
-        x=np.mean(df.loc[mask, "tot_area"]), color="C0", ls="dotted", lw=2, zorder=6
-    )
-
-    print(
-        "Mean, median: {0:.2f} {1:.2f} deg2".format(
-            np.nanmean(df.loc[mask, "tot_area"]), np.nanmedian(df.loc[mask, "tot_area"])
-        )
-    )
-
-    ax1.grid()
-    ax1.set_ylabel("PDF")
-
-    ax2.hist(
-        df.loc[mask, "tot_area"],
-        color="black",
-        bins=71,
-        density=True,
-        cumulative=True,
-        histtype="step",
-        lw=2,
-        zorder=4,
-    )
-
-    ax2.grid()
-    ax2.set_ylabel("CDF")
-    ax2.set_xlabel("Area (deg2)")
-
-    fig.tight_layout()
+    # area histograms
+    for field in ["tot_area", "survey_area"]:
+        plot_area_histogram(df, field)
 
     # nbeam histogram
     fig = plt.figure()
