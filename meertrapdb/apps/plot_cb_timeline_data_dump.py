@@ -70,6 +70,8 @@ def load_data(files):
     if not len(files) > 0:
         raise RuntimeError("Need to provide input files.")
 
+    files = sorted(files)
+
     print("Number of files to process: {0}".format(len(files)))
 
     names = ["name", "sample_ts", "value_ts", "status", "value"]
@@ -193,21 +195,48 @@ def main():
     df_ibants = df_ibants[mask]
     df_ibants.index = range(len(df_ibants.index))
 
-    # compute total area
+    # cross-match the data
     df["nbeam"] = np.nan
-    df["tot_area"] = np.nan
+    df["nant_cb"] = np.nan
+    df["nant_ib"] = np.nan
 
     for i in range(len(df) - 1):
-        mask = (df.loc[i, "date"] <= df_beams["date"]) & (
+        mask_beam = (df.loc[i, "date"] <= df_beams["date"]) & (
             df_beams["date"] < df.loc[i + 1, "date"]
         )
-        if len(df_beams[mask]) > 0:
-            nbeam = df_beams.loc[mask, "nbeam"].iat[0]
+        if len(df_beams[mask_beam]) > 0:
+            nbeam = df_beams.loc[mask_beam, "nbeam"].iat[0]
         else:
             nbeam = np.nan
 
         df.loc[i, "nbeam"] = nbeam
-        df.loc[i, "tot_area"] = df.loc[i, "area"] * nbeam / 3600.0
+
+        mask_cbants = (df.loc[i, "date"] <= df_cbants["date"]) & (
+            df_cbants["date"] < df.loc[i + 1, "date"]
+        )
+        if len(df_cbants[mask_cbants]) > 0:
+            nant_cb = df_cbants.loc[mask_cbants, "nant_cb"].iat[0]
+        else:
+            nant_cb = np.nan
+
+        df.loc[i, "nant_cb"] = nant_cb
+
+        mask_ibants = (df.loc[i, "date"] <= df_ibants["date"]) & (
+            df_ibants["date"] < df.loc[i + 1, "date"]
+        )
+        if len(df_ibants[mask_ibants]) > 0:
+            nant_ib = df_ibants.loc[mask_ibants, "nant_ib"].iat[0]
+        else:
+            nant_ib = np.nan
+
+        df.loc[i, "nant_ib"] = nant_ib
+
+    # select only our observations
+    mask = (df["nant_cb"] >= 30) & (df["nant_cb"] <= 48)
+    df = df[mask]
+    df.index = range(len(df.index))
+
+    df["tot_area"] = df["area"] * df["nbeam"] / 3600.0
 
     # survey coverage
     df["survey_nbeam"] = df["nbeam"]
