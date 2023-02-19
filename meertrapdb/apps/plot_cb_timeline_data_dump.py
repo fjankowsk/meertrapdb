@@ -6,6 +6,42 @@ import numpy as np
 import pandas as pd
 
 
+def plot_timeline(t_df):
+    df = t_df.copy()
+
+    fig, (ax1, ax2, ax3, ax4, ax5) = plt.subplots(
+        nrows=5, ncols=1, figsize=(12, 7), sharex=True, sharey=False
+    )
+
+    ax1.scatter(df["date"], df["area"], color="black", marker=".", zorder=4)
+
+    ax1.grid()
+    ax1.set_ylabel("Area ($\mathrm{arcmin}^2$)")
+
+    ax2.scatter(df["date"], df["nbeam"], color="black", marker=".", zorder=4)
+
+    ax2.grid()
+    ax2.set_ylabel("Nbeam")
+
+    ax3.scatter(df["date"], df["nant_cb"], color="black", marker=".", zorder=4)
+
+    ax3.grid()
+    ax3.set_ylabel("$\mathrm{Nant}_\mathrm{cb}$")
+
+    ax4.scatter(df["date"], df["nant_ib"], color="black", marker=".", zorder=4)
+
+    ax4.grid()
+    ax4.set_ylabel("$\mathrm{Nant}_\mathrm{ib}$")
+
+    ax5.scatter(df["date"], df["tot_area"], color="black", marker=".", zorder=4)
+
+    ax5.grid()
+    ax5.set_ylabel("Tot_area ($\mathrm{deg}^2$)")
+    ax5.set_xlabel("Date")
+
+    fig.tight_layout()
+
+
 def plot_area_histogram(t_df, field):
     """
     Plot an area histogram.
@@ -259,43 +295,7 @@ def main():
     print("CB survey coverage: {0:.1f} deg2 h".format(survey_coverage))
 
     # make plots
-    fig, (ax1, ax2, ax3, ax4, ax5) = plt.subplots(
-        nrows=5, ncols=1, figsize=(12, 7), sharex=True, sharey=False
-    )
-
-    ax1.scatter(df["date"], df["area"], color="black", marker=".", zorder=4)
-
-    ax1.grid()
-    ax1.set_ylabel("Area ($\mathrm{arcmin}^2$)")
-
-    ax2.scatter(
-        df_beams["date"], df_beams["nbeam"], color="black", marker=".", zorder=4
-    )
-
-    ax2.grid()
-    ax2.set_ylabel("Nbeam")
-
-    ax3.scatter(
-        df_cbants["date"], df_cbants["nant_cb"], color="black", marker=".", zorder=4
-    )
-
-    ax3.grid()
-    ax3.set_ylabel("$\mathrm{Nant}_\mathrm{cb}$")
-
-    ax4.scatter(
-        df_ibants["date"], df_ibants["nant_ib"], color="black", marker=".", zorder=4
-    )
-
-    ax4.grid()
-    ax4.set_ylabel("$\mathrm{Nant}_\mathrm{ib}$")
-
-    ax5.scatter(df["date"], df["tot_area"], color="black", marker=".", zorder=4)
-
-    ax5.grid()
-    ax5.set_ylabel("Tot_area ($\mathrm{deg}^2$)")
-    ax5.set_xlabel("Date")
-
-    fig.tight_layout()
+    plot_timeline(df)
 
     # area histogram
     mask = df["area"] > 0.01
