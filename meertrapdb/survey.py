@@ -4,6 +4,7 @@
 #
 
 import glob
+import os.path
 
 from astropy import units
 from astropy.coordinates import Angle, SkyCoord
