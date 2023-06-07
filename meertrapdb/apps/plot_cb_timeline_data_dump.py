@@ -1,5 +1,6 @@
 import glob
 import json
+import os.path
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -132,6 +133,45 @@ def load_data(files):
     return df
 
 
+def remove_bad_pointings(t_df):
+    """
+    Remove pointings where the pipeline was not working as expected.
+    """
+
+    df = t_df.copy()
+
+    bad_pointings_fn = os.path.join(
+        os.path.dirname(__file__), "..", "config", "bad_pointings_ib.csv"
+    )
+    bad_pointings_fn = os.path.abspath(bad_pointings_fn)
+
+    df_bad = pd.read_csv(bad_pointings_fn, comment="#", names=["start", "end"], sep=",")
+
+    # convert to dates
+    df_bad["start"] = pd.to_datetime(df_bad["start"])
+    df_bad["end"] = pd.to_datetime(df_bad["end"])
+
+    df_bad.info()
+    print(df_bad.to_string())
+
+    print("Entries before bad pointings removal: {0}".format(len(df.index)))
+
+    for i in range(len(df_bad.index)):
+        start = df_bad.at[i, "start"]
+        end = df_bad.at[i, "end"]
+        # print('Start, end: {0}, {1}'.format(start, end))
+
+        mask = (df["date"] >= start) & (df["date"] < end)
+        mask = np.logical_not(mask)
+
+        df = df[mask]
+
+    df.index = range(len(df.index))
+    print("Entries after bad pointings removal: {0}".format(len(df.index)))
+
+    return df
+
+
 #
 # MAIN
 #
@@ -152,6 +192,14 @@ def main():
     df.index = range(len(df.index))
 
     df["freq"] = df["value"] * 1e-6
+
+    # sanitise
+    mask = df["freq"] > 0
+    df = df[mask]
+    df.index = range(len(df.index))
+
+    df = remove_bad_pointings(df)
+    df.info()
 
     # cb beam shape
     files = glob.glob(
@@ -252,51 +300,37 @@ def main():
     df_ibants.index = range(len(df_ibants.index))
 
     # cross-match the data
-    df["nbeam"] = np.nan
-    df["nant_cb"] = np.nan
-    df["nant_ib"] = np.nan
-    df["freq"] = np.nan
+    print("Starting to cross-match the data.")
+
+    for field in ["area", "nbeam", "nant_cb", "nant_ib"]:
+        df[field] = np.nan
 
     for i in range(len(df) - 1):
         mask_shape = (df.loc[i, "date"] <= df_shape["date"]) & (
             df_shape["date"] < df.loc[i + 1, "date"]
         )
         if len(df_shape[mask_shape]) > 0:
-            area = df_shape.loc[mask_shape, "area"].iat[0]
-        else:
-            area = np.nan
-
-        df.loc[i, "area"] = area
+            df.loc[i, "area"] = df_shape.loc[mask_shape, "area"].iat[0]
 
         mask_beam = (df.loc[i, "date"] <= df_beams["date"]) & (
             df_beams["date"] < df.loc[i + 1, "date"]
         )
         if len(df_beams[mask_beam]) > 0:
-            nbeam = df_beams.loc[mask_beam, "nbeam"].iat[0]
-        else:
-            nbeam = np.nan
-
-        df.loc[i, "nbeam"] = nbeam
+            df.loc[i, "nbeam"] = df_beams.loc[mask_beam, "nbeam"].iat[0]
 
         mask_cbants = (df.loc[i, "date"] <= df_cbants["date"]) & (
             df_cbants["date"] < df.loc[i + 1, "date"]
         )
         if len(df_cbants[mask_cbants]) > 0:
-            nant_cb = df_cbants.loc[mask_cbants, "nant_cb"].iat[0]
-        else:
-            nant_cb = np.nan
-
-        df.loc[i, "nant_cb"] = nant_cb
+            df.loc[i, "nant_cb"] = df_cbants.loc[mask_cbants, "nant_cb"].iat[0]
 
         mask_ibants = (df.loc[i, "date"] <= df_ibants["date"]) & (
             df_ibants["date"] < df.loc[i + 1, "date"]
         )
         if len(df_ibants[mask_ibants]) > 0:
-            nant_ib = df_ibants.loc[mask_ibants, "nant_ib"].iat[0]
-        else:
-            nant_ib = np.nan
+            df.loc[i, "nant_ib"] = df_ibants.loc[mask_ibants, "nant_ib"].iat[0]
 
-        df.loc[i, "nant_ib"] = nant_ib
+    print("Cross-matching done.")
 
     # select only our observations at l-band
     mask = (
@@ -317,18 +351,18 @@ def main():
     df["survey_area"] = df["area"] * df["survey_nbeam"] / 3600.0
 
     survey_coverage = df["survey_area"].sum() * 10.0 / 60.0
+    print(
+        "CB survey coverage with beam size information: {0:.1f} deg2 h".format(
+            survey_coverage
+        )
+    )
     # add to that the data before we had beam sizes
-    # mask = df_beams["date"] < pd.Timestamp("2020-04-16T10:00:00")
-    # add = df_beams[mask].copy()
-    # add["area"] = 0.85
-
-    # add["survey_nbeam"] = add["nbeam"]
-    # mask = add["survey_nbeam"] > 768
-    # add.loc[mask, "survey_nbeam"] = 768
-    # add["survey_area"] = add["area"] * add["survey_nbeam"] / 3600.0
-
-    # survey_coverage += add["survey_area"].sum() * 10.0 / 60.0
-    # print("CB survey coverage: {0:.1f} deg2 h".format(survey_coverage))
+    mask = df["date"] < pd.Timestamp("2020-04-16T10:00:00")
+    add = df[mask].copy()
+    add["area"] = 0.85
+    add["survey_area"] = add["area"] * add["survey_nbeam"] / 3600.0
+    survey_coverage += add["survey_area"].sum() * 10.0 / 60.0
+    print("CB survey coverage total: {0:.1f} deg2 h".format(survey_coverage))
 
     # make plots
     plot_timeline(df)
