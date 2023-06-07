@@ -312,7 +312,7 @@ def remove_bad_pointings(t_df):
     df = t_df.copy()
 
     bad_pointings_fn = os.path.join(
-        os.path.dirname(__file__), "..", "config", "bad_pointings_ib.csv"
+        os.path.dirname(__file__), "config", "bad_pointings_ib.csv"
     )
     bad_pointings_fn = os.path.abspath(bad_pointings_fn)
 
