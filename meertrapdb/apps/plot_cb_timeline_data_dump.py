@@ -138,38 +138,53 @@ def load_data(files):
 
 
 def main():
+    # centre frequency
+    files = glob.glob(
+        "fbfuse_sensor_dump/fbfuse_1_fbfmc_array_1_centre_frequency_*.csv"
+    )
+    files = sorted(files)
+
+    df = load_data(files)
+
+    # remove nans
+    mask = df["value"].notna()
+    df = df[mask]
+    df.index = range(len(df.index))
+
+    df["freq"] = df["value"] * 1e-6
+
     # cb beam shape
     files = glob.glob(
         "fbfuse_sensor_dump/fbfuse_1_fbfmc_array_1_coherent_beam_shape_*.csv"
     )
     files = sorted(files)
 
-    df = load_data(files)
+    df_shape = load_data(files)
 
-    df["value"] = df["value"].str.strip('"')
-    df["value"] = df["value"].str.replace(r'\\"', '"', regex=True)
+    df_shape["value"] = df_shape["value"].str.strip('"')
+    df_shape["value"] = df_shape["value"].str.replace(r'\\"', '"', regex=True)
 
-    mask = (df["value"] != "") & df["value"].notna()
-    df = df[mask]
-    df.index = range(len(df.index))
+    mask = (df_shape["value"] != "") & df_shape["value"].notna()
+    df_shape = df_shape[mask]
+    df_shape.index = range(len(df_shape.index))
 
-    df["x"] = np.nan
-    df["y"] = np.nan
-    df["angle"] = np.nan
+    df_shape["x"] = np.nan
+    df_shape["y"] = np.nan
+    df_shape["angle"] = np.nan
 
-    for i in range(len(df.index)):
-        parsed = json.loads(df.loc[i, "value"])
-        df.loc[i, "x"] = parsed["x"]
-        df.loc[i, "y"] = parsed["y"]
-        df.loc[i, "angle"] = parsed["angle"]
+    for i in range(len(df_shape.index)):
+        parsed = json.loads(df_shape.loc[i, "value"])
+        df_shape.loc[i, "x"] = parsed["x"]
+        df_shape.loc[i, "y"] = parsed["y"]
+        df_shape.loc[i, "angle"] = parsed["angle"]
 
     # compute area of ellipse
-    df["area"] = np.pi * df["x"] * df["y"] * 3600.0
+    df_shape["area"] = np.pi * df_shape["x"] * df_shape["y"] * 3600.0
 
     # sanitise
-    mask = (df["area"] > 0) & (df["area"] <= 10.0)
-    df = df[mask]
-    df.index = range(len(df.index))
+    mask = (df_shape["area"] > 0) & (df_shape["area"] <= 10.0)
+    df_shape = df_shape[mask]
+    df_shape.index = range(len(df_shape.index))
 
     # nbeam
     files = glob.glob(
@@ -236,21 +251,6 @@ def main():
     df_ibants = df_ibants[mask]
     df_ibants.index = range(len(df_ibants.index))
 
-    # centre frequency
-    files = glob.glob(
-        "fbfuse_sensor_dump/fbfuse_1_fbfmc_array_1_centre_frequency_*.csv"
-    )
-    files = sorted(files)
-
-    df_freq = load_data(files)
-
-    # remove nans
-    mask = df_freq["value"].notna()
-    df_freq = df_freq[mask]
-    df_freq.index = range(len(df_freq.index))
-
-    df_freq["freq"] = df_freq["value"] * 1e-6
-
     # cross-match the data
     df["nbeam"] = np.nan
     df["nant_cb"] = np.nan
@@ -258,6 +258,16 @@ def main():
     df["freq"] = np.nan
 
     for i in range(len(df) - 1):
+        mask_shape = (df.loc[i, "date"] <= df_shape["date"]) & (
+            df_shape["date"] < df.loc[i + 1, "date"]
+        )
+        if len(df_shape[mask_shape]) > 0:
+            area = df_shape.loc[mask_shape, "area"].iat[0]
+        else:
+            area = np.nan
+
+        df.loc[i, "area"] = area
+
         mask_beam = (df.loc[i, "date"] <= df_beams["date"]) & (
             df_beams["date"] < df.loc[i + 1, "date"]
         )
@@ -288,18 +298,13 @@ def main():
 
         df.loc[i, "nant_ib"] = nant_ib
 
-        mask_freq = (df.loc[i, "date"] <= df_freq["date"]) & (
-            df_freq["date"] < df.loc[i + 1, "date"]
-        )
-        if len(df_freq[mask_freq]) > 0:
-            freq = df_freq.loc[mask_freq, "freq"].iat[0]
-        else:
-            freq = np.nan
-
-        df.loc[i, "freq"] = freq
-
-    # select only our observations
-    mask = (df["nant_cb"] >= 30) & (df["nant_cb"] <= 48)
+    # select only our observations at l-band
+    mask = (
+        (df["freq"] > 1000.0)
+        & (df["freq"] < 2000.0)
+        & (df["nant_cb"] >= 30)
+        & (df["nant_cb"] <= 48)
+    )
     df = df[mask]
     df.index = range(len(df.index))
 
