@@ -217,8 +217,8 @@ def run_ib_pointing(params):
     df_bad = pd.read_csv(bad_pointings_fn, comment="#", names=["start", "end"], sep=",")
 
     # convert to dates
-    df_bad["start"] = pd.to_datetime(df_bad["start"], infer_datetime_format=True)
-    df_bad["end"] = pd.to_datetime(df_bad["end"], infer_datetime_format=True)
+    df_bad["start"] = pd.to_datetime(df_bad["start"])
+    df_bad["end"] = pd.to_datetime(df_bad["end"])
 
     df_bad.info()
     print(df_bad.to_string())
