@@ -301,3 +301,42 @@ def plot_exposure_timeline(t_df_sources, t_df, coords, radius=0.75):
         ax.set_title(df_sources["name"].iat[i])
 
         fig.tight_layout()
+
+
+def remove_bad_pointings(t_df):
+    """
+    Remove pointings where the pipeline was not working as expected.
+    """
+
+    df = t_df.copy()
+
+    bad_pointings_fn = os.path.join(
+        os.path.dirname(__file__), "..", "config", "bad_pointings_ib.csv"
+    )
+    bad_pointings_fn = os.path.abspath(bad_pointings_fn)
+
+    df_bad = pd.read_csv(bad_pointings_fn, comment="#", names=["start", "end"], sep=",")
+
+    # convert to dates
+    df_bad["start"] = pd.to_datetime(df_bad["start"])
+    df_bad["end"] = pd.to_datetime(df_bad["end"])
+
+    df_bad.info()
+    print(df_bad.to_string())
+
+    print("Entries before bad pointings removal: {0}".format(len(df.index)))
+
+    for i in range(len(df_bad.index)):
+        start = df_bad.at[i, "start"]
+        end = df_bad.at[i, "end"]
+        # print('Start, end: {0}, {1}'.format(start, end))
+
+        mask = (df["date"] >= start) & (df["date"] < end)
+        mask = np.logical_not(mask)
+
+        df = df[mask]
+
+    df.index = range(len(df.index))
+    print("Entries after bad pointings removal: {0}".format(len(df.index)))
+
+    return df

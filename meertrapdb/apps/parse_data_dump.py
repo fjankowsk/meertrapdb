@@ -209,34 +209,7 @@ def run_ib_pointing(params):
         df = df[mask]
 
     # remove pointings where the pipeline was not working as expected
-    bad_pointings_fn = os.path.join(
-        os.path.dirname(__file__), "..", "config", "bad_pointings_ib.csv"
-    )
-    bad_pointings_fn = os.path.abspath(bad_pointings_fn)
-
-    df_bad = pd.read_csv(bad_pointings_fn, comment="#", names=["start", "end"], sep=",")
-
-    # convert to dates
-    df_bad["start"] = pd.to_datetime(df_bad["start"])
-    df_bad["end"] = pd.to_datetime(df_bad["end"])
-
-    df_bad.info()
-    print(df_bad.to_string())
-
-    print("Entries before bad pointings removal: {0}".format(len(df.index)))
-
-    for i in range(len(df_bad.index)):
-        start = df_bad.at[i, "start"]
-        end = df_bad.at[i, "end"]
-        # print('Start, end: {0}, {1}'.format(start, end))
-
-        mask = (df["date"] >= start) & (df["date"] < end)
-        mask = np.logical_not(mask)
-
-        df = df[mask]
-
-    df.index = range(len(df.index))
-    print("Entries after bad pointings removal: {0}".format(len(df.index)))
+    df = survey.remove_bad_pointings(df)
 
     # plot tobs
     fig = plt.figure()
