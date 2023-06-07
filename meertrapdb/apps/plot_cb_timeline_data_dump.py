@@ -333,7 +333,7 @@ def main():
     # add to that the data before we had beam sizes
     mask = df["date"] < pd.Timestamp("2020-04-16T10:00:00")
     add = df[mask].copy()
-    add["area"] = 0.85
+    add["area"] = 0.9
     add["survey_area"] = add["area"] * add["survey_nbeam"] / 3600.0
     survey_coverage += add["survey_area"].sum() * 10.0 / 60.0
     print("CB survey coverage total: {0:.1f} deg2 h".format(survey_coverage))
