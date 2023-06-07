@@ -9,8 +9,8 @@ import pandas as pd
 def plot_timeline(t_df):
     df = t_df.copy()
 
-    fig, (ax1, ax2, ax3, ax4, ax5) = plt.subplots(
-        nrows=5, ncols=1, figsize=(12, 7), sharex=True, sharey=False
+    fig, (ax1, ax2, ax3, ax4, ax5, ax6) = plt.subplots(
+        nrows=6, ncols=1, figsize=(12, 7), sharex=True, sharey=False
     )
 
     ax1.scatter(df["date"], df["area"], color="black", marker=".", zorder=4)
@@ -37,7 +37,12 @@ def plot_timeline(t_df):
 
     ax5.grid()
     ax5.set_ylabel("Tot_area ($\mathrm{deg}^2$)")
-    ax5.set_xlabel("Date")
+
+    ax6.scatter(df["date"], df["freq"], color="black", marker=".", zorder=4)
+
+    ax6.grid()
+    ax6.set_ylabel("Freq (MHz)")
+    ax6.set_xlabel("Date")
 
     fig.tight_layout()
 
@@ -231,10 +236,26 @@ def main():
     df_ibants = df_ibants[mask]
     df_ibants.index = range(len(df_ibants.index))
 
+    # centre frequency
+    files = glob.glob(
+        "fbfuse_sensor_dump/fbfuse_1_fbfmc_array_1_centre_frequency_*.csv"
+    )
+    files = sorted(files)
+
+    df_freq = load_data(files)
+
+    # remove nans
+    mask = df_freq["value"].notna()
+    df_freq = df_freq[mask]
+    df_freq.index = range(len(df_freq.index))
+
+    df_freq["freq"] = df_freq["value"] * 1e-6
+
     # cross-match the data
     df["nbeam"] = np.nan
     df["nant_cb"] = np.nan
     df["nant_ib"] = np.nan
+    df["freq"] = np.nan
 
     for i in range(len(df) - 1):
         mask_beam = (df.loc[i, "date"] <= df_beams["date"]) & (
@@ -267,6 +288,16 @@ def main():
 
         df.loc[i, "nant_ib"] = nant_ib
 
+        mask_freq = (df.loc[i, "date"] <= df_freq["date"]) & (
+            df_freq["date"] < df.loc[i + 1, "date"]
+        )
+        if len(df_freq[mask_freq]) > 0:
+            freq = df_freq.loc[mask_freq, "freq"].iat[0]
+        else:
+            freq = np.nan
+
+        df.loc[i, "freq"] = freq
+
     # select only our observations
     mask = (df["nant_cb"] >= 30) & (df["nant_cb"] <= 48)
     df = df[mask]
@@ -282,17 +313,17 @@ def main():
 
     survey_coverage = df["survey_area"].sum() * 10.0 / 60.0
     # add to that the data before we had beam sizes
-    mask = df_beams["date"] < pd.Timestamp("2020-04-16T10:00:00")
-    add = df_beams[mask].copy()
-    add["area"] = 1.2
+    # mask = df_beams["date"] < pd.Timestamp("2020-04-16T10:00:00")
+    # add = df_beams[mask].copy()
+    # add["area"] = 0.85
 
-    add["survey_nbeam"] = add["nbeam"]
-    mask = add["survey_nbeam"] > 768
-    add.loc[mask, "survey_nbeam"] = 768
-    add["survey_area"] = add["area"] * add["survey_nbeam"] / 3600.0
+    # add["survey_nbeam"] = add["nbeam"]
+    # mask = add["survey_nbeam"] > 768
+    # add.loc[mask, "survey_nbeam"] = 768
+    # add["survey_area"] = add["area"] * add["survey_nbeam"] / 3600.0
 
-    survey_coverage += add["survey_area"].sum() * 10.0 / 60.0
-    print("CB survey coverage: {0:.1f} deg2 h".format(survey_coverage))
+    # survey_coverage += add["survey_area"].sum() * 10.0 / 60.0
+    # print("CB survey coverage: {0:.1f} deg2 h".format(survey_coverage))
 
     # make plots
     plot_timeline(df)
