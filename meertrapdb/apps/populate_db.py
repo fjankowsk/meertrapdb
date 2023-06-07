@@ -453,7 +453,6 @@ def insert_candidates(data, sb_id, summary, obs_utc_start, node_name):
         )[:]
 
         if len(pc_queried) == 0:
-
             ddplan_str = None
 
             if isinstance(summary["pipeline"]["cheetah"]["ddplan_str"], str):
