@@ -168,6 +168,11 @@ def main():
     # remove pointings where the pipeline was not working as expected
     df = survey.remove_bad_pointings(df)
 
+    # enfore a strict end date
+    mask = df["date"] <= pd.Timestamp("2021-12-31T23:59:59")
+    df = df[mask]
+    df.index = range(len(df.index))
+
     df.info()
 
     # cb beam shape
